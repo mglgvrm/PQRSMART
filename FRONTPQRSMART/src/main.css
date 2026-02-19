@@ -1,0 +1,55 @@
+html,
+body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    scroll-behavior: smooth;
+    overflow: auto;
+    /* Evita el scroll */
+}
+
+/* Para navegadores basados en WebKit (Chrome, Safari, Edge basado en Chromium) */
+::-webkit-scrollbar {
+    width: 8px;
+    /* Ajusta el ancho de la barra de desplazamiento vertical */
+    height: 8px;
+    /* Ajusta el alto de la barra de desplazamiento horizontal */
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+    /* Fondo de la barra de desplazamiento */
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.3);
+    /* Color de la barra, transparente */
+    border-radius: 10px;
+    /* Bordes redondeados */
+    border: 2px solid transparent;
+    /* Para crear un pequeño espacio alrededor */
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.6);
+    /* Color más visible al pasar el mouse */
+}
+
+/* Estilo para Firefox */
+* {
+    scrollbar-width: thin;
+    /* Define el ancho de la barra de desplazamiento */
+    scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+    /* Color de la barra y del fondo */
+}
+
+/* Estilo para Internet Explorer 10 y Edge */
+.scrollable {
+    -ms-overflow-style: none;
+    /* Oculta la barra de desplazamiento en IE/Edge */
+}
+
+.scrollable::-ms-scrollbar {
+    display: none;
+    /* Oculta la barra de desplazamiento en IE/Edge */
+}

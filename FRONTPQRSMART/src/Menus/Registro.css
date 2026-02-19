@@ -1,0 +1,163 @@
+body {
+    font-family: 'Poppins', sans-serif;
+}
+
+.RegistroUser {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.FormularioRegistro {
+    background: rgba(255, 255, 255, 0.05); /* Fondo semi-transparente para más oscuridad */
+    backdrop-filter: blur(12px); /* Efecto de desenfoque */
+    padding: 40px;
+    border-radius: 15px;
+    color: #E6E8EC; /* Texto blanco-gris para mayor contraste */
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8); /* Sombras negras más intensas */
+    width: 100%;
+    max-width: 600px;
+    margin: auto;
+}
+
+.tituloRegistro {
+    color: #FFFFFF; /* Azul muy claro para el título */
+    font-size: 1rem;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.Campos {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.labelsAndInputs {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.labelsAndInputs label {
+    font-weight: 600;
+    color: #142B4C; /* Azul claro apagado para las etiquetas */
+    font-size: 14px;
+}
+
+.Selects, .inputs {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1); /* Fondo más oscuro */
+    color: #E0E0E0; /* Texto blanco-gris */
+    border-radius: 8px;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+select option {
+    background-color: #ffffff; /* Azul oscuro para las opciones de select */
+    color: #000000;
+}
+
+.Selects:focus,
+.inputs:focus {
+    border: 1px solid #5A6DBF; /* Azul más oscuro en foco */
+    box-shadow: 0 0 8px rgba(90, 109, 191, 0.5); /* Sombra azul suave */
+}
+
+.inputs::placeholder, .Selects::placeholder {
+    color: #9FA6B2; /* Placeholder gris claro */
+    opacity: 0.8;
+}
+
+.Selects {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%23FFFFFF' d='M5.293 6.293a1 1 0 011.414 0L8 7.586l1.293-1.293a1 1 0 011.414 1.414l-2 2a1 1 0 01-1.414 0l-2-2a1 1 0 010-1.414z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 12px;
+}
+
+.errores {
+    color: #FF5E5E; /* Rojo fuerte para errores */
+    font-size: 0.9em;
+    margin-top: 5px;
+}
+
+.ButonR {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+    margin-bottom: 3px;
+    text-align: center;
+}
+
+.ButonR button {
+    background-color: #5E76FF   ; /* Azul-negro para botones */
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 8px;
+    width: 50%;
+
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.ButonR button:hover {
+    background-color: #1C285A; /* Azul-negro más oscuro en hover */
+    transform: translateY(-2px);
+}
+
+.ButonR button:active {
+    transform: translateY(0);
+}
+
+.labelAndA {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.labelAndA a {
+    color: #334E9C; /* Azul más claro para los enlaces */
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+.labelAndA a:hover {
+    color: #000000 ; /* Azul más oscuro en hover */
+    text-decoration: underline;
+}
+
+/* Mensajes de error */
+.errore, .errores {
+    color: #FF4D4D; /* Rojo más brillante para errores */
+    font-size: 12px;
+    margin-top: 5px;
+    background-color: rgba(255, 255, 255, 0.1); /* Fondo de error más oscuro */
+    padding: 8px;
+    border-radius: 6px;
+    position: relative;
+}
+
+.passwordRegistro {
+    display: flex;
+    align-items: center;
+    
+}
+
+
+
+.passwordRegistro span {
+    cursor: pointer;
+    margin-left: -30px;
+    
+}

@@ -1,0 +1,311 @@
+@import url('https://fonts.googleapis.com/css?family=Montserrat');
+
+/* Mantén este código para el fondo con gradiente */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Montserrat', sans-serif;
+    overflow: hidden; /* Eliminar el scroll */
+}
+
+#gradient-canvas {
+    position: absolute;
+    --gradient-color-1: #4A81D1; /* Azul claro para confianza y profesionalismo */
+    --gradient-color-2: #3368B0; /* Un azul más oscuro para estabilidad */
+    --gradient-color-3: #5A93D9; /* Azul suave para equilibrio */
+    --gradient-color-4: #295087; /* Un tono intermedio de azul */
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+
+/* Contenedor principal que aloja el logo y el formulario */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    position: relative;
+}
+
+.login-box {
+    display: flex;
+    border-radius: 10px;
+    padding: 40px;
+    width: 800px;
+    justify-content: space-between;
+}
+
+/* Estilo de la sección del logo */
+.logo-section {
+    flex: 1;
+    text-align: center;
+    color: #34B0E3;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.logo-section h1 {
+    font-size: 36px;
+    font-weight: 100;
+}
+
+/* Línea vertical al lado del logo */
+.vertical-line {
+    width: 2px;
+    /* Ancho de la línea */
+    height: 300px;
+    /* Altura de la línea */
+    background-color: #34B0E3;
+    /* Color de la línea */
+    margin-left: 40px;
+    /* Espacio entre el texto y la línea */
+    align-self: center;
+    /* Centrar verticalmente la línea */
+}
+
+/* Sección del formulario */
+.form-section {
+    flex: 1;
+}
+
+.form-section h2 {
+    margin-bottom: 20px;
+    color: #34B0E3;
+    text-align: center;
+}
+
+.user-box {
+    position: relative;
+}
+
+.user-box input {
+    width: 100%;
+    padding: 10px 0;
+    font-size: 16px;
+    color: #ffffff;
+    margin-bottom: 30px;
+    outline: none;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #fff;
+}
+
+.user-box label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 10px 0;
+    font-size: 16px;
+    color: #fff;
+    pointer-events: none;
+    transition: 0.2s;
+}
+
+.user-box input:focus~label,
+.user-box input:valid~label {
+    top: -20px;
+    left: 0;
+    color: #f3f4f6;
+    font-size: 12px;
+}
+.password-wrapper {
+    display: flex;
+    align-items: center;
+
+}
+
+
+
+.password-wrapper span {
+    cursor: pointer;
+    margin-left: -30px;
+    margin-top: -10px;
+
+}
+
+.btn-container {
+    text-align: center;
+}
+
+.btn {
+    box-sizing: border-box;
+    appearance: none;
+    background-color: transparent;
+    border: 2px solid #f3f4f6;
+    border-radius: 0.6em;
+    color: #e74c3c;
+    cursor: pointer;
+    display: inline-block;
+    font-size: 0.9rem;
+    padding: 0.8em 2em;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    transition: color 150ms ease-in-out;
+}
+
+.btn:hover,
+.btn:focus {
+    color: #fff;
+    outline: 0;
+}
+
+.fifth {
+    border-color: #f6f3f3;
+    border-radius: 0;
+    color: #f6f3f3;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.fifth:after {
+    content: '';
+    position: absolute;
+    display: block;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 100%;
+    background: #063d75;
+    z-index: -1;
+    transition: width 150ms ease-in-out;
+}
+
+.fifth:hover {
+    color: #fff;
+}
+
+.fifth:hover:after {
+    width: 110%;
+}
+
+.titulologin {
+    color: #FFFFFF;
+    font-weight: 900;
+    font-size: 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.CheckboxYRegistro {
+    display: flex;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.80em;
+    color: #fff;
+    /* Color del texto */
+    text-align: center;
+    /* Centra el texto del párrafo */
+    justify-content: space-evenly;
+    margin-top: 15px;
+    margin-bottom: 15px;
+
+
+}
+
+.CheckboxYRegistro label,
+a {
+    color: #fff;
+    /* Color del texto */
+
+}
+.PQRSmart {
+    transition: transform 1s ease, font-size 1s ease;
+}
+
+.PQRSmart:hover {
+    transform: scale(1.2) translateX(-10px) translateY(-10px) rotate(360deg);
+    font-size: 4rem; /* Aumenta el tamaño a 4rem */
+}
+
+
+/* Estilo del enlace para recuperar la contraseña */
+.OlvidasteContra {
+    color: #fff;
+    text-align: center;
+}
+
+
+/* Media Queries para pantallas pequeñas (teléfonos móviles) */
+@media (max-width: 768px) {
+    .login-box {
+        padding: 20px;
+        flex-direction: column;
+        width: 100%;
+        /* Asegúrate de que ocupe todo el ancho en móviles */
+        align-items: center;
+        /* Centrar contenido horizontalmente */
+    }
+
+    .logo-section h1 {
+        font-size: 28px;
+        /* Ajusta el tamaño del logo */
+
+    }
+
+    .user-box input {
+        font-size: 14px;
+        /* Reduce el tamaño de la fuente para inputs en móviles */
+    }
+
+    .btn {
+        padding: 0.6em 1.5em;
+        /* Ajusta el tamaño del botón */
+        font-size: 0.8rem;
+    }
+
+    .CheckboxYRegistro {
+        font-size: 0.75em;
+    }
+
+    /* Centrar la línea vertical horizontalmente */
+    .vertical-line {
+        width: 500px;
+        /* Ajusta el ancho de la línea */
+        height: 2px;
+        /* Cambia a una línea horizontal */
+        margin-left: -110px;
+        /* Elimina el margen izquierdo */
+        margin-top: 60px;
+        /* Añade un margen superior */
+        align-self: center;
+        background-color: #34B0E3;
+    }
+    .PQRSmart {
+        transition: transform 1s ease, font-size 1s ease;
+    }
+
+    .PQRSmart:hover {
+        transform: scale(1.2) translateX(100px) translateY(-10px) rotate(360deg);
+        font-size: 4rem; /* Aumenta el tamaño a 4rem */
+    }
+}
+
+@media (max-width: 480px) {
+    .login-box {
+        padding: 15px;
+    }
+
+    .logo-section h1 {
+        font-size: 22px;
+    }
+
+    .user-box input {
+        font-size: 12px;
+    }
+
+    .btn {
+        padding: 0.5em 1.2em;
+        font-size: 0.7rem;
+    }
+
+    .vertical-line {
+        width: 350px;
+        /* Ajusta el ancho en pantallas muy pequeñas */
+    }
+}
