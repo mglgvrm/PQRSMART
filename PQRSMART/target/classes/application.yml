@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/pqrsmartdb
+    username: postgres
+    password: 2004
+    driver-class-name: org.postgresql.Driver
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 100MB
+      max-request-size: 100MB
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    defer-datasource-initialization: true
+  server:
+    port: 8080
+  sql:
+    init:
+      mode: never
