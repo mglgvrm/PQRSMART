@@ -1,0 +1,105 @@
+.Dashboard {
+    font-family: 'Montserrat', sans-serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    color: #000000;
+}
+
+.cuerpos-Dashboard {
+    width: 90%;
+    margin: 10vh auto;
+    display: flex;
+    justify-content: center;
+    z-index: 1;
+}
+
+.dashform {
+    width: 100%;
+    padding: 20px;
+}
+
+.formdash {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(2, 1fr);
+    grid-gap: 20px;
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+
+.card h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #333;
+}
+
+.pqrstotal {
+    font-size: 2rem;
+    color: #007bff;
+}
+
+.card canvas {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Media queries para hacer el diseño responsive */
+@media (max-width: 1024px) {
+    .cuerpos-Dashboard {
+        width: 100%;
+        margin: 8vh auto;
+    }
+
+    .formdash {
+        grid-template-columns: 1fr;
+        grid-gap: 15px;
+    }
+}
+
+@media (max-width: 768px) {
+    .Dashboard {
+        height: auto;
+    }
+
+    .dashform {
+        padding: 15px;
+    }
+
+    .card h2 {
+        font-size: 1.3rem;
+    }
+
+    .pqrstotal {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .card {
+        padding: 15px;
+    }
+
+    .card h2 {
+        font-size: 1.2rem;
+    }
+
+    .pqrstotal {
+        font-size: 1.2rem;
+    }
+}

@@ -1,0 +1,260 @@
+.consultarPqrs {
+    display: flex;
+    height: 100vh;
+}
+
+.cuerpoconsultarPqrs {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 20px;
+    overflow-y: auto;
+    width: 100%;
+}
+
+.tabla-usuario {
+    width: 90%;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+    color: black;
+}
+
+.titleConsultar {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 2rem;
+    color: #000000;
+}
+
+.busqueda {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+    color: #000000;
+}
+
+.busqueda label {
+    margin-bottom: 8px;
+    white-space: nowrap;
+}
+
+.input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.busqueda input {
+    width: 100%;
+    padding: 10px;
+    padding-right: 40px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    transition: box-shadow 0.3s;
+}
+
+.busqueda input:hover {
+    box-shadow: 0 0 5px rgba(74, 144, 226, 0.5);
+}
+
+.icono-busqueda {
+    position: absolute;
+    right: 10px;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.nota {
+    display: block;
+    margin-bottom: 15px;
+    font-weight: 600;
+    color: #000000;
+    font-size: 14px;
+}
+
+.tabla-minimalista-usuario {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.tabla-minimalista-usuario th,
+.tabla-minimalista-usuario td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.tabla-minimalista-usuario th {
+    background-color: #f4f4f4;
+    font-weight: 600;
+}
+
+.tabla-minimalista-usuario tr:hover {
+    background-color: #f9f9f9;
+}
+
+.btn-descargar {
+    padding: 8px 16px;
+    font-family: 'Montserrat', sans-serif;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    background-color: #fff;
+    transition: all 0.2s;
+}
+
+.btn-descargar:hover {
+    background-color: #f0f0f0;
+    border-color: #999;
+}
+
+.estado {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.activar {
+    cursor: pointer;
+    margin-right: 15px;
+}
+
+.paginacion {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    gap: 15px;
+}
+
+.paginacion button {
+    padding: 8px 16px;
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.paginacion button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.paginacion button:hover:not(:disabled) {
+    background-color: #357abd;
+    transform: translateY(-1px);
+}
+
+.paginacion span {
+    font-size: 14px;
+    color: #666;
+}
+
+/* Responsive Breakpoints */
+@media screen and (max-width: 1366px) {
+    .tabla-usuario {
+        margin-left: 10vh;
+        width: 100%;
+    }
+}
+
+@media screen and (max-width: 1024px) {
+    .tabla-usuario {
+        margin-left: 15vh;
+        width: 95%;
+    }
+
+    .tabla-minimalista-usuario {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .consultarPqrs {
+        flex-direction: column;
+    }
+
+    .tabla-usuario {
+        margin-left: 0;
+        width: 95%;
+        padding: 15px;
+    }
+
+    .titleConsultar {
+        font-size: 1.5rem;
+    }
+
+    .cuerpoconsultarPqrs {
+        padding: 10px;
+        height: auto;
+        min-height: 100vh;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .tabla-usuario {
+        width: 100%;
+        padding: 10px;
+        margin: 0;
+    }
+
+    .titleConsultar {
+        font-size: 1.2rem;
+    }
+
+    .busqueda input {
+        font-size: 14px;
+    }
+
+    .nota {
+        font-size: 12px;
+    }
+
+    .btn-descargar {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
+    .tabla-minimalista-usuario th,
+    .tabla-minimalista-usuario td {
+        padding: 8px;
+        font-size: 12px;
+    }
+
+    .span-descargar {
+        font-size: 12px;
+    }
+
+    .paginacion button {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+}
+
+/* Ensure table is always scrollable on smaller screens */
+@media screen and (max-width: 1024px) {
+    .tabla-minimalista-usuario {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .tabla-minimalista-usuario thead,
+    .tabla-minimalista-usuario tbody,
+    .tabla-minimalista-usuario tr,
+    .tabla-minimalista-usuario th,
+    .tabla-minimalista-usuario td {
+        white-space: nowrap;
+    }
+}

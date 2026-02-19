@@ -1,0 +1,40 @@
+/* Banner.css */
+.banner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 8rem 2rem;
+    background: linear-gradient(135deg, #03072B, #050A31);
+    color: white;
+    position: relative;
+    overflow: hidden;
+    animation: fadeIn 2s ease-out;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.banner-title {
+    font-size: 2.8rem;
+    font-weight: bold;
+    color: #00c7ff;
+}
+
+.primary-btn {
+    background-color: transparent;
+    padding: 1rem 2rem;
+    border: 2px solid #00c7ff;
+    color: #00c7ff;
+    margin-top: 1.5rem;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.primary-btn:hover {
+    background: #0078d7;
+    color: white;
+    box-shadow: 0px 4px 15px rgba(0, 199, 255, 0.5);
+}

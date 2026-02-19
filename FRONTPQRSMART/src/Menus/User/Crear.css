@@ -1,0 +1,160 @@
+/* Crear.css */
+
+.cuerpo-crear {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 20px;
+    margin-top: 10vh;
+    margin-left: 10vh;
+}
+
+.title {
+    color: #000000;
+    font-size: 1.5rem;
+    text-align: center;
+}
+
+.formcrear {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+    width: 100%;
+    max-width: 600px;
+    color: #000000;
+    box-sizing: border-box;
+}
+
+.solicitud-form-crear {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: #000000;
+    font-size: 14px;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    background: rgb(255, 255, 255);
+    color: #000000;
+    border-radius: 8px;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.form-group select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%23FFFFFF' d='M5.293 6.293a1 1 0 011.414 0L8 7.586l1.293-1.293a1 1 0 011.414 1.414l-2 2a1 1 0 01-1.414 0l-2-2a1 1 0 010-1.414z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 12px;
+}
+
+.file-input-button {
+    background-color: #E0E0E0;
+    border: 1px solid #ccc;
+    padding: 6px 12px;
+    cursor: pointer;
+    color: #000;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+/* Botón de envío */
+.submit-btn {
+    background-color: #ffffff;
+    border: none;
+    color: #000;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.submit-btn:hover {
+    background-color: #000000;
+    color: #ffffff;
+}
+
+@media (max-width: 1366px) and (max-height: 768px) {
+    .cuerpo-crear {
+        margin-left: 4vh;
+        overflow: hidden;
+    }
+    .formcrear{
+    }
+}
+
+/* Media queries para hacerlo responsive */
+@media (max-width: 768px) {
+    .formcrear {
+        padding: 20px;
+        margin-top: 5vh;
+    }
+
+    .title {
+        font-size: 1.25rem;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+
+    .submit-btn {
+        padding: 8px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .cuerpo-crear {
+        margin-top: 5vh;
+        padding: 10px;
+        margin-left: 1vh;
+    }
+
+    .title {
+        font-size: 1rem;
+    }
+
+    .formcrear {
+        padding: 15px;
+        box-shadow: none;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+
+    .submit-btn {
+        padding: 6px;
+        font-size: 12px;
+    }
+}
+
+

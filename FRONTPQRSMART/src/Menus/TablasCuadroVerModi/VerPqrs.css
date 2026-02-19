@@ -1,0 +1,45 @@
+.VerPqrs {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+.modal-buttons-pqrs {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.modal-buttons-pqrs button {
+    padding: 10px 20px;
+    border: none;
+    background-color: #4a90e2;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.modal-buttons-pqrs button:hover {
+    background-color: #357ab8;
+}
+
+.modal-buttons-pqrs button:last-child {
+    background-color: #4a90e2;
+}
+
+.modal-buttons-pqrs button:last-child:hover {
+    background-color: #999;
+}
+.modal-form textarea {
+    color: black;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}

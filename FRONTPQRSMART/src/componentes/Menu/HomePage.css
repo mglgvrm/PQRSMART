@@ -1,0 +1,95 @@
+.HomePage {
+    font-family: 'Montserrat', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center; /* Esto centra el contenido verticalmente */
+    overflow: hidden;
+}
+
+.cuerpos {
+    width: 80%;
+    margin-top: 5vh;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center; /* Centrado del contenido */
+    text-align: center;
+}
+
+.headers {
+    width: 100%;
+}
+
+.titulo {
+    font-size: 2rem;
+    color: #000;
+    margin: 1rem 0;
+}
+
+.mision {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center; /* Centrado vertical */
+    color: #000;
+    text-align: center; /* Alineación centrada del texto */
+    padding: 2rem 0;
+}
+
+.p1 {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.p2 {
+    font-size: 1rem;
+    max-width: 800px; /* Para evitar que el texto se alargue demasiado */
+    padding: 0 1rem;
+    line-height: 1.5;
+}
+
+/* Media Queries */
+@media (min-width: 768px) {
+    .cuerpos {
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 80%;
+    }
+
+    .mision {
+        width: 70%; /* Aumentar el ancho en pantallas más grandes */
+        text-align: center;
+    }
+
+    .p1 {
+        font-size: 2rem;
+    }
+
+    .p2 {
+        font-size: 1.2rem;
+        max-width: 70%;
+    }
+}
+
+@media (min-width: 1024px) {
+    .cuerpos {
+        width: 70%;
+    }
+
+    .titulo {
+        font-size: 2.5rem;
+    }
+
+    .p1 {
+        font-size: 2.5rem;
+    }
+
+    .p2 {
+        font-size: 1.3rem;
+    }
+}

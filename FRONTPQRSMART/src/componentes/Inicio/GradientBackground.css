@@ -1,0 +1,8 @@
+#gradient {
+    width: 100%;
+    height: 100vh; /* Cambiado a 100vh para ocupar toda la pantalla */
+    position: absolute; /* Para que esté detrás de otros elementos */
+    top: 0;
+    left: 0;
+    z-index: -1; /* Para que no cubra otros elementos en la página */
+}
