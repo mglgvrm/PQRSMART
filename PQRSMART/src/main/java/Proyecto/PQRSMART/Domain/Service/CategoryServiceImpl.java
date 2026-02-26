@@ -2,6 +2,7 @@ package Proyecto.PQRSMART.Domain.Service;
 
 import Proyecto.PQRSMART.Domain.Dto.CategoryDTO;
 import Proyecto.PQRSMART.Domain.Mapper.CategoryMapper;
+import Proyecto.PQRSMART.Domain.Service.Interfaces.CategoryService;
 import Proyecto.PQRSMART.Persistence.Repository.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,7 +12,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class CategoryService {
+public class CategoryServiceImpl implements CategoryService {
 @Autowired
     private CategoryRepository categoryRepository;
 

@@ -2,6 +2,7 @@ package Proyecto.PQRSMART.Domain.Service;
 
 import Proyecto.PQRSMART.Domain.Dto.PersonTypeDTO;
 import Proyecto.PQRSMART.Domain.Mapper.PersonTypeMapper;
+import Proyecto.PQRSMART.Domain.Service.Interfaces.PersonTypeService;
 import Proyecto.PQRSMART.Persistence.Repository.PersonTypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,7 +12,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class PersonTypeService {
+public class PersonTypeServiceImpl implements PersonTypeService {
 @Autowired
     private PersonTypeRepository personTypeRepository;
 

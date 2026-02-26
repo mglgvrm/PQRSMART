@@ -1,4 +1,4 @@
-package Proyecto.PQRSMART.Domain.Service;
+package Proyecto.PQRSMART.Domain.Service.Interfaces;
 
 import Proyecto.PQRSMART.Controller.models.AuthResponse;
 import Proyecto.PQRSMART.Controller.models.AuthenticationRequest;

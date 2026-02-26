@@ -4,6 +4,7 @@ import Proyecto.PQRSMART.Config.Exception.Exceptions;
 import Proyecto.PQRSMART.Controller.models.AuthResponse;
 import Proyecto.PQRSMART.Controller.models.AuthenticationRequest;
 import Proyecto.PQRSMART.Controller.models.RegisterRequest;
+import Proyecto.PQRSMART.Domain.Service.Interfaces.AuthService;
 import Proyecto.PQRSMART.Persistence.Entity.Role;
 import Proyecto.PQRSMART.Persistence.Entity.StateUser;
 import Proyecto.PQRSMART.Persistence.Entity.User;

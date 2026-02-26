@@ -5,9 +5,9 @@ import Proyecto.PQRSMART.Controller.models.AuthResponse;
 import Proyecto.PQRSMART.Controller.models.AuthenticationRequest;
 import Proyecto.PQRSMART.Controller.models.RegisterRequest;
 import Proyecto.PQRSMART.Domain.Dto.UsuarioDto;
-import Proyecto.PQRSMART.Domain.Service.AuthService;
+import Proyecto.PQRSMART.Domain.Service.Interfaces.AuthService;
 import Proyecto.PQRSMART.Domain.Service.JwtService;
-import Proyecto.PQRSMART.Domain.Service.UsuarioService;
+import Proyecto.PQRSMART.Domain.Service.UsuarioServiceImpl;
 import Proyecto.PQRSMART.Persistence.Entity.User;
 import Proyecto.PQRSMART.Persistence.Repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -35,7 +34,7 @@ public class AuthController {
     UsuarioRepository userRepository;
 
     @Autowired
-    private UsuarioService userService;
+    private UsuarioServiceImpl userService;
 
     @Autowired
     private JwtService jwtService;

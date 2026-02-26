@@ -1,7 +1,8 @@
 package Proyecto.PQRSMART.Controller;
 
 import Proyecto.PQRSMART.Domain.Dto.CategoryDTO;
-import Proyecto.PQRSMART.Domain.Service.CategoryService;
+import Proyecto.PQRSMART.Domain.Service.CategoryServiceImpl;
+import Proyecto.PQRSMART.Domain.Service.Interfaces.CategoryService;
 import Proyecto.PQRSMART.Persistence.Entity.State;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
