@@ -2,7 +2,8 @@ package Proyecto.PQRSMART.Controller;
 
 
 import Proyecto.PQRSMART.Domain.Dto.IdentificationTypeDTO;
-import Proyecto.PQRSMART.Domain.Service.IdentificationTypeService;
+import Proyecto.PQRSMART.Domain.Service.IdentificationTypeServiceImpl;
+import Proyecto.PQRSMART.Domain.Service.Interfaces.IdentificationTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

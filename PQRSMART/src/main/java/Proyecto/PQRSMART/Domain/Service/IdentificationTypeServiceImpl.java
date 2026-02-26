@@ -2,6 +2,7 @@ package Proyecto.PQRSMART.Domain.Service;
 
 import Proyecto.PQRSMART.Domain.Dto.IdentificationTypeDTO;
 import Proyecto.PQRSMART.Domain.Mapper.IdentificationTypeMapper;
+import Proyecto.PQRSMART.Domain.Service.Interfaces.IdentificationTypeService;
 import Proyecto.PQRSMART.Persistence.Repository.IdentificationTypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,7 +12,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class IdentificationTypeService {
+public class IdentificationTypeServiceImpl implements IdentificationTypeService {
     @Autowired
     private IdentificationTypeRepository identificationTypeRepository;
 

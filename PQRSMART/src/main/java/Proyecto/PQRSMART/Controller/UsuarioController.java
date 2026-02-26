@@ -1,8 +1,8 @@
 package Proyecto.PQRSMART.Controller;
 
 import Proyecto.PQRSMART.Domain.Dto.UsuarioDto;
-import Proyecto.PQRSMART.Domain.Service.UsuarioService;
-import Proyecto.PQRSMART.Persistence.Entity.RequestState;
+import Proyecto.PQRSMART.Domain.Service.Interfaces.UsuarioService;
+import Proyecto.PQRSMART.Domain.Service.UsuarioServiceImpl;
 import Proyecto.PQRSMART.Persistence.Entity.StateUser;
 import Proyecto.PQRSMART.Persistence.Entity.User;
 import org.springframework.beans.factory.annotation.Autowired;

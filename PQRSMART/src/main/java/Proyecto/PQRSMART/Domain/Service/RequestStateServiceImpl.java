@@ -2,6 +2,7 @@ package Proyecto.PQRSMART.Domain.Service;
 
 import Proyecto.PQRSMART.Domain.Dto.RequestStateDTO;
 import Proyecto.PQRSMART.Domain.Mapper.RequestStateMapper;
+import Proyecto.PQRSMART.Domain.Service.Interfaces.RequestStateService;
 import Proyecto.PQRSMART.Persistence.Entity.RequestState;
 import Proyecto.PQRSMART.Persistence.Repository.RequestStateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +13,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class RequestStateService {
+public class RequestStateServiceImpl implements RequestStateService {
     @Autowired
     RequestStateRepository requestStateRepository;
 

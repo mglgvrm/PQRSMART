@@ -2,7 +2,8 @@ package Proyecto.PQRSMART.Controller;
 
 
 import Proyecto.PQRSMART.Domain.Dto.DependenceDTO;
-import Proyecto.PQRSMART.Domain.Service.DependenceService;
+import Proyecto.PQRSMART.Domain.Service.DependenceServiceImpl;
+import Proyecto.PQRSMART.Domain.Service.Interfaces.DependenceService;
 import Proyecto.PQRSMART.Persistence.Entity.State;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

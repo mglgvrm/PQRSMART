@@ -2,7 +2,8 @@ package Proyecto.PQRSMART.Controller;
 
 
 import Proyecto.PQRSMART.Domain.Dto.RequestStateDTO;
-import Proyecto.PQRSMART.Domain.Service.RequestStateService;
+import Proyecto.PQRSMART.Domain.Service.Interfaces.RequestStateService;
+import Proyecto.PQRSMART.Domain.Service.RequestStateServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

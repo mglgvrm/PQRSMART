@@ -1,5 +1,6 @@
 package Proyecto.PQRSMART.Domain.Service;
 
+import Proyecto.PQRSMART.Domain.Service.Interfaces.IEmailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,7 @@ import java.io.File;
 
 
 @Service
-public class EmailServiceImpl implements  IEmailService {
+public class EmailServiceImpl implements IEmailService {
 
     @Autowired
     private JavaMailSender mailSender;

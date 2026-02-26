@@ -3,14 +3,11 @@ package Proyecto.PQRSMART.Domain.Service;
 
 import Proyecto.PQRSMART.Domain.Dto.RequestDTO;
 import Proyecto.PQRSMART.Domain.Mapper.RequestMapper;
+import Proyecto.PQRSMART.Domain.Service.Interfaces.RequestServices;
 import Proyecto.PQRSMART.Persistence.Entity.Request;
 import Proyecto.PQRSMART.Persistence.Repository.RequestRepository;
 import Proyecto.PQRSMART.Persistence.Repository.UsuarioRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,7 +15,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class RequestServices {
+public class RequestServicesImpl implements RequestServices {
     @Autowired
     private RequestRepository requestRepository;
 

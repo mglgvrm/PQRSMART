@@ -3,9 +3,9 @@ package Proyecto.PQRSMART.Controller;
 
 import Proyecto.PQRSMART.Domain.Dto.RequestDTO;
 import Proyecto.PQRSMART.Domain.Service.EmailServiceImpl;
-import Proyecto.PQRSMART.Domain.Service.RequestServices;
-import Proyecto.PQRSMART.Domain.Service.RequestStateService;
-import Proyecto.PQRSMART.Persistence.Entity.Request;
+import Proyecto.PQRSMART.Domain.Service.Interfaces.RequestServices;
+import Proyecto.PQRSMART.Domain.Service.Interfaces.RequestStateService;
+import Proyecto.PQRSMART.Domain.Service.RequestServicesImpl;
 import Proyecto.PQRSMART.Persistence.Entity.RequestState;
 import Proyecto.PQRSMART.Persistence.Entity.User;
 import Proyecto.PQRSMART.Persistence.Repository.RequestRepository;

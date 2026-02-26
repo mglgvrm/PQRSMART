@@ -1,4 +1,4 @@
-package Proyecto.PQRSMART.Domain.Service;
+package Proyecto.PQRSMART.Domain.Service.Interfaces;
 
 public interface IEmailService {
     void sendEmails(String[] toUser, String subject, String message);

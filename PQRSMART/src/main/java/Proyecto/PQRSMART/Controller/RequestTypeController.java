@@ -4,7 +4,8 @@ package Proyecto.PQRSMART.Controller;
 
 
 import Proyecto.PQRSMART.Domain.Dto.RequestTypeDTO;
-import Proyecto.PQRSMART.Domain.Service.RequestTypeService;
+import Proyecto.PQRSMART.Domain.Service.Interfaces.RequestTypeService;
+import Proyecto.PQRSMART.Domain.Service.RequestTypeServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

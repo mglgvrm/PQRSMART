@@ -3,6 +3,8 @@ package Proyecto.PQRSMART.Domain.Service;
 
 import Proyecto.PQRSMART.Domain.Dto.RequestTypeDTO;
 import Proyecto.PQRSMART.Domain.Mapper.RequestTypeMapper;
+import Proyecto.PQRSMART.Domain.Service.Interfaces.RequestServices;
+import Proyecto.PQRSMART.Domain.Service.Interfaces.RequestTypeService;
 import Proyecto.PQRSMART.Persistence.Repository.RequestTypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,7 +14,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class RequestTypeService {
+public class RequestTypeServiceImpl implements RequestTypeService {
     @Autowired
     private RequestTypeRepository requestTypeRepository;
 
