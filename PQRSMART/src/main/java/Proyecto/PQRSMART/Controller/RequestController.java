@@ -3,6 +3,7 @@ package Proyecto.PQRSMART.Controller;
 
 import Proyecto.PQRSMART.Domain.Dto.RequestDTO;
 import Proyecto.PQRSMART.Domain.Service.EmailServiceImpl;
+import Proyecto.PQRSMART.Domain.Service.Interfaces.PdfServices;
 import Proyecto.PQRSMART.Domain.Service.Interfaces.RequestServices;
 import Proyecto.PQRSMART.Domain.Service.Interfaces.RequestStateService;
 import Proyecto.PQRSMART.Domain.Service.RequestServicesImpl;
@@ -50,6 +51,9 @@ public class RequestController {
     private UsuarioRepository userRepository;
     @Autowired
     private RequestStateService requestStateService;
+
+    @Autowired
+    private PdfServices pdfServices;
 
     private final EmailServiceImpl emailService;
 
@@ -143,8 +147,18 @@ public class RequestController {
 
                 document.close();
 
+            byte[] pdf = pdfServices.generarPdfSolicitud(user, savedRequest);
+
+            emailService.sendEmailWithPdf(
+                    user.getEmail(),
+                    "Detalle de Solicitud",
+                    "Adjunto encontrarás el PDF con los detalles.",
+                    pdf, archivoGuardado
+
+            );
                 // Enviar el PDF por correo
-                emailService.sendEmailWithPdf(user.getEmail(), "Detalle de Solicitud", "Adjunto encontrarás el PDF con los detalles de tu solicitud.", pdfOutputStream.toByteArray(), archivoGuardado);
+            emailService.sendEmailWithPdf(user.getEmail(), "Detalle de Solicitud", "Adjunto encontrarás el PDF con los detalles de tu solicitud.", pdfOutputStream.toByteArray(), archivoGuardado);
+
 
             } catch (Exception e) {
                 System.out.println(e);
