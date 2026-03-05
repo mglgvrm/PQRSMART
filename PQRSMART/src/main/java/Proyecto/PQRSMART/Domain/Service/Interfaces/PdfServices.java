@@ -5,7 +5,7 @@ import Proyecto.PQRSMART.Persistence.Entity.Request;
 import Proyecto.PQRSMART.Persistence.Entity.User;
 
 public interface PdfServices {
-    public byte[] generarPdfSolicitud(User user, RequestDTO request);
+    public byte[] generarPdfSolicitud(User user, Request request);
 
 
 

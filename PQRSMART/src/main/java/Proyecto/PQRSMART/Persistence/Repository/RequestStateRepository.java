@@ -8,4 +8,5 @@ import java.util.Optional;
 @org.springframework.stereotype.Repository
 public interface RequestStateRepository extends JpaRepository<RequestState, Long> {
     Optional<RequestState> findByNameRequestState(String nameRequestState);
+
 }

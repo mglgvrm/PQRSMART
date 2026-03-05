@@ -2,11 +2,16 @@ package Proyecto.PQRSMART.Controller;
 
 
 import Proyecto.PQRSMART.Domain.Dto.RequestDTO;
+import Proyecto.PQRSMART.Domain.Dto.RequestStateDTO;
+import Proyecto.PQRSMART.Domain.Dto.UsuarioDto;
+import Proyecto.PQRSMART.Domain.Mapper.RequestMapper;
+import Proyecto.PQRSMART.Domain.Mapper.UsuarioMapper;
 import Proyecto.PQRSMART.Domain.Service.EmailServiceImpl;
 import Proyecto.PQRSMART.Domain.Service.Interfaces.PdfServices;
 import Proyecto.PQRSMART.Domain.Service.Interfaces.RequestServices;
 import Proyecto.PQRSMART.Domain.Service.Interfaces.RequestStateService;
 import Proyecto.PQRSMART.Domain.Service.RequestServicesImpl;
+import Proyecto.PQRSMART.Persistence.Entity.Request;
 import Proyecto.PQRSMART.Persistence.Entity.RequestState;
 import Proyecto.PQRSMART.Persistence.Entity.User;
 import Proyecto.PQRSMART.Persistence.Repository.RequestRepository;
@@ -63,25 +68,23 @@ public class RequestController {
     private String uploadDir;
 
     @PostMapping("/save")
-    public ResponseEntity<String> guardarSolicitud(@RequestPart("request") RequestDTO request, @RequestPart(value = "archivo", required = false) MultipartFile archivo) {
-
+    public ResponseEntity<String> saveRequest(@RequestPart("request") RequestDTO request, @RequestPart(value = "archivo", required = false) MultipartFile archivo) {
+        try{
 
         // Obtenemos el usuario autenticado
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         // Buscamos el usuario en la base de datos
-        User user = userRepository.findByUser(userDetails.getUsername());
-        System.out.println(request);
+
+            User user = userRepository.findByUser(userDetails.getUsername());
 
         if (user == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Usuario no encontrado");
         }
         String archivoGuardado = null;
         if (archivo != null && !archivo.isEmpty()) {
-            try {
-
                 //Si la Carpeta no Existe se crea
                 //Files.createDirectories(fileStorageLocation);
-                Files.createDirectories(Paths.get(uploadDir));
+            Files.createDirectories(Paths.get(uploadDir));
 
                 // Guardar el archivo
                 String fileName = archivo.getOriginalFilename();
@@ -101,53 +104,41 @@ public class RequestController {
 
                 archivoGuardado = targetLocation.toString();  // Guardamos la ruta del archivo para el adjunto
 
-            } catch (IOException e) {
-                System.out.println(e);
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al procesar el archivo " + e.getMessage());
-            }
+
         }
+
+
         // Creamos la solicitud
-        request.setUser(user);
+        request.setUser(UsuarioMapper.toDto(user));
 
-        // Guardar solicitud usando el servicio
-        RequestDTO savedRequest;
-        RequestDTO searchRequest;
-        try {
-            savedRequest = requestServices.saves(request);
+            // Guardar solicitud usando el servicio
+            RequestDTO  savedRequest = requestServices.saves(request);
+            Request  requests = requestServices.findEntityByIds(request);
+            Optional<Request> searchRequest = requestServices.findEntityById(savedRequest.getIdRequest());
 
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al guardar la solicitud");
-        }
+            Request requestAll;
+            String requestJson;
+                if (searchRequest.isPresent()) {
+                    // Convertir la solicitud guardada a JSON y devolverla
+                    ObjectMapper mapper = new ObjectMapper();
+                    mapper.registerModule(new JavaTimeModule());
+                    requestAll = searchRequest.get();
+                    requestAll.setUser(user);
+                    requestAll.setRequestType(requests.getRequestType());
+                    requestAll.setCategory(requests.getCategory());
+                    requestAll.setDependence(requests.getDependence());
+                    requestAll.setRequestState(requests.getRequestState());
+                    System.out.println("empieza " + requestAll);
+                    requestJson = mapper.writeValueAsString(requestAll);
 
-        try{
 
-                // Generar PDF con iText
 
-                ByteArrayOutputStream pdfOutputStream = new ByteArrayOutputStream();
+                } else {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                            .body("Solicitud no encontrada");
+                }
 
-                // 1. Crear el documento PDF
-                PdfWriter writer = new PdfWriter(pdfOutputStream);
-                PdfDocument pdfDoc = new PdfDocument(writer);
-                Document document = new Document(pdfDoc);
-
-                // 2. Añadir contenido al PDF
-                document.add(new Paragraph("Fecha: " + request.getDate()));
-                document.add(new Paragraph(" "));
-                document.add(new Paragraph(" "));
-                document.add(new Paragraph("Usuario: " + user.getName()));
-                document.add(new Paragraph(" "));
-                document.add(new Paragraph("Tipo de Solicitud: " + savedRequest.getRequestType().getNameRequestType()));
-                document.add(new Paragraph(" "));
-                document.add(new Paragraph("Categoría: " + savedRequest.getCategory().getNameCategory()));
-                document.add(new Paragraph(" "));
-                document.add(new Paragraph("Detalle de la Solicitud: " ));
-                document.add(new Paragraph( request.getDescription()));
-                document.add(new Paragraph(" "));
-                document.add(new Paragraph("Estado Actual de la Solicitud: " + savedRequest.getRequestState().getNameRequestState()));
-
-                document.close();
-
-            byte[] pdf = pdfServices.generarPdfSolicitud(user, savedRequest);
+            byte[] pdf = pdfServices.generarPdfSolicitud(user, requestAll);
 
             emailService.sendEmailWithPdf(
                     user.getEmail(),
@@ -156,29 +147,21 @@ public class RequestController {
                     pdf, archivoGuardado
 
             );
-                // Enviar el PDF por correo
-            emailService.sendEmailWithPdf(user.getEmail(), "Detalle de Solicitud", "Adjunto encontrarás el PDF con los detalles de tu solicitud.", pdfOutputStream.toByteArray(), archivoGuardado);
 
 
-            } catch (Exception e) {
-                System.out.println(e);
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al procesar el archivo " + e.getMessage());
-            }
+            // 7️⃣ Devolver objeto directamente (Spring lo convierte a JSON)
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)
+                    .body(requestJson);
 
-        // Convertir la solicitud guardada a JSON y devolverla
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
-        String requestJson;
-        try {
-            requestJson = mapper.writeValueAsString(savedRequest);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al convertir a JSON");
+
+            e.printStackTrace();
+
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error interno: " + e.getMessage());
         }
-
-
-System.out.println(requestJson);
-        // Devolver respuesta HTTP con estado 201 (creado)
-        return ResponseEntity.status(HttpStatus.CREATED).body(requestJson);
     }
 
     @GetMapping("/get")
@@ -188,17 +171,9 @@ System.out.println(requestJson);
 
     @PutMapping("/cancel/{id}")
     public ResponseEntity<RequestDTO> cancelarSolicitud(@PathVariable Long id) {
-        Optional<RequestDTO> optionalRequest = requestServices.findById(id);
-        if (optionalRequest.isPresent()) {
-            RequestDTO request = optionalRequest.get();
-            // Asignar el estado "CANCELADA" de la entidad RequestState
+        RequestDTO requestCancelado = requestServices.cancelar(id);
 
-            Optional<RequestState> canceladoState = requestStateService.findByName("Cancelado");
-            request.setRequestState(canceladoState.get());
-            requestServices.save(request);
-            return ResponseEntity.ok(request);
-        }
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(requestCancelado);
     }
     @PutMapping("/update/{id}")
     public ResponseEntity<?> update(@PathVariable Long id, @RequestBody RequestDTO requestDTO) {

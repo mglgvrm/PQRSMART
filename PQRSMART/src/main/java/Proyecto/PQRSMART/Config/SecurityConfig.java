@@ -34,8 +34,14 @@ import java.util.List;
         httpSecurity
                 .csrf(csrf ->csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Habilitar CORS
-                .authorizeHttpRequests(auth -> auth.requestMatchers(publicEndpoinds()).permitAll()
-                        .anyRequest().authenticated())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(publicEndpoinds()).permitAll()
+                        .requestMatchers(userEndpoinds()).hasRole("USER")
+                        .requestMatchers(adminEndpoinds()).hasRole("ADMIN")
+                        .requestMatchers(secreEndpoinds()).hasRole("SECRE")
+
+                        .anyRequest().authenticated()
+                )
                 .sessionManagement(sess ->sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
@@ -66,6 +72,22 @@ import java.util.List;
 
         );
     }
+    private RequestMatcher userEndpoinds(){
+        return new OrRequestMatcher(
+                new AntPathRequestMatcher("/api/request/get")
+        );
+    }
 
+    private RequestMatcher adminEndpoinds(){
+        return new OrRequestMatcher(
+                new AntPathRequestMatcher("/api/admin/**")
+        );
+    }
+
+    private RequestMatcher secreEndpoinds(){
+        return new OrRequestMatcher(
+                new AntPathRequestMatcher("/api/auth/request/get")
+        );
+    }
     }
 

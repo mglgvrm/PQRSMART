@@ -7,11 +7,11 @@ import Proyecto.PQRSMART.Persistence.Entity.Dependence;
 import Proyecto.PQRSMART.Persistence.Entity.State;
 import lombok.*;
 
-@Setter
-@Getter
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Data
 public class CategoryDTO {
     private Long idCategory;
     private String nameCategory;

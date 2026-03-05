@@ -24,10 +24,12 @@ public class JwtService {
         return genereteToken(new HashMap<>(),userDetails);
     }
     public String genereteToken(Map<String, Object> extraClaims, UserDetails userDetails){
+
         return Jwts.builder().setClaims(extraClaims)
                 .setSubject(userDetails.getUsername())
+
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() * 1000 * 60 *60 *24))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 *60 *24))
                 .signWith(getSingInKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -40,12 +42,11 @@ public class JwtService {
     }
 
     private Claims getAllClaims(String token) {
-        return Jwts
-                .parserBuilder()
-                .setSigningKey(getSingInKey())
+        return Jwts.parser()
+                .verifyWith((javax.crypto.SecretKey) getSingInKey())
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token)
+                .getPayload();
     }
 
     private Key getSingInKey() {
@@ -55,10 +56,13 @@ public class JwtService {
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder().setSigningKey(getSingInKey()).build().parseClaimsJws(token);
+            Jwts.parser()
+                    .verifyWith((javax.crypto.SecretKey) getSingInKey())
+                    .build()
+                    .parseSignedClaims(token);
+
             return true;
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             return false;
         }
     }

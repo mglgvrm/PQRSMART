@@ -9,8 +9,10 @@ import java.util.Optional;
 public interface RequestServices {
     List<RequestDTO> getAll();
     Optional<RequestDTO> findById(Long id);
+    Request findEntityByIds(RequestDTO dto);
     Optional<Request> findEntityById(Long id);
     void update(RequestDTO requestDTO);
     RequestDTO save(RequestDTO requestDTO);
     RequestDTO saves(RequestDTO request);
+    RequestDTO cancelar(Long id);
 }
