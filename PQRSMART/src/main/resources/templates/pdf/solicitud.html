@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8"/>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -9,15 +9,7 @@
             font-size: 13px;
         }
 
-        /* Marca de agua */
-        .watermark {
-            position: fixed;
-            top: 40%;
-            left: 20%;
-            opacity: 0.08;
-            font-size: 80px;
-            transform: rotate(-30deg);
-        }
+
 
         /* Encabezado */
         .header {
@@ -98,20 +90,20 @@
 
 <body>
 
-<div class="watermark">PQRSmart</div>
+
 
 <div class="header">
     <img src="classpath:/static/logo.png" class="logo"/>
     <div class="entity-info">
         <div class="entity-name">PQRSMART S.A.S</div>
-        Nit: 900123456-7<br>
+        Nit: 900123456-7<br/>
         Cartagena - Colombia
     </div>
 </div>
 
 <div class="radicado-box">
-    RADICADO No: <span th:text="${radicado}"></span><br>
-    Fecha: <span th:text="${fechaFormateada}"></span>
+    RADICADO No: <span th:text="${radicado}"></span><br/>
+    Fecha: <span th:text="${fecha}"></span>
 </div>
 
 <div class="section-title">DATOS DEL SOLICITANTE</div>
@@ -141,7 +133,7 @@
 
 
 <div class="footer">
-    Documento generado automáticamente por el sistema PQRSmart.<br>
+    Documento generado automáticamente por el sistema PQRSmart.<br/>
     © 2026 - Todos los derechos reservados.
 </div>
 

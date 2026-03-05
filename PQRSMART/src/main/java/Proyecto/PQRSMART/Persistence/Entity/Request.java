@@ -5,8 +5,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 
-@Setter
-@Getter
+@Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -34,8 +33,10 @@ public class Request {
     @ManyToOne(fetch = FetchType.EAGER)
     private Category category;
 
-    @Column(name = "Descripcion_Solicitud", length = 1000)
+    @Lob
+    @Column(name = "Descripcion_Solicitud", columnDefinition = "TEXT")
     private String description;
+
 
     @Column(name = "Fecha_Solicitud")
     private LocalDate date;

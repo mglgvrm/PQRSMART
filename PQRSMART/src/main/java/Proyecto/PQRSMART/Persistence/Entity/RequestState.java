@@ -3,8 +3,7 @@ package Proyecto.PQRSMART.Persistence.Entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-@Setter
-@Getter
+@Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor

@@ -99,6 +99,7 @@ public class AuthController {
             // Obtener el usuario desde el repositorio
             User user = userRepository.findByUser(request.getUser());
 
+            System.out.println(user.getStateUser().getId());
             // Verificar el estado del usuario
             if (user.getStateUser().getId() == 3) {
                 // Usuario bloqueado (DESACTIVADO)
