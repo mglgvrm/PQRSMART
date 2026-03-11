@@ -2,6 +2,7 @@ package Proyecto.PQRSMART.Domain.Service.Interfaces;
 
 import Proyecto.PQRSMART.Domain.Dto.UsuarioDto;
 import Proyecto.PQRSMART.Persistence.Entity.User;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,4 +17,5 @@ public interface UsuarioService {
     void verifyUser(String username);
     User findByEmail(String email);
     void resetPassword(String email, String newPassword);
+    ResponseEntity<UsuarioDto>  getProfile();
 }

@@ -8,6 +8,7 @@ import Proyecto.PQRSMART.Persistence.Entity.*;
 import Proyecto.PQRSMART.Persistence.Repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -37,6 +38,15 @@ public class RequestServicesImpl implements RequestServices {
 
     public List<RequestDTO> getAll() {
         return requestRepository.findAll().stream().map(RequestMapper::toDTO).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<RequestDTO> getPqrs(String usurious) {
+
+        return requestRepository.findByUserUser(usurious)
+                .stream()
+                .map(RequestMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     public Optional<RequestDTO> findById(Long id) {

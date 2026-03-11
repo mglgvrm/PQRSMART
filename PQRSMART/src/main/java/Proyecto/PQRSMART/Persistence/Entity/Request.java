@@ -33,7 +33,7 @@ public class Request {
     @ManyToOne(fetch = FetchType.EAGER)
     private Category category;
 
-    @Lob
+    
     @Column(name = "Descripcion_Solicitud", columnDefinition = "TEXT")
     private String description;
 

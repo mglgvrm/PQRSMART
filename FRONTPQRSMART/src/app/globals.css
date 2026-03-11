@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+input::placeholder {
+  color: rgb(170, 170, 170);
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+#gradient-canvas {
+    position: absolute;
+    --gradient-color-1: #4A81D1; /* Azul claro para confianza y profesionalismo */
+    --gradient-color-2: #3368B0; /* Un azul más oscuro para estabilidad */
+    --gradient-color-3: #5A93D9; /* Azul suave para equilibrio */
+    --gradient-color-4: #295087; /* Un tono intermedio de azul */
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+
+/* Para navegadores basados en WebKit (Chrome, Safari, Edge basado en Chromium) */
+::-webkit-scrollbar {
+    width: 8px;
+    /* Ajusta el ancho de la barra de desplazamiento vertical */
+    height: 8px;
+    /* Ajusta el alto de la barra de desplazamiento horizontal */
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+    /* Fondo de la barra de desplazamiento */
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.3);
+    /* Color de la barra, transparente */
+    border-radius: 10px;
+    /* Bordes redondeados */
+    border: 2px solid transparent;
+    /* Para crear un pequeño espacio alrededor */
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.6);
+    /* Color más visible al pasar el mouse */
+}
+
+/* Estilo para Firefox */
+* {
+    scrollbar-width: thin;
+    /* Define el ancho de la barra de desplazamiento */
+    scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+    /* Color de la barra y del fondo */
+}
+
+/* Estilo para Internet Explorer 10 y Edge */
+.scrollable {
+    -ms-overflow-style: none;
+    /* Oculta la barra de desplazamiento en IE/Edge */
+}
+
+.scrollable::-ms-scrollbar {
+    display: none;
+    /* Oculta la barra de desplazamiento en IE/Edge */
+}

@@ -8,6 +8,7 @@ import java.util.Optional;
 
 public interface RequestServices {
     List<RequestDTO> getAll();
+    List<RequestDTO> getPqrs(String usuario);
     Optional<RequestDTO> findById(Long id);
     Request findEntityByIds(RequestDTO dto);
     Optional<Request> findEntityById(Long id);
