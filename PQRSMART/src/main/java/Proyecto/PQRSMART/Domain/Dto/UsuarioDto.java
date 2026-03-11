@@ -26,6 +26,8 @@ public class UsuarioDto {
 
     private BigInteger identificationNumber;
 
+    private BigInteger number;
+
     private StateUser stateUser;
 
     private Role role;

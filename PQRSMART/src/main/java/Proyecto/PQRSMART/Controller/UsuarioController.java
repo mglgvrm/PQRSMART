@@ -6,7 +6,10 @@ import Proyecto.PQRSMART.Domain.Service.UsuarioServiceImpl;
 import Proyecto.PQRSMART.Persistence.Entity.StateUser;
 import Proyecto.PQRSMART.Persistence.Entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -77,5 +80,11 @@ public class UsuarioController {
             return ResponseEntity.ok(usuario);
         }
         return ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<UsuarioDto> getProfile(){
+        return usuarioService.getProfile();
+
     }
 }

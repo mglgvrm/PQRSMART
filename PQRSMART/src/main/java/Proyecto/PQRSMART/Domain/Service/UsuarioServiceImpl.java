@@ -9,6 +9,10 @@ import Proyecto.PQRSMART.Persistence.Entity.User;
 import Proyecto.PQRSMART.Persistence.Repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -83,5 +87,33 @@ public class UsuarioServiceImpl implements UsuarioService {
         else{
             System.out.println("Email no encontrado");
         }
+    }
+
+    public ResponseEntity<UsuarioDto> getProfile() {
+
+        UserDetails userDetails = (UserDetails) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        User user = usuarioRepository.findByUser(userDetails.getUsername());
+
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        UsuarioDto dto = UsuarioDto.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .lastName(user.getLastName())
+                .email(user.getEmail())
+                .user(user.getUser())
+                .identificationNumber(user.getIdentificationNumber())
+                .stateUser(user.getStateUser())
+                .role(user.getRole())
+                .number(user.getNumber())
+                .build();
+
+        return ResponseEntity.ok(dto);
     }
 }

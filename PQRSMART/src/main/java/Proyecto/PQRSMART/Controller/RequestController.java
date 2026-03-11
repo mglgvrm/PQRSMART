@@ -168,6 +168,14 @@ public class RequestController {
     public List<RequestDTO> get() {
         return requestServices.getAll();
     }
+    @GetMapping("/get/pqrs")
+    public List<RequestDTO> getPqrs() {
+        // Obtenemos el usuario autenticado
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        return requestServices.getPqrs(userDetails.getUsername());
+    }
+
 
     @PutMapping("/cancel/{id}")
     public ResponseEntity<RequestDTO> cancelarSolicitud(@PathVariable Long id) {
