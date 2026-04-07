@@ -193,4 +193,4 @@ const Profile = () => {
 };
 
 // Protección del componente según roles
-export default withAuth(Profile, ["ROLE_USER", "admin", "secretariat"]);
+export default withAuth(Profile, ["ROLE_USER", "ROLE_SECRE", "ROLE_ADMIN"]);

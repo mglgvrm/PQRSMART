@@ -89,7 +89,7 @@
       "table_email_header": "Email",
       "table_role_header": "Role",
       "table_actions_header": "Action",
-      "table_pqrs_type_header": "Type PQRS",
+      "table_dependence_header": "Dependence",
       "user_search_placeholder": "Search by Role or Email",
       "table_no_registries": "There are no registered users.",
       "pagination_next_button": "Next",
@@ -166,5 +166,16 @@
     "role": "Role",
     "number": "Number",
     "loading": "Loading..."
+  },
+  "forgot_password": {
+    "title": "Forgot Password",
+    "email_label": "Email",
+    "email_placeholder": "email@example.com",
+    "email_error": "Email is required and must be valid",
+    "submit_button": "Send Reset Link",
+    "submit_loading": "Sending...",
+    "success_message": "If an account with that email exists, a password reset link has been sent.",
+    "acount_recovery": "¿Already have an account? ",
+    "login_link": "Login"
   }
 }

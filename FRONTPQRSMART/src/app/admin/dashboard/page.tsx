@@ -34,7 +34,7 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  Filler
+  Filler,
 );
 
 import { CalendarDays } from "lucide-react";
@@ -57,8 +57,8 @@ function DashboardPageAdmin() {
         const token = localStorage.getItem("token");
         if (!token)
           return console.error("No se encontró el token de autenticación");
-
-        const response = await api.get("/pqrs/all", {
+        console.log("Token de autenticación encontrado:", token);
+        const response = await api.get("/request/get", {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = response.data;
@@ -77,35 +77,46 @@ function DashboardPageAdmin() {
     setTotalPQRS(data.length);
 
     // Total PQRS por Dependencia
-    const dependenciaCount = data.reduce((acc, pqrs) => {
-      const dependencia = pqrs.pqrsType?.name || "Sin Dependencia";
-      acc[dependencia] = (acc[dependencia] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const dependenciaCount = data.reduce(
+      (acc, pqrs) => {
+        const dependencia =
+          pqrs.dependence?.nameDependence || "Sin Dependencia";
+        acc[dependencia] = (acc[dependencia] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
     setTotalPQRSPorDependencia(dependenciaCount);
 
     // Total PQRS por Mes
-    const pqrsPorMes = data.reduce((acc, pqrs) => {
-      const mes = new Date(pqrs.createdAt).toLocaleString("default", {
-        month: "long",
-        year: "numeric",
-      });
-      acc[mes] = (acc[mes] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const pqrsPorMes = data.reduce(
+      (acc, pqrs) => {
+        const mes = new Date(pqrs.date).toLocaleString("default", {
+          month: "long",
+          year: "numeric",
+        });
+        acc[mes] = (acc[mes] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
     setTotalPQRSmes(pqrsPorMes);
 
     // Total PQRS por Dependencia al Mes
-    const pqrsPorDepMes = data.reduce((acc, pqrs) => {
-      const mes = new Date(pqrs.createdAt).toLocaleString("default", {
-        month: "long",
-        year: "numeric",
-      });
-      const dependencia = pqrs.pqrsType?.name || "Sin Dependencia";
-      const key = `${dependencia} - ${mes}`;
-      acc[key] = (acc[key] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const pqrsPorDepMes = data.reduce(
+      (acc, pqrs) => {
+        const mes = new Date(pqrs.date).toLocaleString("default", {
+          month: "long",
+          year: "numeric",
+        });
+        const dependencia =
+          pqrs.dependence?.nameDependence || "Sin Dependencia";
+        const key = `${dependencia} - ${mes}`;
+        acc[key] = (acc[key] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
     setTotalPQRSDepMes(pqrsPorDepMes);
   };
 
@@ -157,13 +168,13 @@ function DashboardPageAdmin() {
   const handleConfirm = async () => {
     console.log("📅 Año:", selectedYear, "🗓️ Mes:", selectedMonth);
     const response = await api.get(
-      `/pqrs/report/${selectedYear}/${selectedMonth}`,
+      `/request/report/${selectedYear}/${selectedMonth}`,
       {
         responseType: "blob",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-      }
+      },
     );
     // Crear la URL temporal del PDF
     const blob = new Blob([response.data], { type: "application/pdf" });
@@ -379,4 +390,4 @@ function DashboardPageAdmin() {
     </div>
   );
 }
-export default withAuth(DashboardPageAdmin, ["admin"]);
+export default withAuth(DashboardPageAdmin, ["ROLE_ADMIN"]);

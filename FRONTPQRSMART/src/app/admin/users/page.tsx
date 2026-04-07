@@ -13,11 +13,15 @@ function DashboardPageAdmin() {
   type User = {
     id: number;
     name: string;
+    lastName: string;
     email: string;
     role: string;
     password?: string;
     number?: string;
-    typePqrsId?: string;
+    dependence: {
+      idDependence: number;
+      nameDependence: string;
+    };
   };
   const { t } = useTranslation("common");
   const [users, setUsers] = useState<User[]>([]);
@@ -30,9 +34,9 @@ function DashboardPageAdmin() {
   const filteredRecords = users.filter(
     (item) =>
       item.email.toLowerCase().includes(search.toLowerCase()) ||
-      item.role.toLowerCase().includes(search.toLowerCase())
+      item.role.toLowerCase().includes(search.toLowerCase()),
   );
-
+  const token = localStorage.getItem("token");
   // Calcular los índices
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
@@ -47,7 +51,7 @@ function DashboardPageAdmin() {
         if (!token)
           return console.error("No se encontró el token de autenticación");
 
-        const response = await api.get("/users/all", {
+        const response = await api.get("/Usuario/get", {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -59,32 +63,59 @@ function DashboardPageAdmin() {
     };
 
     fetchUsers();
-  }, []);
+  }, []); /*
+  const handleCancel = async (id) => {
+        try {
+            await api.patch(`/api/Usuario/cancel/${id}`);
+            fetchData();
+            setError('Usuario Bloqueado.');
+            setShow(true);
+        } catch (error) {
+            console.error('Error al desactivar el usuario: ', error);
+            setError('Error al guardar información.');
+            setShow(true);
+        }
+    };
+
+    const handleActivate = async (id) => {
+        try {
+            const response = await api.patch(`/api/Usuario/activate/${id}`, {}, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            console.log('Usuario activado', response.data);
+            fetchData();
+            setError('Usuario Activado.');
+            setShow(true);
+        } catch (error) {
+            console.error('Error al Activar el usuario: ', error);
+            setError('Error al guardar información.');
+            setShow(true);
+        }
+    };*/
   const handleSaveUser = async (data: {
     name: string;
+    lastName: string;
     email: string;
-    number?: string;
+    role: string;
     password?: string;
-    typePqrsId?: string;
+    number?: string;
+    dependence: {
+      idDependence: number;
+      nameDependence: string;
+    };
   }) => {
     try {
-      const token = localStorage.getItem("token");
       console.log("Token de autenticación:", token);
       if (!token)
         return console.error("No se encontró el token de autenticación");
 
       if (!selectedUser?.id)
         return console.error("Usuario seleccionado inválido");
-      console.log("ID del usuario seleccionado:", data);
-      const formData = {
-        name: data.name,
-        email: data.email,
-        number: data.number,
-        password: data.password,
-        pqrsType: { id: data.typePqrsId },
-      };
-      console.log("Datos enviados para la actualización:", formData);
-      const response = await api.put(`/users/${selectedUser.id}`, formData, {
+
+      console.log("Datos enviados para la actualización:", data);
+      const response = await api.put(`/Usuario/Update`, data, {
         headers: { Authorization: `Bearer ${token}` },
       });
       console.log("Respuesta de la actualización:", response);
@@ -92,7 +123,7 @@ function DashboardPageAdmin() {
       if (response.status === 200) {
         // Actualiza la lista local con la respuesta del servidor (optimista/definitiva)
         setUsers((prev: any[]) =>
-          prev.map((u) => (u.id === selectedUser.id ? response.data : u))
+          prev.map((u) => (u.id === selectedUser.id ? response.data : u)),
         );
       } else {
         console.error("Error al actualizar el usuario:", response);
@@ -105,33 +136,41 @@ function DashboardPageAdmin() {
   };
   const handleNeweUser = async (data: {
     name: string;
+    lastName: string;
+    user: string;
     email: string;
-    role: string;
-    number: string;
     password: string;
-    typePqrsId?: string;
+    number: string;
+    role: string;
+    personType: { idPersonType: number }; // Enviar el objeto completo,
+    identificationType: { idIdentificationType: number }; // Enviar el objeto completo
+    dependence: { idDependence: number }; // Enviar el objeto completo,
+    identificationNumber: number;
   }) => {
     try {
       let formData: any = {
-        fullName: data.name,
+        name: data.name,
+        lastName: data.lastName,
+        user: data.user,
         email: data.email,
         role: data.role,
         number: data.number,
         password: data.password,
+        personType: { idPersonType: data.personType },
+        identificationType: {
+          idIdentificationType: data.identificationType,
+        },
+        dependence: { idDependence: data.dependence },
+        identificationNumber: data.identificationNumber,
       };
-      if (data.typePqrsId !== "") {
-        formData = {
-          ...formData,
-          pqrsType: { id: data.typePqrsId },
-        };
-      }
+
       console.log("Datos enviados para la actualización:", formData);
-      const response = await api.post(`/auth/admin/register`, formData, {
+      const response = await api.post(`/auth/register`, formData, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       console.log("Respuesta de la actualización:", response);
 
-      if (response.status === 201) {
+      if (response.status === 200) {
         // Actualiza la lista local con la respuesta del servidor (optimista/definitiva)
         setUsers((prev: any[]) => [...prev, response.data]);
         alert("Usuario creado con éxito");
@@ -170,17 +209,17 @@ function DashboardPageAdmin() {
               const token = localStorage.getItem("token");
               if (!token)
                 return console.error(
-                  "No se encontró el token de autenticación"
+                  "No se encontró el token de autenticación",
                 );
 
-              const response = await api.get("/users/report/users", {
+              const response = await api.get("/Usuario/report", {
                 headers: { Authorization: `Bearer ${token}` },
                 responseType: "blob", // importante para archivos
               });
               if (response.status === 200) {
                 // Crear un enlace para descargar el archivo
                 const url = window.URL.createObjectURL(
-                  new Blob([response.data])
+                  new Blob([response.data]),
                 );
                 const link = document.createElement("a");
                 link.href = url;
@@ -250,7 +289,7 @@ function DashboardPageAdmin() {
                   {t("admin.users.table_role_header")}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  {t("admin.users.table_pqrs_type_header")}
+                  {t("admin.users.table_dependence_header")}
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   {t("admin.users.table_actions_header")}
@@ -277,8 +316,8 @@ function DashboardPageAdmin() {
                     {filteredRecords.role}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {filteredRecords.pqrsType
-                      ? filteredRecords.pqrsType.name
+                    {filteredRecords.dependence
+                      ? filteredRecords.dependence.nameDependence
                       : "N/A"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
@@ -358,4 +397,4 @@ function DashboardPageAdmin() {
   );
 }
 
-export default withAuth(DashboardPageAdmin, ["admin"]);
+export default withAuth(DashboardPageAdmin, ["ROLE_ADMIN"]);

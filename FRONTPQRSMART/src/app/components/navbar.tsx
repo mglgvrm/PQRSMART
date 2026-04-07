@@ -22,6 +22,7 @@ function classNames(...classes: (string | undefined | false | null)[]): string {
 
 function Navbar() {
   const { i18n } = useTranslation();
+  const initial = localStorage.getItem("initial");
   const currentLang = i18n.language;
   const { t } = useTranslation("common");
   const changeLanguage = (lang: "es" | "en") => {
@@ -57,28 +58,14 @@ function Navbar() {
       router.push("/Auth/login");
     }
   };
-  const [initial, setInitial] = useState("");
-  const [image, setImage] = useState({ profileImage: "" });
+
   useEffect(() => {
-    // This effect runs once on mount to update the current navigation item
+    // Thisconst [initial effect runs once on mount to update the current navigation item
     navigation.forEach((item) => {
       item.current = pathname === item.href;
     });
-    const fetchProfileImage = async () => {
-      const token = localStorage.getItem("token"); // JWT
-      const response = await api.get("/users/profileImage", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setImage(response.data);
-    };
+
     // Esto solo se ejecuta en el cliente
-    const storedInitial = localStorage.getItem("initial");
-    if (storedInitial) {
-      setInitial(storedInitial);
-    }
-    fetchProfileImage();
   }, []);
   return (
     <Disclosure
@@ -117,7 +104,7 @@ function Navbar() {
                       item.current
                         ? "bg-gray-950/50 text-white"
                         : "text-gray-300 hover:bg-white/5 hover:text-white",
-                      "rounded-md px-3 py-2 text-sm font-medium"
+                      "rounded-md px-3 py-2 text-sm font-medium",
                     )}
                   >
                     {item.name}
@@ -141,17 +128,10 @@ function Navbar() {
               <MenuButton className="relative cursor-pointer flex rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
                 <span className="absolute -inset-1.5" />
                 <span className="sr-only">Open user menu</span>
-                {image.profileImage ? (
-                  <img
-                    alt="Foto de perfil"
-                    src={image.profileImage}
-                    className="size-8 rounded-full bg-gray-800 outline -outline-offset-1 outline-white/10 object-cover"
-                  />
-                ) : (
-                  <div className="size-8 rounded-full bg-[#fafafa] text-[#023047] text-xl font-bold flex items-center justify-center outline -outline-offset-1 outline-white/10">
-                    {initial?.charAt(0).toUpperCase() || "?"}
-                  </div>
-                )}
+
+                <div className="size-8 rounded-full bg-[#fafafa] text-[#023047] text-xl font-bold flex items-center justify-center outline -outline-offset-1 outline-white/10">
+                  {initial || "?"}
+                </div>
               </MenuButton>
 
               <MenuItems
@@ -217,7 +197,7 @@ function Navbar() {
                 item.current
                   ? "bg-gray-950/50 text-white"
                   : "text-gray-300 hover:bg-white/5 hover:text-white",
-                "block rounded-md px-3 py-2 text-base font-medium"
+                "block rounded-md px-3 py-2 text-base font-medium",
               )}
             >
               {item.name}

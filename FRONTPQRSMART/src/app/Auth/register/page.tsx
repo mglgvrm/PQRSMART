@@ -99,14 +99,13 @@ function RegisterPage() {
         email: data.email,
         password: data.password,
         number: data.number,
-        role: "USER",
         personType: { idPersonType: data.idPersonType },
         identificationType: { idIdentificationType: data.idIdentificationType }, // Enviar el objeto completo
         dependence: { idDependence: 7 },
         identificationNumber: parseInt(data.identificationNumber),
       };
       console.log("Datos a enviar al backend:", formData);
-      const response = await api.post(`/auth/register`, formData);
+      const response = await api.post(`/auth/registerUser`, formData);
       console.log("Respuesta de la actualización:", response);
 
       if (response.status === 200) {

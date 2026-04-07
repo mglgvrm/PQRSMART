@@ -47,6 +47,51 @@ export default function AddNewPqrsModal({
   const [showPopup, setShowPopup] = useState(false);
   const [error, setError] = useState("");
   const { t } = useTranslation("common");
+  const [messages, setMessages] = useState<any[]>([
+    {
+      role: "assistant",
+      content:
+        "Hola 👋, soy tu asistente de PQRS. Puedo ayudarte a redactar quejas, reclamos o peticiones. ¿Qué necesitas hoy?",
+    },
+  ]);
+  const [message, setMessage] = useState<any[]>([
+    {
+      role: "assistant",
+      content:
+        "Hola 👋, soy tu asistente de PQRS. Puedo ayudarte a redactar quejas, reclamos o peticiones. ¿Qué necesitas hoy?",
+    },
+  ]);
+  const [input, setInput] = useState("");
+
+  const sendMessage = async () => {
+    if (!input.trim()) return;
+
+    const newMessages = [...messages, { role: "user", content: input }];
+    setMessage([...newMessages, {}]);
+    console.log(newMessages);
+    setInput("");
+    try {
+      const res = await api.post("/chat/box", {
+        messages: newMessages,
+      });
+
+      const response = res.data;
+
+      const textoLimpio = response
+        .replace(/(\*\*|__|--|\*)/g, "\n") // **, __ o * → salto de línea
+
+        .trim();
+
+      setMessage([...newMessages, { role: "assistant", content: textoLimpio }]);
+      setMessages([
+        ...newMessages,
+        { role: "assistant", content: textoLimpio },
+      ]);
+      console.log(messages);
+    } catch (error) {
+      console.error(error);
+    }
+  };
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
@@ -142,9 +187,9 @@ export default function AddNewPqrsModal({
     setShowPopup(false);
   };
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 ">
+    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 gap-6 ">
       {/* Contenedor del modal */}
-      <div className="bg-white rounded-2xl shadow-xl w-96 p-6 relative animate-fade-in">
+      <div className="w-1/2 bg-white rounded-2xl shadow-xl w-300 h-200 p-6 relative animate-fade-in">
         {/* Botón para cerrar */}
         <button
           onClick={onClose}
@@ -160,7 +205,7 @@ export default function AddNewPqrsModal({
 
         <form
           onSubmit={handleSubmit}
-          className="space-y-6 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 overflow-y-auto max-h-[550px]"
+          className="space-y-6 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 overflow-y-auto max-h-full"
         >
           <div className="relative">
             <select
@@ -314,6 +359,42 @@ export default function AddNewPqrsModal({
             {t("user.pqrs.pqrs_modal.submit_button")}
           </button>
         </form>
+      </div>
+
+      <div className="w-1/2 bg-white border rounded-lg p-3 flex flex-col h-[500px] w-[400px]">
+        <h3 className="font-semibold mb-2">Asistente IA 🤖</h3>
+
+        {/* MENSAJES */}
+        <div className="flex-1 overflow-y-auto space-y-2 mb-2">
+          {message.map((msg, index) => (
+            <div
+              key={index}
+              className={`p-2 rounded text-sm ${
+                msg.role === "user"
+                  ? "bg-green-100 text-right"
+                  : "bg-gray-100 text-left"
+              }`}
+            >
+              {msg.content}
+            </div>
+          ))}
+        </div>
+
+        {/* INPUT */}
+        <div className="flex gap-2">
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            className="flex-1 border rounded px-2 py-1"
+            placeholder="Escribe aquí..."
+          />
+          <button
+            onClick={sendMessage}
+            className="bg-green-500 text-white px-3 rounded"
+          >
+            Enviar
+          </button>
+        </div>
       </div>
       {showPopup && <Popup message={error} onClose={closePopup} />}
     </div>

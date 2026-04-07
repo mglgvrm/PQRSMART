@@ -88,7 +88,7 @@
       "table_email_header": "Correo Electrónico",
       "table_role_header": "Rol",
       "table_actions_header": "Acción",
-      "table_pqrs_type_header": "Tipo PQRS",
+      "table_dependence_header": "Dependencia",
       "user_search_placeholder": "Buscar por rol o correo electrónico",
       "table_no_registries": "No hay usuarios registrados.",
       "pagination_next_button": "Siguiente",
@@ -168,5 +168,17 @@
     "role": "Rol",
     "number": "Número",
     "loading": "Cargando..."
+  },
+
+  "forgot_password": {
+    "title": "Recuperar contraseña",
+    "email_label": "Correo electrónico",
+    "email_placeholder": "email@example.com",
+    "email_error": "El correo electrónico es obligatorio y debe ser válido",
+    "submit_button": "Enviar Link de recuperación",
+    "submit_loading": "Enviando...",
+    "success_message": "¡Correo de recuperación enviado! Revisa tu bandeja de entrada.",
+    "acount_recovery": "¿Ya tienes una cuenta?",
+    "login_link": "Inicia sesión"
   }
 }
