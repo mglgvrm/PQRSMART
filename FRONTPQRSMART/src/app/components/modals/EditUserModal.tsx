@@ -3,15 +3,19 @@ import api from "@/app/api/api";
 import { useEffect, useState } from "react";
 
 type User = {
-  name: string;
-  email: string;
-  role: string;
-  pqrsType?: { id: number; name: string };
-};
-type PqrsType = {
   id: number;
   name: string;
+  lastName: string;
+  email: string;
+  role: string;
+  password?: string;
+  number?: string;
+  dependence: {
+    idDependence: number;
+    nameDependence: string;
+  };
 };
+
 export default function EditUserModal({
   onClose,
   user,
@@ -22,31 +26,38 @@ export default function EditUserModal({
   onSave?: (data: User) => void;
 }) {
   const [formData, setFormData] = useState<User>({
+    id: 0,
     name: "",
+    lastName: "",
+    password: "",
     email: "",
     role: "",
-    pqrsType: undefined,
+    dependence: { idDependence: 0, nameDependence: "" },
   });
-  const [typePqrs, setTypePqrs] = useState<PqrsType[]>([]);
-  const fetchTypePqrs = async () => {
+  const [dependencias, setDependencias] = useState([]);
+  const fetchDependencias = async () => {
     try {
-      const response = await api.get("/pqrs-type");
-      if (response.status === 200) {
-        setTypePqrs(response.data);
-        console.log(response.data);
-      } else console.error("Error al obtener los tipos de pqrs");
+      const response = await api.get("/dependence/get", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      console.log(response.data); // Verifica la estructura de datos
+      setDependencias(response.data); // Ajusta según la estructura de datos que devuelva el endpoint
     } catch (error) {
-      console.error("Error en la solicitud:", error);
+      console.error("Error al obtener dependencias:", error);
     }
   };
+
   useEffect(() => {
-    fetchTypePqrs();
+    fetchDependencias();
     if (user) setFormData(user);
     console.log("Usuario a editar:", user);
   }, [user]);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -85,6 +96,17 @@ export default function EditUserModal({
             />
           </div>
           <div>
+            <label className="block text-sm text-gray-600 mb-1">LastName</label>
+            <input
+              type="text"
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-400"
+              placeholder="Ingrese el apellido"
+            />
+          </div>
+          <div>
             <label className="block text-sm text-gray-600 mb-1">Email</label>
             <input
               type="email"
@@ -103,26 +125,29 @@ export default function EditUserModal({
               onChange={handleChange}
               className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-400"
             >
-              <option>admin</option>
-              <option>user</option>
+              <option>ADMIN</option>
+              <option>USER</option>
+              <option>SECRE</option>
             </select>
           </div>
-          {formData.role === "secretariat" ? (
+          {formData.role === "SECRE" ? (
             /* Tipo de PQRS */
             <div className="relative">
               <label className="block text-sm text-gray-600 mb-1">
-                Type PQRS
+                Dependence
               </label>
               <select
                 name="typePqrsId"
-                value={formData.pqrsType ? formData.pqrsType.id : ""}
+                value={
+                  formData.dependence ? formData.dependence.idDependence : ""
+                }
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-400 "
                 required
               >
-                {typePqrs.map((type) => (
-                  <option key={type.id} value={type.id}>
-                    {type.name}
+                {dependencias.map((type: any) => (
+                  <option key={type.idDependence} value={type.idDependence}>
+                    {type.nameDependence}
                   </option>
                 ))}
               </select>
@@ -130,7 +155,7 @@ export default function EditUserModal({
           ) : (
             <div className="relative">
               <label className="block text-sm text-gray-600 mb-1">
-                Type PQRS
+                Dependence
               </label>
               <select
                 name="typePqrsId"
@@ -138,7 +163,7 @@ export default function EditUserModal({
                 required
               >
                 <option value="" disabled hidden></option>
-                <option value="">type not allowed</option>
+                <option value="">Dependence not allowed</option>
               </select>
             </div>
           )}

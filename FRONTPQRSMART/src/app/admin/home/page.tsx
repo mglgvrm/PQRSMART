@@ -30,4 +30,4 @@ function HomePageAdmin() {
   );
 }
 
-export default withAuth(HomePageAdmin, ["admin"]);
+export default withAuth(HomePageAdmin, ["ROLE_ADMIN"]);

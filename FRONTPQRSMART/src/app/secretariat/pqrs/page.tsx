@@ -5,41 +5,58 @@ import api from "@/app/api/api";
 import AnswerModal from "@/app/components/modals/AnswerModal";
 import NavbarSecretariat from "@/app/components/navbar_secretariat";
 import ViewPqrs from "@/app/components/modals/ViewPqrs";
+import { useTranslation } from "react-i18next";
 
 function PqrsPageSecretariat() {
   type Pqrs = {
-    id: number;
-    title: string;
+    idRequest: number;
+    mediumAnswer: string;
     description: string;
-    status: string;
-    createdAt: Date;
-    user: {
-      id: number;
-      name: string;
+    date: Date;
+    answer?: string;
+    category: {
+      idCategory: number;
+      nameCategory: string;
     };
-    pqrsType: {
-      id: number;
-      name: string;
+    requestState: {
+      idRequestState: number;
+      nameRequestState: string;
+    };
+    dependence: {
+      idDependence: number;
+      nameDependence: string;
+    };
+    requestType: {
+      idRequestType: number;
+      nameRequestType: string;
     };
   };
+  const { t } = useTranslation("common");
   const [pqrs, setPqrs] = useState<Pqrs[]>([]);
   const [isOpenResponder, setIsOpenResponder] = useState(false);
   const [isOpenViewPqrs, setIsOpenViewPqrs] = useState(false);
   const [selectedPqrs, setSelectedPqrs] = useState<Pqrs | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = pqrs.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(pqrs.length / itemsPerPage);
   const typeId =
     typeof window !== "undefined" ? localStorage.getItem("type") : null;
   useEffect(() => {
     const fetchPqrs = async () => {
       try {
         console.log("Fetching PQRS for User ID:", typeId);
-        if (!typeId) return; // Espera hasta tener el userId
+        // if (!typeId) return; // Espera hasta tener el userId
         const token = localStorage.getItem("token");
         if (!token)
           return console.error("No se encontró el token de autenticación");
 
-        const response = await api.get(`/pqrs/type/${typeId}`, {
+        const response = await api.get("/request/getForDependence", {
           headers: { Authorization: `Bearer ${token}` },
         });
+        console.log(response);
 
         if (response.status === 200) {
           setPqrs(response.data);
@@ -58,20 +75,25 @@ function PqrsPageSecretariat() {
       const token = localStorage.getItem("token");
       if (!token)
         return console.error("No se encontró el token de autenticación");
-      const response = await api.patch(
-        `/pqrs/${id}`,
-        { status: "CLOSED" },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const response = await api.put(`/request/cancel/${id}`, null, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       console.log("Respuesta de la cancelación:", response.data);
       if (response.status === 200) {
         // Actualiza la lista local con la respuesta del servidor (optimista/definitiva)
+
         setPqrs((prev) =>
           prev.map((pqrs) =>
-            pqrs.id === id ? { ...pqrs, status: "CLOSED" } : pqrs
-          )
+            pqrs.idRequest === id
+              ? {
+                  ...pqrs,
+                  requestState: {
+                    ...pqrs.requestState,
+                    nameRequestState: "Cancelado",
+                  },
+                }
+              : pqrs,
+          ),
         );
         alert("PQRS cancelada con éxito");
       } else {
@@ -106,55 +128,131 @@ function PqrsPageSecretariat() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  title
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  description
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Type PQRS
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  status
+                  {t("user.pqrs.table_id_header")}
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  create Date
+                  {t("user.pqrs.table_created_at_header")}
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  {t("user.pqrs.table_description_header")}
+                </th>
+                <th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    {t("user.pqrs.table_evidence_header")}
+                  </th>
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  {t("user.pqrs.table_status_header")}
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  {t("user.pqrs.table_answer_header")}
+                </th>
+
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  {t("user.pqrs.table_evidenceAnswer_header")}
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Action
+                  {t("user.pqrs.table_actions_header")}
                 </th>
               </tr>
             </thead>
 
             <tbody className="bg-white divide-y divide-gray-100">
-              {pqrs.map((pqrs: any) => (
+              {currentItems.map((pqrs: any) => (
                 <tr
-                  key={pqrs.id}
+                  key={pqrs.idRequest}
                   className="hover:bg-gray-100 transition duration-200"
                 >
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                    {pqrs.id}
+                    {pqrs.radicado}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
-                    {pqrs.title}
+                    {pqrs.date}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {pqrs.description}
+                    <div
+                      style={{
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        maxWidth: "150px",
+                      }}
+                    >
+                      {pqrs.description.length > 50
+                        ? `${pqrs.description.slice(0, 50)}...`
+                        : pqrs.description}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {pqrs.pqrsType.name}
+                    <span className="span-descargar">
+                      {pqrs.archivo ? (
+                        <a
+                          href={pqrs.archivo}
+                          download
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <button className="flex items-center gap-2 bg-[#0B3C49] to-bg-[#0B3C49] text-white px-4 py-2 rounded-lg font-semibold shadow-md hover:from-green-600 hover:bg-[#0B3C49] hover:shadow-lg transform hover:-translate-y-1 active:scale-95 transition-all duration-300">
+                            Abrir
+                          </button>
+                        </a>
+                      ) : (
+                        <div>
+                          <span>No disponible</span>
+                        </div>
+                      )}
+                    </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {pqrs.status}
+                    <span
+                      className={`estado ${pqrs.requestState?.nameRequestState?.toLowerCase()}`}
+                    >
+                      {pqrs.requestState?.nameRequestState === "Finalizado"
+                        ? "✔️"
+                        : pqrs.requestState?.nameRequestState === "Pendiente"
+                          ? "🔎"
+                          : "❌"}
+                    </span>
+                    {pqrs.requestState?.nameRequestState}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {pqrs.createdAt}
+                    <span className="span-descargar">
+                      {pqrs.archivoAnswer ? (
+                        <a
+                          href={pqrs.archivoAnswer}
+                          download
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <button className="btn-descargar">Descargar</button>
+                        </a>
+                      ) : (
+                        <div>
+                          <span>No disponible</span>
+                        </div>
+                      )}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    <span className="span-descargar">
+                      {pqrs.archivoAnswer ? (
+                        <a
+                          href={pqrs.archivoAnswer}
+                          download
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <button className="btn-descargar">Descargar</button>
+                        </a>
+                      ) : (
+                        <div>
+                          <span>No disponible</span>
+                        </div>
+                      )}
+                    </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
-                    {pqrs.status === "PENDING" ? (
+                    {pqrs.requestState.nameRequestState === "Pendiente" ? (
                       <div className="">
                         <span
                           className="mr-4 cursor-pointer"
@@ -179,7 +277,7 @@ function PqrsPageSecretariat() {
                         <span
                           className="mr-4 cursor-pointer cancel-button"
                           title="Cancel"
-                          onClick={() => handleCancel(pqrs.id)}
+                          onClick={() => handleCancel(pqrs.idRequest)}
                         >
                           ❌
                         </span>
@@ -231,17 +329,46 @@ function PqrsPageSecretariat() {
               onSave={() => {
                 // Refresca la lista de PQRS tras responder
                 setPqrs((prev) =>
-                  prev.map((p) =>
-                    p.id === selectedPqrs.id ? { ...p, status: "ANSWERED" } : p
-                  )
+                  prev.map((p: Pqrs) =>
+                    p.idRequest === selectedPqrs.idRequest
+                      ? {
+                          ...p,
+                          requestState: {
+                            ...p.requestState,
+                            nameRequestState: "Finalizado",
+                          },
+                        }
+                      : p,
+                  ),
                 );
               }}
             />
           )}
+        </div>
+        <div className="flex justify-center mt-5 gap-3 mb-5">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            className="px-3 py-1 bg-gray-200 rounded"
+          >
+            Anterior
+          </button>
+
+          <span className="px-3 py-1">
+            Página {currentPage} de {totalPages}
+          </span>
+
+          <button
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+            }
+            className="px-3 py-1 bg-gray-200 rounded"
+          >
+            Siguiente
+          </button>
         </div>
       </main>
     </div>
   );
 }
 
-export default withAuth(PqrsPageSecretariat, ["secretariat"]);
+export default withAuth(PqrsPageSecretariat, ["ROLE_SECRE"]);

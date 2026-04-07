@@ -8,12 +8,15 @@ import ViewPqrs from "@/app/components/modals/ViewPqrs";
 import { set } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import Popup from "@/app/components/modals/Popup";
-import { arch } from "os";
+import { uploadFile } from "@/app/utils/supabase/uploadFile";
 
 function PqrsPageUser() {
   type Pqrs = {
     idRequest: number;
+    radicado: string;
     mediumAnswer: string;
+    archivo: string;
+    archivoAnswer: string;
     description: string;
     date: Date;
     answer?: string;
@@ -87,8 +90,15 @@ function PqrsPageUser() {
     archivo: File | null;
   }) => {
     try {
-      const form = new FormData();
-      const formData = {
+      let urlArchivo = null;
+
+      // 🔥 SI HAY ARCHIVO → subir primero
+      if (data.archivo) {
+        urlArchivo = await uploadFile(data.archivo);
+      }
+      console.log("URL del archivo subido:", urlArchivo);
+
+      const body = {
         mediumAnswer: data.mediumAnswer,
         description: data.description,
         date: data.date,
@@ -97,22 +107,16 @@ function PqrsPageUser() {
         requestState: data.requestState,
         dependence: { idDependence: data.dependencia },
         requestType: { idRequestType: data.requestType },
+
+        // 🔥 AQUÍ VA LA URL
+        archivo: urlArchivo,
       };
-      form.append(
-        "request",
-        new Blob([JSON.stringify(formData)], {
-          type: "application/json",
-        }),
-      );
-      if (data.archivo) {
-        form.append("archivo", data.archivo);
-      }
-      console.log("Datos enviados para la actualización:", form);
+      console.log("Datos enviados para la actualización:", body);
       setError("Espere.....");
       setShowPopup(true); // Mostrar popup
-      const response = await api.post("/request/save", form, {
+      const response = await api.post("/request/save", body, {
         headers: {
-          "Content-Type": "multipart/form-data",
+          "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
@@ -251,7 +255,7 @@ function PqrsPageUser() {
                   className="hover:bg-gray-100 transition duration-200"
                 >
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                    {pqrs.idRequest}
+                    {pqrs.radicado}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
                     {pqrs.date}
@@ -274,12 +278,14 @@ function PqrsPageUser() {
                     <span className="span-descargar">
                       {pqrs.archivo ? (
                         <a
-                          href={`/request/download/${encodeURIComponent(pqrs.archivo.split("\\").pop().split("/").pop())}`}
+                          href={pqrs.archivo}
                           download
                           target="_blank"
                           rel="noopener noreferrer"
                         >
-                          <button className="btn-descargar">Descargar</button>
+                          <button className="flex items-center gap-2 bg-[#0B3C49] to-bg-[#0B3C49] text-white px-4 py-2 rounded-lg font-semibold shadow-md hover:from-green-600 hover:bg-[#0B3C49] hover:shadow-lg transform hover:-translate-y-1 active:scale-95 transition-all duration-300">
+                            Abrir
+                          </button>
                         </a>
                       ) : (
                         <div>
@@ -304,7 +310,7 @@ function PqrsPageUser() {
                     <span className="span-descargar">
                       {pqrs.archivoAnswer ? (
                         <a
-                          href={`/request/download/${encodeURIComponent(pqrs.archivoAnswer.split("\\").pop().split("/").pop())}`}
+                          href={pqrs.archivoAnswer}
                           download
                           target="_blank"
                           rel="noopener noreferrer"
@@ -322,7 +328,7 @@ function PqrsPageUser() {
                     <span className="span-descargar">
                       {pqrs.archivoAnswer ? (
                         <a
-                          href={`/request/download/${encodeURIComponent(pqrs.archivoAnswer.split("\\").pop().split("/").pop())}`}
+                          href={pqrs.archivoAnswer}
                           download
                           target="_blank"
                           rel="noopener noreferrer"

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dialog } from "@headlessui/react";
 import api from "@/app/api/api";
 
@@ -16,7 +16,26 @@ export default function ResponderModal({
 }: ResponderModalProps) {
   const [response, setResponse] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState<{
+    file: File | null;
+  }>({
+    file: null,
+  });
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    setFormData((prev) => ({
+      ...prev,
+      file,
+    }));
+  };
+  useEffect(() => {
+    document.title = "Responder PQRS";
+  }, []);
+  /*
   const handleSubmit = async () => {
     if (!response.trim())
       return alert("Por favor escribe una respuesta antes de enviar.");
@@ -28,13 +47,15 @@ export default function ResponderModal({
       await api.patch(
         `/pqrs/${pqrs.id}`,
         {
+          ...pqrs,
           answer: response,
-          answeredAt: new Date(),
-          status: "ANSWERED",
+          requestState: { idRequestState: 2 },
+          idRequest: pqrs.idRequest,
+          archivoAnswer: formData.file, // Incluir archivo en el guardado
         },
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
       alert("Respuesta enviada correctamente ✅");
       onSave(); // Refresca la lista de PQRS
@@ -45,8 +66,50 @@ export default function ResponderModal({
     } finally {
       setIsSubmitting(false);
     }
+  };*/
+  const handleSubmit = async () => {
+    console.log("envio: ");
+    const formDataToSend = new FormData();
+    const archivo = formData.file; // Incluir archivo en el guardado
+    if (archivo !== null) {
+      formDataToSend.append("archivo", archivo);
+      console.log(archivo);
+    }
+    formDataToSend.append(
+      "request",
+      new Blob(
+        [
+          JSON.stringify({
+            answer: response,
+          }),
+        ],
+        {
+          type: "application/json",
+        },
+      ),
+    );
+    try {
+      const response = await api.put(
+        `/request/update/${pqrs.idRequest}`,
+        formDataToSend,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        },
+      );
+      console.log("Response:", response.data);
+      alert("Respuesta enviada correctamente ✅");
+      onSave(); // Refresca la lista de PQRS
+      onClose(); // Cierra el modal
+    } catch (error) {
+      console.error("Error al enviar la respuesta:", error);
+      alert("Hubo un error al enviar la respuesta ❌");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
-
   return (
     <Dialog open={true} onClose={onClose} className="relative z-50">
       <div
@@ -61,12 +124,7 @@ export default function ResponderModal({
           </Dialog.Title>
 
           <div className="mb-4">
-            <p className="text-sm text-gray-600 mb-2 font-medium">Asunto:</p>
-            <p className="text-gray-800 mb-4">{pqrs.title}</p>
-            <p className="text-sm text-gray-600 mb-2 font-medium">
-              Descripción:
-            </p>
-            <p className="text-gray-800 mb-4">{pqrs.description}</p>
+            <p className="text-sm text-gray-600 mb-2 font-medium">Respuesta:</p>
           </div>
 
           <textarea
@@ -74,6 +132,14 @@ export default function ResponderModal({
             placeholder="Escribe aquí tu respuesta..."
             value={response}
             onChange={(e) => setResponse(e.target.value)}
+          />
+
+          <label>Adjuntar Evidencia (opcional)</label>
+          <input
+            type="file"
+            className="file-input-Responder"
+            id="file"
+            onChange={handleFileChange} // Manejar el archivo name='archivo'
           />
 
           <div className="flex justify-end mt-6 gap-3">

@@ -27,4 +27,4 @@ function DashboardPageSecrtetariat() {
   );
 }
 
-export default withAuth(DashboardPageSecrtetariat, ["secretariat"]);
+export default withAuth(DashboardPageSecrtetariat, ["ROLE_SECRE"]);
