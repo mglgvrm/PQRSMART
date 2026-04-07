@@ -3,11 +3,11 @@ package Proyecto.PQRSMART.Controller;
 import Proyecto.PQRSMART.Domain.Dto.UsuarioDto;
 import Proyecto.PQRSMART.Domain.Service.Interfaces.UsuarioService;
 import Proyecto.PQRSMART.Domain.Service.UsuarioServiceImpl;
+import Proyecto.PQRSMART.Persistence.Entity.Request;
 import Proyecto.PQRSMART.Persistence.Entity.StateUser;
 import Proyecto.PQRSMART.Persistence.Entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +21,7 @@ public class UsuarioController {
     @Autowired
     private UsuarioService usuarioService;
 
-    @PostMapping("/save")
+    /*@PostMapping("/save")
     public UsuarioDto save(@RequestBody UsuarioDto usuarioDto){
         return usuarioService.save(usuarioDto);
     }
@@ -30,7 +30,7 @@ public class UsuarioController {
     public User saves(@RequestBody User usuario){
         return usuarioService.saves(usuario);
     }
-
+*/
     @GetMapping("/get")
     public List<UsuarioDto> get(){return usuarioService.getAll();}
 
@@ -84,7 +84,30 @@ public class UsuarioController {
 
     @GetMapping("/profile")
     public ResponseEntity<UsuarioDto> getProfile(){
+
         return usuarioService.getProfile();
 
+    }
+    @GetMapping("/initial")
+    public ResponseEntity<String> getInitial(){
+
+        return usuarioService.getInitial();
+
+    }
+
+    @GetMapping("/report")
+    public ResponseEntity<byte[]> generateReport() throws Exception {
+
+        byte[] excel = usuarioService.generateReport();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentDisposition(
+                ContentDisposition.attachment()
+                        .filename("reporte-usuario.xlsx")
+                        .build()
+        );
+
+        return new ResponseEntity<>(excel, headers, HttpStatus.OK);
     }
 }

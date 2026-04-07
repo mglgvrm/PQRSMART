@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/forgot-password")
+@RequestMapping("/api/auth/forgot-password")
 public class ForgotPasswordController {
 
     @Autowired
@@ -40,7 +40,7 @@ public class ForgotPasswordController {
         String token = jwtService.genereteTokenEmail(user.getEmail());
 
         // Construir el enlace para restablecer la contraseña
-        String resetLink = "https://pqrsmartfront.onrender.com/reset-password/" + token;
+        String resetLink = "http://localhost:3000/Auth/reset-password/" + token;
 
         // Enviar correo electrónico con el enlace de restablecimiento
         String message = String.format("<h1>Para restablecer tu contraseña, haz clic en este enlace: <h1/>" + "<a href=\"%s\">Restablecer Contraseña</a>",resetLink );
@@ -54,9 +54,10 @@ public class ForgotPasswordController {
         return ResponseEntity.ok("Se ha enviado un correo electrónico con las instrucciones para restablecer la contraseña.");
     }
 
-    @PostMapping("/reset/{token}")
-    public ResponseEntity<String> resetPassword(@PathVariable String token, @RequestBody Map<String, String> payload) {
+    @PostMapping("/reset")
+    public ResponseEntity<String> resetPassword(@RequestBody Map<String, String> payload) {
         String newPassword=payload.get("newPassword");
+        String token=payload.get("token");
         System.out.println(token);
         if (jwtService.validateTokenForPasswordReset(token)) {
             String email = jwtService.getUserName(token);

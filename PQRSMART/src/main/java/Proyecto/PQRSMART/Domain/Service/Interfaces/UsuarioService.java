@@ -18,4 +18,6 @@ public interface UsuarioService {
     User findByEmail(String email);
     void resetPassword(String email, String newPassword);
     ResponseEntity<UsuarioDto>  getProfile();
+    ResponseEntity<String>  getInitial();
+    byte[] generateReport();
 }

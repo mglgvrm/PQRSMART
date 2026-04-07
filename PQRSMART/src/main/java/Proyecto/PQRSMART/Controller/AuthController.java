@@ -6,6 +6,7 @@ import Proyecto.PQRSMART.Controller.models.AuthenticationRequest;
 import Proyecto.PQRSMART.Controller.models.RegisterRequest;
 import Proyecto.PQRSMART.Domain.Dto.UsuarioDto;
 import Proyecto.PQRSMART.Domain.Service.Interfaces.AuthService;
+import Proyecto.PQRSMART.Domain.Service.Interfaces.UsuarioService;
 import Proyecto.PQRSMART.Domain.Service.JwtService;
 import Proyecto.PQRSMART.Domain.Service.UsuarioServiceImpl;
 import Proyecto.PQRSMART.Persistence.Entity.User;
@@ -23,6 +24,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -34,7 +37,7 @@ public class AuthController {
     UsuarioRepository userRepository;
 
     @Autowired
-    private UsuarioServiceImpl userService;
+    private UsuarioService userService;
 
     @Autowired
     private JwtService jwtService;
@@ -159,9 +162,10 @@ public class AuthController {
         return ResponseEntity.ok(updatedUser);
     }
 
-    @GetMapping("/verify-email")
-    public ResponseEntity<String> verifyEmail(@RequestParam("token") String token) {
+    @PostMapping("/verify-email")
+    public ResponseEntity<String> verifyEmail(@RequestBody Map<String, String> payload) {
         try {
+            String token=payload.get("token");
             if (jwtService.validateToken(token)) {
                 String username = jwtService.getUserName(token);
                 userService.verifyUser(username); // Implementa la lógica para marcar al usuario como verificado

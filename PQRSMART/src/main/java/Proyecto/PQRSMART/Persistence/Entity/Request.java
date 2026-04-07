@@ -2,6 +2,7 @@ package Proyecto.PQRSMART.Persistence.Entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.stringtemplate.v4.ST;
 
 import java.time.LocalDate;
 
@@ -18,8 +19,8 @@ public class Request {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idRequest;
 
-    @Column(name = "Radicado")
-    private Long radicado;
+    @Column(name = "Radicado", unique = true)
+    private String radicado;
 
     @JoinColumn(name = "Usuario")
     @ManyToOne
@@ -55,18 +56,15 @@ public class Request {
     @ManyToOne
     private Dependence dependence;
 
-    @Lob
+
     @Column(name = "Archivo")
     private String archivo;
 
-    // Método para asignar el radicado antes de persistir
-    @PrePersist
-    public void asignarRadicado() {
-        // Asigna el idRequest al radicado si es nulo o si necesitas que se incremente
-        if (this.radicado == null) {
-            this.radicado = this.idRequest;
-        }
-    }
+
+    @Column(name = "Archivo_Respuesta")
+    private String archivoAnswer;
+
+
 
 
 }
