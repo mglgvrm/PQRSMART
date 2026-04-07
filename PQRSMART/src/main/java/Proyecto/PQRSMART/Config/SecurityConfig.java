@@ -39,6 +39,8 @@ import java.util.List;
                         .requestMatchers(userEndpoinds()).hasRole("USER")
                         .requestMatchers(adminEndpoinds()).hasRole("ADMIN")
                         .requestMatchers(secreEndpoinds()).hasRole("SECRE")
+                        .requestMatchers(allEnpoinds()).hasAnyRole("USER", "ADMIN", "SECRE")
+                        .requestMatchers("/api/request/report/**").hasAnyRole("ADMIN","SECRE")
 
                         .anyRequest().authenticated()
                 )
@@ -51,7 +53,7 @@ import java.util.List;
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("*")); // Reemplaza con la URL de tu frontend
+        configuration.setAllowedOrigins(List.of("http://localhost:3000")); // Reemplaza con la URL de tu frontend
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("Authorization"));
@@ -64,29 +66,76 @@ import java.util.List;
     private RequestMatcher publicEndpoinds(){
         return new OrRequestMatcher(
           new AntPathRequestMatcher("/api/greeting/sayHelloPublic"),
-                new AntPathRequestMatcher("/api/auth/**"),
+                new AntPathRequestMatcher("/api/auth/registerUser"),
+                new AntPathRequestMatcher("/api/auth/authenticate"),
+                new AntPathRequestMatcher("/api/auth/activate"),
+                new AntPathRequestMatcher("/api/auth/verify-email"),
                 new AntPathRequestMatcher("/api/identification_type/get"),
                 new AntPathRequestMatcher("/api/person_type/get"),
-                new AntPathRequestMatcher("/api/category/get"),
-                new AntPathRequestMatcher("/forgot-password/**")
+                new AntPathRequestMatcher("/api/chat/**"),
+                new AntPathRequestMatcher("/api/auth/forgot-password/**")
 
         );
     }
+
     private RequestMatcher userEndpoinds(){
         return new OrRequestMatcher(
-                new AntPathRequestMatcher("/api/request/get")
+                new AntPathRequestMatcher("/api/request/save"),
+                new AntPathRequestMatcher("/api/request/report/**"),
+        new AntPathRequestMatcher("/api/chat/**"),
+        new AntPathRequestMatcher("/api/Usuario/initial")
         );
     }
 
     private RequestMatcher adminEndpoinds(){
         return new OrRequestMatcher(
-                new AntPathRequestMatcher("/api/admin/**")
+                new AntPathRequestMatcher("/api/Usuario/report"),
+                new AntPathRequestMatcher("/api/Usuario/cancel/**"),
+                new AntPathRequestMatcher("/api/Usuario/activate/**"),
+                new AntPathRequestMatcher("/api/Usuario/get"),
+                new AntPathRequestMatcher("/api/Usuario/update"),
+                new AntPathRequestMatcher("/api/request_type/save"),
+                new AntPathRequestMatcher("/api/request_type/update"),
+                new AntPathRequestMatcher("/api/request_state/update"),
+                new AntPathRequestMatcher("/api/request_state/save"),
+                new AntPathRequestMatcher("/api/person_type/save"),
+                new AntPathRequestMatcher("/api/person_type/update"),
+                new AntPathRequestMatcher("/api/identification_type/save"),
+                new AntPathRequestMatcher("/api/identification_type/update"),
+                new AntPathRequestMatcher("/api/dependence/save"),
+                new AntPathRequestMatcher("/api/dependence/update"),
+                new AntPathRequestMatcher("/api/dependence/cancel/**"),
+                new AntPathRequestMatcher("/api/dependence/activate/**"),
+                new AntPathRequestMatcher("/api/category/cancel/**"),
+                new AntPathRequestMatcher("/api/category/activate/**"),
+                new AntPathRequestMatcher("/api/category/save"),
+                new AntPathRequestMatcher("/api/category/update"),
+                new AntPathRequestMatcher("/api/auth/register")
         );
     }
 
     private RequestMatcher secreEndpoinds(){
         return new OrRequestMatcher(
-                new AntPathRequestMatcher("/api/auth/request/get")
+                new AntPathRequestMatcher("/api/request/update/**")
+        );
+    }
+
+    private RequestMatcher allEnpoinds(){
+        return new OrRequestMatcher(
+                new AntPathRequestMatcher("/api/request/get"),
+                new AntPathRequestMatcher("/api/dependence/get"),
+                new AntPathRequestMatcher("/api/request/cancel/**"),
+                new AntPathRequestMatcher("/api/Usuario/profile"),
+                new AntPathRequestMatcher("/api/request_type/get"),
+                new AntPathRequestMatcher("/api/request_state/get"),
+                new AntPathRequestMatcher("/api/Usuario/update/**"),
+                new AntPathRequestMatcher("/api/request/get"),
+                new AntPathRequestMatcher("/api/identification_type/get"),
+                new AntPathRequestMatcher("/api/dependence/get"),
+                new AntPathRequestMatcher("/api/category/get"),
+                new AntPathRequestMatcher("/api/person_type/get"),
+                new AntPathRequestMatcher("/api/request/getForDependence"),
+                new AntPathRequestMatcher("/api/request/get/pqrs")
         );
     }
     }

@@ -27,7 +27,7 @@ public class RequestTypeController {
     @GetMapping("/get")
     public List<RequestTypeDTO> get(){return requestTypeService.getAll();}
 
-    @PutMapping("update")
+    @PutMapping("/update")
     public ResponseEntity<?> update(@RequestBody RequestTypeDTO requestTypeDTO) {
         Optional<RequestTypeDTO> requestTypeDTOOptional = requestTypeService.findById(requestTypeDTO.getIdRequestType());
         if(requestTypeDTOOptional.isPresent()) {

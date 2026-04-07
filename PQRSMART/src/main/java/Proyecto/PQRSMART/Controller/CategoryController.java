@@ -35,6 +35,7 @@ public class CategoryController {
         }
         return ResponseEntity.notFound().build();
     }
+
     @PutMapping("/cancel/{id}")
     public ResponseEntity<CategoryDTO> delete(@PathVariable Long id){
         Optional<CategoryDTO> categoryDTOOptional = categoryService.findById(id);
@@ -47,6 +48,7 @@ public class CategoryController {
         }
         return ResponseEntity.notFound().build();
     }
+
     @PutMapping("/activate/{id}")
     public ResponseEntity<CategoryDTO> activate(@PathVariable Long id){
         Optional<CategoryDTO> categoryDTOOptional = categoryService.findById(id);

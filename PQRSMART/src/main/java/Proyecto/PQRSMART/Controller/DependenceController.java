@@ -35,6 +35,7 @@ public class DependenceController {
         }
         return ResponseEntity.notFound().build();
     }
+
     @PutMapping("/cancel/{id}")
     public ResponseEntity<DependenceDTO> delete(@PathVariable Long id){
         Optional<DependenceDTO> dependenceDTOOptional = dependenceService.findById(id);
@@ -46,6 +47,7 @@ public class DependenceController {
         }
         return ResponseEntity.notFound().build();
     }
+
     @PutMapping("/activate/{id}")
     public ResponseEntity<DependenceDTO> activate(@PathVariable Long id){
         Optional<DependenceDTO> dependenceDTOOptional = dependenceService.findById(id);

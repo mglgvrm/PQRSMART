@@ -27,10 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -68,7 +65,7 @@ public class RequestController {
     private String uploadDir;
 
     @PostMapping("/save")
-    public ResponseEntity<String> saveRequest(@RequestPart("request") RequestDTO request, @RequestPart(value = "archivo", required = false) MultipartFile archivo) {
+    public ResponseEntity<String> saveRequest(@RequestBody RequestDTO request) {
         try{
 
         // Obtenemos el usuario autenticado
@@ -80,32 +77,7 @@ public class RequestController {
         if (user == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Usuario no encontrado");
         }
-        String archivoGuardado = null;
-        if (archivo != null && !archivo.isEmpty()) {
-                //Si la Carpeta no Existe se crea
-                //Files.createDirectories(fileStorageLocation);
-            Files.createDirectories(Paths.get(uploadDir));
 
-                // Guardar el archivo
-                String fileName = archivo.getOriginalFilename();
-                System.out.println(fileName);
-
-                // Generar un nombre único para el archivo (ejemplo con timestamp)
-                String uniqueFileName = System.currentTimeMillis() + "_" + fileName;
-                System.out.println(uniqueFileName);
-
-                Path targetLocation = Paths.get(uploadDir).resolve(uniqueFileName);
-                System.out.println(targetLocation);
-
-                Files.copy(archivo.getInputStream(), targetLocation);
-
-                // Establecer la URL del archivo
-                request.setArchivo(targetLocation.toString());
-
-                archivoGuardado = targetLocation.toString();  // Guardamos la ruta del archivo para el adjunto
-
-
-        }
 
 
         // Creamos la solicitud
@@ -140,11 +112,13 @@ public class RequestController {
 
             byte[] pdf = pdfServices.generarPdfSolicitud(user, requestAll);
 
+                System.out.println("archivo url: "+ request.getArchivo());
+
             emailService.sendEmailWithPdf(
                     user.getEmail(),
                     "Detalle de Solicitud",
                     "Adjunto encontrarás el PDF con los detalles.",
-                    pdf, archivoGuardado
+                    pdf, request.getArchivo()
 
             );
 
@@ -166,8 +140,16 @@ public class RequestController {
 
     @GetMapping("/get")
     public List<RequestDTO> get() {
+
         return requestServices.getAll();
     }
+
+    @GetMapping("/getForDependence")
+    public List<RequestDTO> getForDependence() {
+
+        return requestServices.getForDependence();
+    }
+
     @GetMapping("/get/pqrs")
     public List<RequestDTO> getPqrs() {
         // Obtenemos el usuario autenticado
@@ -183,13 +165,15 @@ public class RequestController {
 
         return ResponseEntity.ok(requestCancelado);
     }
-    @PutMapping("/update/{id}")
-    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody RequestDTO requestDTO) {
+
+    @PutMapping(value = "/update/{id}", consumes = "multipart/form-data")
+    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody RequestDTO requestDTO ) throws IOException {
         Optional<RequestDTO> requestDTOOptional = requestServices.findById(id);
         if (requestDTOOptional.isPresent()) {
             RequestDTO existingRequest = requestDTOOptional.get();
-            existingRequest.setRequestState(requestDTO.getRequestState());
             existingRequest.setAnswer(requestDTO.getAnswer());
+
+
             // Actualizar otros campos si es necesario
             RequestDTO updatedRequestDTO = requestServices.save(existingRequest); // Guardar los cambios en la solicitud existente
             return ResponseEntity.ok(updatedRequestDTO);
@@ -197,23 +181,24 @@ public class RequestController {
         return ResponseEntity.notFound().build();
     }
 
-    @GetMapping("/download/{filename}")
-    public ResponseEntity<Resource> downloadFile(@PathVariable String filename) {
-        try {
-            //Path filePath = fileStorageLocation.resolve(filename).normalize();
-            Path filePath = Paths.get(uploadDir).resolve(filename);
-            Resource resource = new UrlResource(filePath.toUri());
 
-            if (resource.exists()) {
-                return ResponseEntity.ok()
-                        .contentType(MediaType.valueOf(Files.probeContentType(filePath)))
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
-                        .body(resource);
-            } else {
-                return ResponseEntity.notFound().build();
-            }
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    @GetMapping("/report/{year}/{month}")
+    public ResponseEntity<byte[]> generateReport(
+            @PathVariable int year,
+            @PathVariable int month) throws Exception {
+
+        List<Request> pqrs = requestServices.getByMonth(year, month);
+
+        byte[] pdf = requestServices.generateReport(pqrs, year);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDisposition(
+                ContentDisposition.attachment()
+                        .filename("reporte_pqrs.pdf")
+                        .build()
+        );
+
+        return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
     }
 }

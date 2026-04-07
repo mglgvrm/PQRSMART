@@ -2,6 +2,7 @@ package Proyecto.PQRSMART.Domain.Service;
 
 
 import Proyecto.PQRSMART.Domain.Dto.RequestDTO;
+import Proyecto.PQRSMART.Domain.Dto.UsuarioDto;
 import Proyecto.PQRSMART.Domain.Service.Interfaces.PdfServices;
 import Proyecto.PQRSMART.Persistence.Entity.Request;
 import Proyecto.PQRSMART.Persistence.Entity.User;
@@ -12,6 +13,7 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import java.io.ByteArrayOutputStream;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -39,9 +41,53 @@ public class PdfServicesImpl implements PdfServices {
         }
     }
 
+    public byte[] generateReport(List<Request> pqrsDelMes, int anio) {
+try {
+    Context context = new Context();
+    context.setVariable("pqrsDelMes", pqrsDelMes);
+    context.setVariable("anio", anio);
+
+    String html = templateEngine.process("pdf/report-template", context);
+
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+    PdfRendererBuilder builder = new PdfRendererBuilder();
+    builder.withHtmlContent(html, null);
+    builder.toStream(outputStream);
+    builder.run();
+
+    return outputStream.toByteArray();
+}catch (Exception e){
+    throw new RuntimeException("Error generando el reporte PDF", e);
+}
+    }
+
+    public byte[] generateReportUser(List<UsuarioDto> users){
+        try {
+            Context context =new Context();
+            context.setVariable("usuarios", users);
+            context.setVariable("totalUsuarios", users.size());
+            String html =templateEngine.process("pdf/usuario-template", context);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+            PdfRendererBuilder builder = new PdfRendererBuilder();
+            builder.withHtmlContent(html, null);
+            builder.toStream(outputStream);
+            builder.run();
+
+            return outputStream.toByteArray();
+
+
+        }catch (Exception e){
+            throw new RuntimeException("Error generando el reporte PDF", e);
+        }
+
+    }
+
+
     private static Context getContext(User user, Request request) {
         Context context = new Context();
-        context.setVariable("radicado", request.getIdRequest());
+        context.setVariable("radicado", request.getRadicado());
         context.setVariable("fecha", request.getDate().toString());
         System.out.println("fecha "+ request.getDate().toString());
         context.setVariable("usuario", user.getName());

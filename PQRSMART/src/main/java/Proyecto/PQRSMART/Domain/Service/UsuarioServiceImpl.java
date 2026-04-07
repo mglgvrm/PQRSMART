@@ -3,11 +3,17 @@ package Proyecto.PQRSMART.Domain.Service;
 
 import Proyecto.PQRSMART.Domain.Dto.UsuarioDto;
 import Proyecto.PQRSMART.Domain.Mapper.UsuarioMapper;
+import Proyecto.PQRSMART.Domain.Service.Interfaces.PdfServices;
 import Proyecto.PQRSMART.Domain.Service.Interfaces.UsuarioService;
+import Proyecto.PQRSMART.Persistence.Entity.Request;
 import Proyecto.PQRSMART.Persistence.Entity.StateUser;
 import Proyecto.PQRSMART.Persistence.Entity.User;
 import Proyecto.PQRSMART.Persistence.Repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +22,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayOutputStream;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -26,6 +33,9 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private PdfServices pdfServices;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -115,5 +125,100 @@ public class UsuarioServiceImpl implements UsuarioService {
                 .build();
 
         return ResponseEntity.ok(dto);
+    }
+
+    public ResponseEntity<String> getInitial() {
+
+        UserDetails userDetails = (UserDetails) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        User user = usuarioRepository.findByUser(userDetails.getUsername());
+
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        String name = user.getName();
+        String initial = name != null && !name.isEmpty()
+                ? String.valueOf(name.charAt(0)).toUpperCase()
+                : "";
+
+        return ResponseEntity.ok(initial);
+    }
+
+    public byte[] generateReport() {
+        try {
+            List<User> usuarios = usuarioRepository.findAll();
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("Usuarios");
+
+            Row header = sheet.createRow(0);
+            header.createCell(0).setCellValue("ID");
+            header.createCell(1).setCellValue("Nombre");
+            header.createCell(2).setCellValue("Apellido");
+            header.createCell(3).setCellValue("Usuario");
+            header.createCell(4).setCellValue("Correo");
+            header.createCell(5).setCellValue("Rol");
+            header.createCell(6).setCellValue("Numero Identificación");
+            header.createCell(7).setCellValue("Numero Teléfono");
+            header.createCell(8).setCellValue("Tipo Identificación");
+            header.createCell(9).setCellValue("Tipo Persona");
+            header.createCell(10).setCellValue("Dependencia");
+            header.createCell(11).setCellValue("Estado");
+
+            int rowNum = 1;
+
+            for (User u : usuarios) {
+
+                Row row = sheet.createRow(rowNum++);
+
+                row.createCell(0).setCellValue(u.getId());
+                row.createCell(1).setCellValue(u.getName());
+                row.createCell(2).setCellValue(u.getLastName());
+                row.createCell(3).setCellValue(u.getUser());
+                row.createCell(4).setCellValue(u.getEmail());
+                row.createCell(5).setCellValue(u.getRole().name());
+
+                row.createCell(6).setCellValue(
+                        u.getIdentificationNumber() != null ? u.getIdentificationNumber().toString() : ""
+                );
+
+                row.createCell(7).setCellValue(
+                        u.getNumber() != null ? u.getNumber().toString() : ""
+                );
+
+                row.createCell(8).setCellValue(
+                        u.getIdentificationType() != null ? u.getIdentificationType().getNameIdentificationType() : ""
+                );
+
+                row.createCell(9).setCellValue(
+                        u.getPersonType() != null ? u.getPersonType().getNamePersonType() : ""
+                );
+
+                row.createCell(10).setCellValue(
+                        u.getDependence() != null ? u.getDependence().getNameDependence() : ""
+                );
+
+                row.createCell(11).setCellValue(
+                        u.getStateUser() != null ? u.getStateUser().getState() : ""
+                );
+            }
+
+            // Ajustar tamaño de columnas automáticamente
+            for (int i = 0; i <= 11; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            workbook.write(outputStream);
+            workbook.close();
+
+            return outputStream.toByteArray();
+        }
+        catch (Exception e){
+            throw new RuntimeException("Error generando el reporte de usuarios", e);
+        }
     }
 }
