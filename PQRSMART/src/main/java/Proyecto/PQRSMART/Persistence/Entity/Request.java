@@ -62,7 +62,7 @@ public class Request {
 
 
     @Column(name = "Archivo_Respuesta")
-    private String archivoAnswer;
+    private String archiveAnswer;
 
 
 

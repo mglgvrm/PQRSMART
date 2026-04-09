@@ -1,5 +1,6 @@
 package Proyecto.PQRSMART.Domain.Dto;
 
+import Proyecto.PQRSMART.Persistence.Entity.Dependence;
 import Proyecto.PQRSMART.Persistence.Entity.Role;
 import Proyecto.PQRSMART.Persistence.Entity.StateUser;
 import lombok.AllArgsConstructor;
@@ -29,6 +30,8 @@ public class UsuarioDto {
     private BigInteger number;
 
     private StateUser stateUser;
+
+    private DependenceDTO dependence;
 
     private Role role;
 }

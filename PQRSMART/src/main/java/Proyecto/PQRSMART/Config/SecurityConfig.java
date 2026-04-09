@@ -82,8 +82,7 @@ import java.util.List;
         return new OrRequestMatcher(
                 new AntPathRequestMatcher("/api/request/save"),
                 new AntPathRequestMatcher("/api/request/report/**"),
-        new AntPathRequestMatcher("/api/chat/**"),
-        new AntPathRequestMatcher("/api/Usuario/initial")
+        new AntPathRequestMatcher("/api/chat/**")
         );
     }
 
@@ -135,7 +134,8 @@ import java.util.List;
                 new AntPathRequestMatcher("/api/category/get"),
                 new AntPathRequestMatcher("/api/person_type/get"),
                 new AntPathRequestMatcher("/api/request/getForDependence"),
-                new AntPathRequestMatcher("/api/request/get/pqrs")
+                new AntPathRequestMatcher("/api/request/get/pqrs"),
+                new AntPathRequestMatcher("/api/Usuario/initial")
         );
     }
     }

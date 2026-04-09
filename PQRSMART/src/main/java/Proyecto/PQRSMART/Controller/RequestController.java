@@ -166,7 +166,7 @@ public class RequestController {
         return ResponseEntity.ok(requestCancelado);
     }
 
-    @PutMapping(value = "/update/{id}", consumes = "multipart/form-data")
+    @PutMapping(value = "/update/{id}")
     public ResponseEntity<?> update(@PathVariable Long id, @RequestBody RequestDTO requestDTO ) throws IOException {
         Optional<RequestDTO> requestDTOOptional = requestServices.findById(id);
         if (requestDTOOptional.isPresent()) {

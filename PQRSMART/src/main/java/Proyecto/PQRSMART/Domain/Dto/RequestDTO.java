@@ -22,7 +22,7 @@ public class RequestDTO {
     private RequestStateDTO requestState;
     private String mediumAnswer;
     private String archivo;
-    private String archivoAnswer;
+    private String archiveAnswer;
     private String radicado;
 
 }
