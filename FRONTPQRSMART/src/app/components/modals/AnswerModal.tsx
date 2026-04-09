@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { Dialog } from "@headlessui/react";
 import api from "@/app/api/api";
+import { uploadFile } from "@/app/utils/supabase/uploadFile";
 
 interface ResponderModalProps {
   pqrs: any;
@@ -68,33 +69,25 @@ export default function ResponderModal({
     }
   };*/
   const handleSubmit = async () => {
-    console.log("envio: ");
-    const formDataToSend = new FormData();
-    const archivo = formData.file; // Incluir archivo en el guardado
-    if (archivo !== null) {
-      formDataToSend.append("archivo", archivo);
-      console.log(archivo);
+    let urlArchivo = null;
+
+    // 🔥 SI HAY ARCHIVO → subir primero
+    if (formData.file) {
+      urlArchivo = await uploadFile(formData.file);
     }
-    formDataToSend.append(
-      "request",
-      new Blob(
-        [
-          JSON.stringify({
-            answer: response,
-          }),
-        ],
-        {
-          type: "application/json",
-        },
-      ),
-    );
+    console.log("URL del archivo subido:", urlArchivo);
+
+    const body = {
+      answer: response,
+      // 🔥 AQUÍ VA LA URL
+      archiveAnswer: urlArchivo,
+    };
     try {
       const response = await api.put(
         `/request/update/${pqrs.idRequest}`,
-        formDataToSend,
+        body,
         {
           headers: {
-            "Content-Type": "multipart/form-data",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         },

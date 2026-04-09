@@ -142,8 +142,8 @@ public class RequestServicesImpl implements RequestServices {
             existingRequest.setRequestState(state);
 
             existingRequest.setAnswer(requestDTO.getAnswer());
-            if (requestDTO.getArchivoAnswer() != null && !requestDTO.getArchivoAnswer().isEmpty()) {
-                existingRequest.setArchivoAnswer(requestDTO.getArchivoAnswer());
+            if (requestDTO.getArchiveAnswer() != null && !requestDTO.getArchiveAnswer().isEmpty()) {
+                existingRequest.setArchiveAnswer(requestDTO.getArchiveAnswer());
             }
             // Actualizar otros campos si es necesario
             requestRepository.save(existingRequest);

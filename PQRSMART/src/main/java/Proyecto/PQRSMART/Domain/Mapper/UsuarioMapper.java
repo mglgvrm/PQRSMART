@@ -1,7 +1,9 @@
 package Proyecto.PQRSMART.Domain.Mapper;
 
 
+import Proyecto.PQRSMART.Domain.Dto.DependenceDTO;
 import Proyecto.PQRSMART.Domain.Dto.UsuarioDto;
+import Proyecto.PQRSMART.Persistence.Entity.Dependence;
 import Proyecto.PQRSMART.Persistence.Entity.User;
 
 public class UsuarioMapper {
@@ -17,6 +19,11 @@ public class UsuarioMapper {
         user.setRole(userDTO.getRole());
         user.setEmail(userDTO.getEmail());
         user.setNumber(userDTO.getNumber());
+        if (userDTO.getDependence() != null) {
+            Dependence dependence = new Dependence();
+            dependence.setIdDependence(userDTO.getDependence().getIdDependence());
+            user.setDependence(dependence);
+        }
         return user;
     }
 
@@ -31,6 +38,14 @@ public class UsuarioMapper {
         userDTO.setRole(user.getRole());
         userDTO.setEmail(user.getEmail());
         userDTO.setNumber(user.getNumber());
+        if (user.getDependence() != null) {
+            userDTO.setDependence(
+                    DependenceDTO.builder()
+                            .idDependence(user.getDependence().getIdDependence())
+                            .nameDependence(user.getDependence().getNameDependence())
+                            .build()
+            );
+        }
         return userDTO;
     }
 }

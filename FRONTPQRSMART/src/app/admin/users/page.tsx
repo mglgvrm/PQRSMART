@@ -54,6 +54,7 @@ function DashboardPageAdmin() {
         const response = await api.get("/Usuario/get", {
           headers: { Authorization: `Bearer ${token}` },
         });
+        console.log("Usuarios obtenidos:", response.data);
 
         if (response.status === 200) setUsers(response.data);
         else console.error("Error al obtener los usuarios");

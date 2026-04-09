@@ -18,7 +18,7 @@ public class RequestMapper {
         request.setAnswer(dto.getAnswer());
         request.setMediumAnswer(dto.getMediumAnswer());
         request.setArchivo(dto.getArchivo());
-        request.setArchivoAnswer(dto.getArchivoAnswer());
+        request.setArchiveAnswer(dto.getArchiveAnswer());
 
         // 🔥 Relaciones SOLO con ID (sin traer toda la entidad)
 
@@ -68,7 +68,7 @@ public class RequestMapper {
         dto.setAnswer(request.getAnswer());
         dto.setMediumAnswer(request.getMediumAnswer());
         dto.setArchivo(request.getArchivo());
-        dto.setArchivoAnswer(request.getArchivoAnswer());
+        dto.setArchiveAnswer(request.getArchiveAnswer());
 
         // 🔥 Convertimos Entity → DTO correctamente
 
