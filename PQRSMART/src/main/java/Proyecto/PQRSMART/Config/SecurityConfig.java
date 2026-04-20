@@ -53,11 +53,13 @@ import java.util.List;
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000")); // Reemplaza con la URL de tu frontend
+        configuration.setAllowedOrigins(List.of("http://localhost:3000"
+                // Flutter emulador
+                 )); // Reemplaza con la URL de tu frontend
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("Authorization"));
-
+        configuration.setAllowCredentials(true); // 🔥 importante
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

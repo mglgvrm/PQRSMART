@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:urbanestia/presentation/pages/drawer_user.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -59,7 +58,7 @@ class _HomeState extends State<Home> {
           ),
         ],
       ),
-      drawer: const DrawerUser(),
+
       body: SingleChildScrollView(
         child: Column(
           children: [

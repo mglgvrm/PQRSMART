@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:urbanestia/core/utils/custom_textFormFiel_utils.dart';
-import 'package:urbanestia/core/utils/device_utils.dart';
-import 'package:urbanestia/presentation/blocs/auth_bloc.dart';
-import 'package:urbanestia/presentation/states/auth_event.dart';
+import 'package:pqrsmart/core/utils/custom_textFormFiel_utils.dart';
+import 'package:pqrsmart/core/utils/device_utils.dart';
+import 'package:pqrsmart/presentation/blocs/auth_bloc.dart';
 
 class PasswordRecoveryPage extends StatefulWidget {
   const PasswordRecoveryPage({Key? key}) : super(key: key);
@@ -17,7 +16,7 @@ class _PasswordRecoveryPageState extends State<PasswordRecoveryPage> {
   void _submit() {
     final email = _emailController.text.trim();
     if (email.isNotEmpty) {
-      context.read<AuthBloc>().add(SendResetPasswordEmail(email));
+     // context.read<AuthBloc>().add(SendResetPasswordEmail(email));
       Navigator.pushNamed(context, '/login');
     }
   }

@@ -1,16 +1,16 @@
-class StateUser {
-  final int id;
-  final String state;
+class PersonTypeModal {
+  final int idPersonType;
+  final String namePersonType;
 
-  StateUser({
-    required this.id,
-    required this.state,
+  PersonTypeModal({
+    required this.idPersonType,
+    required this.namePersonType,
   });
 
-  factory StateUser.fromJson(Map<String, dynamic> json) {
-    return StateUser(
-      id: json['id'],
-      state: json['state'] ?? '',
+  factory PersonTypeModal.fromJson(Map<String, dynamic> json) {
+    return PersonTypeModal(
+      idPersonType: json['idPersonType']?? 0,
+      namePersonType: json['namePersonType'] ?? '',
     );
   }
 }

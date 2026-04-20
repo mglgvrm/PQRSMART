@@ -2,17 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pqrsmart/presentation/blocs/RequestBloc.dart';
 import 'package:pqrsmart/presentation/blocs/auth_bloc.dart';
+import 'package:pqrsmart/presentation/pages/user/request/new_request_page.dart';
+import 'package:pqrsmart/presentation/states/RequestEvent.dart';
 import 'package:pqrsmart/presentation/states/RequestState.dart';
 import 'package:pqrsmart/presentation/states/auth_event.dart';
 
-class Pqrs extends StatefulWidget {
-  const Pqrs({Key? key}) : super(key: key);
+class RequestPage extends StatefulWidget {
+  const RequestPage({Key? key}) : super(key: key);
 
   @override
-  _PqrsState createState() => _PqrsState();
+  _RequestPageState createState() => _RequestPageState();
 }
 
-class _PqrsState extends State<Pqrs> {
+class _RequestPageState extends State<RequestPage> {
   String _filtroSeleccionado = 'Todos';
   String _busquedaRadicado = '';
   final TextEditingController _searchController = TextEditingController();
@@ -23,7 +25,6 @@ class _PqrsState extends State<Pqrs> {
     'Queja',
     'Reclamo',
     'Sugerencia',
-    'Denuncia',
   ];
 
   String safeStr(dynamic value, [String fallback = 'No disponible']) {
@@ -38,7 +39,6 @@ class _PqrsState extends State<Pqrs> {
       case 'QUEJA':      return 'Queja';
       case 'RECLAMO':    return 'Reclamo';
       case 'SUGERENCIA': return 'Sugerencia';
-      case 'DENUNCIA':   return 'Denuncia';
       default:           return tipo;
     }
   }
@@ -51,24 +51,21 @@ class _PqrsState extends State<Pqrs> {
     switch (_filtroSeleccionado) {
       case 'Petición':
         resultado = resultado.where((r) =>
-        safeStr(r.requestType?.name).toUpperCase() == 'PETICION').toList();
+        safeStr(r.requestType?.nameRequestType).toUpperCase() == 'PETICION').toList();
         break;
       case 'Queja':
         resultado = resultado.where((r) =>
-        safeStr(r.requestType?.name).toUpperCase() == 'QUEJA').toList();
+        safeStr(r.requestType?.nameRequestType).toUpperCase() == 'QUEJA').toList();
         break;
       case 'Reclamo':
         resultado = resultado.where((r) =>
-        safeStr(r.requestType?.name).toUpperCase() == 'RECLAMO').toList();
+        safeStr(r.requestType?.nameRequestType).toUpperCase() == 'RECLAMO').toList();
         break;
       case 'Sugerencia':
         resultado = resultado.where((r) =>
-        safeStr(r.requestType?.name).toUpperCase() == 'SUGERENCIA').toList();
+        safeStr(r.requestType?.nameRequestType).toUpperCase() == 'SUGERENCIA').toList();
         break;
-      case 'Denuncia':
-        resultado = resultado.where((r) =>
-        safeStr(r.requestType?.name).toUpperCase() == 'DENUNCIA').toList();
-        break;
+
     }
 
     // Filtro por radicado
@@ -86,15 +83,15 @@ class _PqrsState extends State<Pqrs> {
     return {
       'total':      requests.length,
       'peticiones': requests.where((r) =>
-      safeStr(r.requestType?.name).toUpperCase() == 'PETICION').length,
+      safeStr(r.requestType?.nameRequestType).toUpperCase() == 'PETICION').length,
       'quejas':     requests.where((r) =>
-      safeStr(r.requestType?.name).toUpperCase() == 'QUEJA').length,
+      safeStr(r.requestType?.nameRequestType).toUpperCase() == 'QUEJA').length,
       'reclamos':   requests.where((r) =>
-      safeStr(r.requestType?.name).toUpperCase() == 'RECLAMO').length,
+      safeStr(r.requestType?.nameRequestType).toUpperCase() == 'RECLAMO').length,
       'sugerencias': requests.where((r) =>
-      safeStr(r.requestType?.name).toUpperCase() == 'SUGERENCIA').length,
+      safeStr(r.requestType?.nameRequestType).toUpperCase() == 'SUGERENCIA').length,
       'denuncias':  requests.where((r) =>
-      safeStr(r.requestType?.name).toUpperCase() == 'DENUNCIA').length,
+      safeStr(r.requestType?.nameRequestType).toUpperCase() == 'DENUNCIA').length,
     };
   }
 
@@ -105,7 +102,6 @@ class _PqrsState extends State<Pqrs> {
       case 'QUEJA':      return Colors.orange;
       case 'RECLAMO':    return Colors.red;
       case 'SUGERENCIA': return Colors.green;
-      case 'DENUNCIA':   return Colors.purple;
       default:           return Colors.grey;
     }
   }
@@ -181,13 +177,13 @@ class _PqrsState extends State<Pqrs> {
                 Text('Detalle de la Solicitud',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 Divider(),
-                _infoFila(Icons.category,      'Tipo',        _tipoLegible(safeStr(request.requestType?.name))),
+                _infoFila(Icons.category,      'Tipo',        _tipoLegible(safeStr(request.requestType?.nameRequestType))),
                 _infoFila(Icons.person,         'Solicitante', '${safeStr(request.user?.name)} ${safeStr(request.user?.lastName)}'),
                 _infoFila(Icons.email,          'Email',       safeStr(request.user?.email)),
                 _infoFila(Icons.business,       'Dependencia', safeStr(request.dependence?.nameDependence)),
                 _infoFila(Icons.label,          'Categoría',   safeStr(request.category?.nameCategory)),
                 _infoFila(Icons.calendar_today, 'Fecha',       safeStr(request.date)),
-                _infoFila(Icons.info_outline,   'Estado',      safeStr(request.requestState?.name)),
+                _infoFila(Icons.info_outline,   'Estado',      safeStr(request.requestState?.nameRequestState)),
                 _infoFila(Icons.forum,          'Medio resp.', safeStr(request.mediumAnswer)),
                 SizedBox(height: 12),
                 Text('Descripción',
@@ -403,6 +399,30 @@ class _PqrsState extends State<Pqrs> {
           ),
         ],
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          final result = await showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (_) => FractionallySizedBox(
+              heightFactor: 0.95,
+              child: ClipRRect(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                child: NewRequestPage(),
+              ),
+            ),
+          );
+
+          if (result == true) {
+            context.read<RequestBloc>().add(LoadRequestEvent()); // 🔄 recarga
+          }
+        },
+        backgroundColor: Color(0xFF4A6B5A),
+        foregroundColor: Colors.white,
+        icon: Icon(Icons.add),
+        label: Text('Nueva PQRS'),
+      ),
       body: BlocBuilder<RequestBloc, RequestState>(
         builder: (context, state) {
           if (state is RequestLoading) {
@@ -453,8 +473,7 @@ class _PqrsState extends State<Pqrs> {
                         'P: ${stats['peticiones']}  •  '
                         'Q: ${stats['quejas']}  •  '
                         'R: ${stats['reclamos']}  •  '
-                        'S: ${stats['sugerencias']}  •  '
-                        'D: ${stats['denuncias']}',
+                        'S: ${stats['sugerencias']}  •  ',
                     style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                   ),
                 ),
@@ -480,8 +499,8 @@ class _PqrsState extends State<Pqrs> {
                     separatorBuilder: (_, __) => Divider(height: 1),
                     itemBuilder: (context, index) {
                       final request = filtered[index];
-                      final tipo    = safeStr(request.requestType?.name);
-                      final estado  = safeStr(request.requestState?.name);
+                      final tipo    = safeStr(request.requestType?.nameRequestType);
+                      final estado  = safeStr(request.requestState?.nameRequestState);
                       final colorTipo   = _colorTipo(tipo);
                       final colorEstado = _colorEstado(estado);
 

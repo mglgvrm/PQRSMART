@@ -1,4 +1,8 @@
-import 'package:urbanestia/domain/model/user_model.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:pqrsmart/data/model/AuthResponse.dart';
+import 'package:pqrsmart/data/model/IdentificationTypeModal.dart';
+import 'package:pqrsmart/data/model/PersonTypeModal.dart';
+import 'package:pqrsmart/data/model/user_model.dart';
 
 abstract class AuthStates {}
 
@@ -8,12 +12,6 @@ class AuthLoading extends AuthStates {}
 
 class AuthAuthenticated extends AuthStates {}
 
-class date extends AuthStates {
-  final UserModel user;
-
-  date(this.user);
-}
-
 class AuthLoggedOut extends AuthStates {}
 
 class AuthFailure extends AuthStates {
@@ -22,20 +20,31 @@ class AuthFailure extends AuthStates {
   AuthFailure(this.errorMessage);
 }
 
+
 class AuthSuccess extends AuthStates {
-  final String userId;
-  final String token;
-  final String? email;
+  final AuthResponse data;
 
-  AuthSuccess(this.userId, this.token, this.email);
+
+  AuthSuccess(this.data);
 }
 
-class AuthNeedsProfileCompletion extends AuthStates {
-  final String userId;
+class AuthRegisterSuccess extends AuthStates {
+  final UserModel user;
 
-  AuthNeedsProfileCompletion(this.userId);
+  AuthRegisterSuccess({required this.user});
+
+  @override
+  List<Object> get props => [user];
 }
+class AuthRegisterLoaded extends AuthStates {
+  final List<IdentificationTypeModal> identificationTypes;
+  final List<PersonTypeModal> personTypes;
 
+  AuthRegisterLoaded({
+    required this.identificationTypes,
+    required this.personTypes,
+  });
+}
 class AuthError extends AuthStates {
   final String message;
 

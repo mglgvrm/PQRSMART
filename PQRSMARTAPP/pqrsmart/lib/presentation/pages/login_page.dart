@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:urbanestia/core/utils/custom_textFormFiel_utils.dart';
-import 'package:urbanestia/presentation/blocs/auth_bloc.dart';
-import 'package:urbanestia/presentation/pages/password_recovery_page.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:urbanestia/presentation/states/auth_event.dart';
-import 'package:urbanestia/presentation/states/auth_state.dart';
+import 'package:pqrsmart/core/utils/custom_textFormFiel_utils.dart';
+import 'package:pqrsmart/data/services/AuthStorage.dart';
+import 'package:pqrsmart/presentation/blocs/auth_bloc.dart';
+import 'package:pqrsmart/presentation/pages/password_recovery_page.dart';
+import 'package:pqrsmart/presentation/states/auth_event.dart';
+import 'package:pqrsmart/presentation/states/auth_state.dart';
+import 'dart:math' as math;
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -15,32 +16,81 @@ class Login extends StatefulWidget {
   _LoginState createState() => _LoginState();
 }
 
-class _LoginState extends State<Login> {
+class _LoginState extends State<Login> with TickerProviderStateMixin{
   bool _obscureText = true;
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
+  AnimationController? _controller;
+  Animation<double>? _animation;
+
+  // Colores del gradiente (equivalente a --gradient-color-1..4)
+  final List<Color> _gradientColors = [
+    const Color(0xFF3F5A4C), // verde oscuro (base de tu app)
+    const Color(0xFF2D4A5A), // azul verdoso
+    const Color(0xFF1A3A4A), // azul marino
+    const Color(0xFF4A6B5A), // verde medio
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 6),
+    )..repeat(reverse: true);
+
+    _animation = CurvedAnimation(
+      parent: _controller!,
+      curve: Curves.easeInOut,
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+  final storage = AuthStorage();
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthStates>(
-      listener: (context, state) {
-        if (state is AuthAuthenticated) {
+      listener: (context, state) async {
+        if (state is AuthSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Inicio de sesion exitoso'),
               backgroundColor: Colors.green,
             ),
           );
-          print("Redirigiendo a /home...");
-          Navigator.pushReplacementNamed(context, '/home');
+          final roles = await storage.getAuthorities();
+          print("ROLES: $roles");
+
+          if (roles.contains("ROLE_ADMIN")){
+            print("Redirigiendo a /home...");
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/homeAdmin',
+                  (route) => false,
+            );
+          }
+          else if(roles.contains("ROLE_SECRE")){
+
+          }
+          else if(roles.contains("ROLE_USER")){
+
+            print("Redirigiendo a /home...");
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/homeUser',
+                  (route) => false,
+            );
+          }
+
         }
-        if (state is AuthNeedsProfileCompletion) {
-          Navigator.pushReplacementNamed(
-            context,
-            '/registerGoogle',
-            arguments: state.userId,
-          );
-        } else if (state is AuthError) {
+
+        else if (state is AuthError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.message), backgroundColor: Colors.red),
           );
@@ -48,7 +98,46 @@ class _LoginState extends State<Login> {
         }
       },
       child: Scaffold(
-        body: SingleChildScrollView(
+        body: AnimatedBuilder(
+          animation: _animation ?? const AlwaysStoppedAnimation(0.0),
+          builder: (context, child) {
+            final anim = _animation?.value ?? 0.0;
+            return Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment(
+                    math.cos(anim * math.pi),
+                    math.sin(anim * math.pi),
+                  ),
+                  end: Alignment(
+                    -math.cos(anim * math.pi),
+                    -math.sin(anim * math.pi),
+                  ),
+                  colors: [
+                    Color.lerp(
+                      _gradientColors[0],
+                      _gradientColors[2],
+                      anim,
+                    )!,
+                    Color.lerp(
+                      _gradientColors[1],
+                      _gradientColors[3],
+                      anim,
+                    )!,
+                    Color.lerp(
+                      _gradientColors[3],
+                      _gradientColors[0],
+                      anim,
+                    )!,
+                  ],
+                ),
+              ),
+              child: child,
+            );
+          },
+    child: SizedBox(
+    height: MediaQuery.of(context).size.height,
+        child: SingleChildScrollView(
           physics: NeverScrollableScrollPhysics(),
           scrollDirection: Axis.vertical,
           child: Center(
@@ -59,11 +148,8 @@ class _LoginState extends State<Login> {
                 children: [
                   Center(
                     child: Center(
-                      child: SvgPicture.asset(
-                        "assets/vectors/Imagotipo.svg",
-                        width: 150,
-                        height: 130,
-                      ),
+                        child: Image.asset("assets/logo.png"
+                        )
                     ),
                   ),
                   const Center(
@@ -73,14 +159,15 @@ class _LoginState extends State<Login> {
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
+                        color: Colors.white
                       ),
                     ),
                   ),
 
                   const SizedBox(height: 40),
                   CustomTextField(
-                    label: "Correo electrónico",
-                    hintText: "m@ejemplo.com",
+                    label: "Usuario",
+                    hintText: "user123",
                     controller: emailController,
                     icon: (Icons.email_outlined),
                     keyboardType: TextInputType.emailAddress,
@@ -93,8 +180,8 @@ class _LoginState extends State<Login> {
                     child: Padding(
                       padding: EdgeInsets.only(left: 0),
                       child: Text(
-                        "Correo electrónico con que te has registrado",
-                        style: TextStyle(color: Colors.black, fontSize: 14),
+                        "Usuario con que te has registrado",
+                        style: TextStyle(color: Colors.white, fontSize: 14),
                       ),
                     ),
                   ),
@@ -133,7 +220,7 @@ class _LoginState extends State<Login> {
                         "Olvidaste tu contraseña?",
                         style: TextStyle(
                           fontFamily: 'Roboto',
-                          color: Colors.black,
+                          color: Colors.white,
                           fontSize: 15,
                         ),
                       ),
@@ -173,7 +260,8 @@ class _LoginState extends State<Login> {
                         }
                         BlocProvider.of<AuthBloc>(
                           context,
-                        ).add(LoginRequested(email: email, password: password));
+                        ).add(LoginEvent(email, password));
+
                       },
                       child: const Text(
                         "Iniciar sesión",
@@ -182,17 +270,6 @@ class _LoginState extends State<Login> {
                     ),
                   ),
 
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildSocialButton(
-                        context,
-                        "assets/google.png",
-                        'google',
-                      ),
-                    ],
-                  ),
                   const SizedBox(height: 12),
                   RichText(
                     text: TextSpan(
@@ -200,7 +277,7 @@ class _LoginState extends State<Login> {
                       children: [
                         const TextSpan(
                           text: "¿No tienes una cuenta? ",
-                          style: TextStyle(color: Colors.grey),
+                          style: TextStyle(color: Colors.white),
                         ),
                         TextSpan(
                           text: "Crear Cuenta",
@@ -227,37 +304,9 @@ class _LoginState extends State<Login> {
           ),
         ),
       ),
+      ),
+      ),
     );
   }
 }
 
-Widget _buildSocialButton(
-  BuildContext context,
-  String assetPath,
-  String? provider,
-) {
-  return GestureDetector(
-    onTap: () {
-      if (provider == 'google') {
-        context.read<AuthBloc>().add(GoogleSignInRequested());
-      }
-    },
-    child: Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
-
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            spreadRadius: 2,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(10),
-      child: Image.asset(assetPath, width: 24, height: 24, color: Colors.grey),
-    ),
-  );
-}
