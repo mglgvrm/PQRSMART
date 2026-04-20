@@ -1,23 +1,21 @@
-
-
 import 'package:pqrsmart/data/model/DependenceModel.dart';
 import 'package:pqrsmart/data/model/State.dart';
 
-class Category {
+class CategoryModel {
   final int idCategory;
   final String nameCategory;
   final DependenceModel? dependence;
   final State? state;
 
-  Category({
+  CategoryModel({
     required this.idCategory,
     required this.nameCategory,
     required this.dependence,
     required this.state
   });
 
-  factory Category.fromJson(Map<String, dynamic> json) {
-    return Category(
+  factory CategoryModel.fromJson(Map<String, dynamic> json) {
+    return CategoryModel(
       idCategory: json['idCategory'] ?? 0,
       nameCategory: json['nameCategory']?.toString() ?? '',
       dependence: json['dependence'] != null
@@ -28,4 +26,10 @@ class Category {
           : null,
     );
   }
+  Map<String, dynamic> toJson() {
+    return {
+      "idCategory": idCategory,
+    };
+  }
+
 }

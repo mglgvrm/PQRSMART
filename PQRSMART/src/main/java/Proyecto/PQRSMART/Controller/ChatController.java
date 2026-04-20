@@ -19,7 +19,6 @@ public class ChatController {
     }
 
 
-
     @PostMapping("/")
     public String chat(@RequestBody String mensaje) {
         return chatService.preguntarIA(mensaje);

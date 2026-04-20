@@ -1,10 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:urbanestia/presentation/pages/dashboard/dashboard_page.dart';
-import 'package:urbanestia/presentation/pages/editProfile/activity_profile.dart';
-import 'package:urbanestia/presentation/pages/home.dart';
-import 'package:urbanestia/presentation/pages/message/message_page.dart';
-import 'package:urbanestia/presentation/pages/notification/notification_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -14,7 +9,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final List<Widget> _pageList = [Home(), NotificationPage(), MessagePage()];
+  final List<Widget> _pageList = [];
   int _currentIndex = 0;
   PageController _pageController = new PageController();
   DateTime? _lastPressed;
@@ -67,7 +62,7 @@ class _HomePageState extends State<HomePage> {
               selectedLabelStyle: TextStyle(color: Colors.black),
               unselectedLabelStyle: TextStyle(color: Colors.orange),
               onTap: (value) {
-                if (value == 3) {
+               /* if (value == 3) {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => DashboardPage()),
@@ -85,7 +80,7 @@ class _HomePageState extends State<HomePage> {
                     _pageController.jumpToPage(_currentIndex);
                     print('${value} ${_currentIndex}');
                   });
-                }
+                }*/
               },
               items: [
                 BottomNavigationBarItem(

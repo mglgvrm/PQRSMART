@@ -1,92 +1,51 @@
-// lib/presentation/auth/bloc/auth_event.dart
-abstract class AuthEvent {}
+import 'package:equatable/equatable.dart';
 
-class LogoutRequested extends AuthEvent {}
-
-class GoogleSignInRequested extends AuthEvent {}
-
-class MetaSignInRequested extends AuthEvent {}
-
-class LoginRequested extends AuthEvent {
-  final String email;
-  final String password;
-
-  LoginRequested({required this.email, required this.password});
+abstract class AuthEvent extends Equatable {
+  @override
+  List<Object> get props => [];
 }
 
-class SignInRequestedEmail extends AuthEvent {
+class LoginEvent extends AuthEvent {
+  final String user;
+  final String password;
+
+  LoginEvent(this.user, this.password);
+
+  @override
+  List<Object> get props => [user, password];
+}
+
+class SignInEvent extends AuthEvent {
+  final String user;
+  final String name;
+  final String lastName;
   final String email;
   final String password;
-  final String name;
-  final String lastname;
-  final String role;
-  final String? nit;
-  final String? identification;
-  final String? img;
-  final String? phoneNumber;
-  final String? nameCompany;
-  final String? selectedTypePerson;
+  final int identificationType; // ID del objeto relacional
+  final int identificationNumber;
+  final int personType;          // ID del objeto relacional
+  final int number;        // ID del objeto relacional
 
-  SignInRequestedEmail({
+  SignInEvent({
+    required this.user,
+    required this.name,
+    required this.lastName,
     required this.email,
     required this.password,
-    required this.name,
-    required this.lastname,
-    required this.role,
-    required this.nit,
-    required this.identification,
-    required this.img,
-    required this.phoneNumber,
-    required this.nameCompany,
-    required this.selectedTypePerson,
+    required this.identificationType,
+    required this.identificationNumber,
+    required this.personType,
+    required this.number,
   });
+
+  @override
+  List<Object> get props => [
+    user, name, lastName, email, password,
+    identificationType, identificationNumber,
+    personType, number,
+  ];
 }
 
-class CreateUserProfile extends AuthEvent {
-  final String userId;
-  final String email;
-  final String name;
-  final String lastname;
-  final String role;
-  final String? nit;
-  final String? identification;
-  final String? img;
-  final String phoneNumber;
-  final String? nameCompany;
-  final String? selectedTypePerson;
+class LogoutEvent extends AuthEvent {}
 
-  CreateUserProfile({
-    required this.userId,
-    required this.email,
-    required this.name,
-    required this.lastname,
-    required this.role,
-    required this.nit,
-    required this.identification,
-    required this.img,
-    required this.phoneNumber,
-    required this.nameCompany,
-    required this.selectedTypePerson,
-  });
-}
-
-class SendResetPasswordEmail extends AuthEvent {
-  final String email;
-  SendResetPasswordEmail(this.email);
-}
-
-class UpdateProfileRequested extends AuthEvent {
-  final String userId;
-  final String phone;
-  final String email;
-  final String name;
-  final String lastname;
-
-  UpdateProfileRequested({
-    required this.userId,
-    required this.phone,
-    required this.email,
-    required this.name,
-    required this.lastname,
-  });
-}
+class LoadFormDataEvent extends AuthEvent {}

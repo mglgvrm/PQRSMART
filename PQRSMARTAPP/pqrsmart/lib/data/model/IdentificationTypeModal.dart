@@ -1,16 +1,16 @@
-class Identificationtype {
-  final int id;
-  final String name;
+class IdentificationTypeModal {
+  final int idIdentificationType;
+  final String nameIdentificationType;
 
-  Identificationtype({
-    required this.id,
-    required this.name,
+  IdentificationTypeModal({
+    required this.idIdentificationType,
+    required this.nameIdentificationType,
   });
 
-  factory Identificationtype.fromJson(Map<String, dynamic> json) {
-    return Identificationtype(
-      id: json['idPersonType'],
-      name: json['namePersonType'] ?? '',
+  factory IdentificationTypeModal.fromJson(Map<String, dynamic> json) {
+    return IdentificationTypeModal(
+      idIdentificationType: json['idIdentificationType']?? 0,
+      nameIdentificationType: json['nameIdentificationType'] ?? '',
     );
   }
 }

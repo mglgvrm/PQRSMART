@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:ui';
 import 'package:url_launcher/url_launcher.dart';
+import 'dart:math' as math;
 
 class Intro extends StatefulWidget {
   const Intro({super.key});
@@ -10,11 +11,36 @@ class Intro extends StatefulWidget {
   _IntroState createState() => _IntroState();
 }
 
-class _IntroState extends State<Intro> {
+class _IntroState extends State<Intro> with TickerProviderStateMixin {
+  AnimationController? _controller;
+  Animation<double>? _animation;
+
+  // Colores del gradiente (equivalente a --gradient-color-1..4)
+  final List<Color> _gradientColors = [
+    const Color(0xFF3F5A4C), // verde oscuro (base de tu app)
+    const Color(0xFF2D4A5A), // azul verdoso
+    const Color(0xFF1A3A4A), // azul marino
+    const Color(0xFF4A6B5A), // verde medio
+  ];
+
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    precacheImage(AssetImage("assets/fondoIntro.jpg"), context);
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 6),
+    )..repeat(reverse: true);
+
+    _animation = CurvedAnimation(
+      parent: _controller!,
+      curve: Curves.easeInOut,
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
   }
 
   // Función para abrir enlaces
@@ -28,19 +54,48 @@ class _IntroState extends State<Intro> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: Image.asset("assets/fondoIntro.jpg", fit: BoxFit.cover),
-          ),
-          Positioned.fill(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2), // Desenfoque
-              child: Container(
-                color: Colors.black.withOpacity(0.3), // Opacidad del fondo
-              ),
+      body: AnimatedBuilder(
+        animation: _animation ?? const AlwaysStoppedAnimation(0.0),
+        builder: (context, child) {
+          final anim = _animation?.value ?? 0.0;
+      return Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment(
+              math.cos(anim * math.pi),
+              math.sin(anim * math.pi),
             ),
+            end: Alignment(
+              -math.cos(anim * math.pi),
+              -math.sin(anim * math.pi),
+            ),
+            colors: [
+              Color.lerp(
+                _gradientColors[0],
+                _gradientColors[2],
+                anim,
+              )!,
+              Color.lerp(
+                _gradientColors[1],
+                _gradientColors[3],
+                anim,
+              )!,
+              Color.lerp(
+                _gradientColors[3],
+                _gradientColors[0],
+                anim,
+              )!,
+            ],
           ),
+        ),
+        child: child,
+      );
+    },
+
+
+      child: Stack(
+        children: [
+
 
           // Contenedor semi-transparente para evitar que el fondo opaque el contenido
           Padding(
@@ -53,28 +108,11 @@ class _IntroState extends State<Intro> {
               children: [
                 Center(
                   child: Container(
-                    width: 250, // Ajusta según necesites
-                    height: 250,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Color(0x4DFFFFFF), // Sombra suave
-                          blurRadius: 15, // Difuminado de la sombra
-                          spreadRadius: 5, // Extensión de la sombra
-                          offset: Offset(0, 5), // Posición de la sombra
-                        ),
-                      ],
-                      color: Colors.black.withOpacity(0.2), // Fondo del círculo
+                    width: 260,
+                    height: 260,
+                    child: Image.asset("assets/logo.png"
                     ),
-                    child: Center(
-                      child: SvgPicture.asset(
-                        "assets/isotipo2.svg",
-                        width: 220,
-                        height: 170,
-                      ),
-                    ),
-                  ),
+                  )
                 ),
                 const SizedBox(height: 60),
                 Center(
@@ -127,6 +165,7 @@ class _IntroState extends State<Intro> {
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
+
                           ),
                         ),
                         Row(
@@ -167,33 +206,23 @@ class _IntroState extends State<Intro> {
                       "assets/Imagotipo2Dark.svg",
                       width: 40,
                       height: 40,
+
                     ),
                   ),
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+
                     GestureDetector(
                       onTap: () {
-                        _launchURL(
-                          "https://www.linkedin.com/company/urbanestia/",
-                        );
-                      },
-                      child: Image.asset(
-                        "assets/linkedin.png",
-                        width: 25,
-                        height: 25,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    GestureDetector(
-                      onTap: () {
-                        _launchURL("https://www.instagram.com/dnamyk_1/");
+                        _launchURL("https://www.instagram.com//");
                       },
                       child: Image.asset(
                         "assets/instagram.png",
                         width: 25,
                         height: 25,
+                        color: Colors.black,
                       ),
                     ),
                   ],
@@ -202,6 +231,7 @@ class _IntroState extends State<Intro> {
             ),
           ),
         ],
+      ),
       ),
     );
   }
