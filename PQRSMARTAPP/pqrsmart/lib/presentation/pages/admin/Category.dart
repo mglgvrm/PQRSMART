@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pqrsmart/presentation/blocs/CategoryBloc.dart';
 import 'package:pqrsmart/presentation/blocs/DependenceBloc.dart';
 import 'package:pqrsmart/presentation/blocs/auth_bloc.dart';
+import 'package:pqrsmart/presentation/pages/ProfilePage.dart';
 import 'package:pqrsmart/presentation/states/CategoryEvent.dart';
 import 'package:pqrsmart/presentation/states/CategoryState.dart';
 import 'package:pqrsmart/presentation/states/DependenceEvent.dart';
@@ -283,6 +284,12 @@ class _CategoryPageState extends State<CategoryPage> {
       ),
     );
   }
+  void _showProfile(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => ProfilePage()),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -297,7 +304,11 @@ class _CategoryPageState extends State<CategoryPage> {
           PopupMenuButton<String>(
             icon: Icon(Icons.account_circle, color: Colors.white),
             onSelected: (value) {
-              if (value == 'cerrar_sesion') _signOut(context);
+              if (value == 'perfil') {
+                _showProfile(context);
+              } else if (value == 'cerrar_sesion') {
+                _signOut(context);
+              }
             },
             itemBuilder: (context) => [
               PopupMenuItem(

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pqrsmart/data/services/AuthStorage.dart';
+import 'package:pqrsmart/presentation/pages/ActivationPage.dart';
+import 'package:pqrsmart/presentation/pages/ProfilePage.dart';
 import 'package:pqrsmart/presentation/pages/admin/homeAdmin.dart';
 import 'package:pqrsmart/presentation/pages/intro.dart';
 import 'package:pqrsmart/presentation/pages/login_page.dart';
@@ -62,9 +64,18 @@ class AppRoutes {
       case '/register':
         return MaterialPageRoute(builder: (_) => const Register());
 
+      case'/profile':
+        return MaterialPageRoute(builder: (_)=> const ProfilePage());
+
       case '/passwordRecovered':
         return MaterialPageRoute(builder: (_) => const PasswordRecoveryPage());
 
+      case '/activation-result':
+      // Recibe el bool que mandas desde _handleLink
+        final success = settings.arguments as bool? ?? false;
+        return MaterialPageRoute(
+          builder: (_) => ActivationResultPage(success: success),
+        );
       default:
         return MaterialPageRoute(builder: (_) => const Intro());
     }

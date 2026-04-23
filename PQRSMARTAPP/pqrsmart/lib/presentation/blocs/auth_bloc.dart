@@ -58,6 +58,30 @@ class AuthBloc extends Bloc<AuthEvent, AuthStates> {
       }
     });
 
+    on<SignInEventAmin>((event, emit) async {
+      emit(AuthLoading());
+      try {
+        final UserModel user = await repository.registerAdmin(
+          // ← corregido
+          user: event.user,
+          name: event.name,
+          lastName: event.lastName,
+          email: event.email,
+          password: event.password,
+          identificationType: event.identificationType,
+          identificationNumber: event.identificationNumber,
+          personType: event.personType,
+          number: event.number,
+          dependence: event.dependence,
+          role: event.role
+
+        );
+        emit(AuthRegisterSuccess(user: user));
+      } catch (e) {
+        emit(AuthError(e.toString()));
+      }
+    });
+
     // Carga los dropdowns al abrir el formulario
     on<LoadFormDataEvent>((event, emit) async {
       emit(AuthLoading());

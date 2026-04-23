@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pqrsmart/presentation/blocs/UserBloc.dart';
 import 'package:pqrsmart/presentation/blocs/auth_bloc.dart';
+import 'package:pqrsmart/presentation/pages/ProfilePage.dart';
+import 'package:pqrsmart/presentation/pages/admin/register/RegisterAdminPage.dart';
+import 'package:pqrsmart/presentation/states/UserEvent.dart';
 import 'package:pqrsmart/presentation/states/UserSatate.dart';
 import 'package:pqrsmart/presentation/states/auth_event.dart';
 
@@ -169,142 +172,25 @@ class _UserState extends State<User> {
   }
 
   void _showViewFormAddUser(BuildContext context) {
-    final _nombreController        = TextEditingController();
-    final _apellidoController      = TextEditingController();
-    final _emailController         = TextEditingController();
-    final _usuarioController       = TextEditingController();
-    final _numeroController        = TextEditingController();
-    final _identificacionController = TextEditingController();
-    String _rolSeleccionado = 'USER';
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) => Padding(
-        padding: EdgeInsets.only(
-          left: 24, right: 24, top: 24,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40, height: 4,
-                  margin: EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              Text('Nuevo Usuario',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              Divider(),
-              SizedBox(height: 8),
-              TextField(
-                controller: _nombreController,
-                decoration: InputDecoration(
-                  labelText: 'Nombre',
-                  prefixIcon: Icon(Icons.person),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-              ),
-              SizedBox(height: 12),
-              TextField(
-                controller: _apellidoController,
-                decoration: InputDecoration(
-                  labelText: 'Apellido',
-                  prefixIcon: Icon(Icons.person_outline),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-              ),
-              SizedBox(height: 12),
-              TextField(
-                controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  prefixIcon: Icon(Icons.email),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-              ),
-              SizedBox(height: 12),
-              TextField(
-                controller: _usuarioController,
-                decoration: InputDecoration(
-                  labelText: 'Usuario',
-                  prefixIcon: Icon(Icons.account_circle),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-              ),
-              SizedBox(height: 12),
-              TextField(
-                controller: _numeroController,
-                keyboardType: TextInputType.phone,
-                decoration: InputDecoration(
-                  labelText: 'Número',
-                  prefixIcon: Icon(Icons.phone),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-              ),
-              SizedBox(height: 12),
-              TextField(
-                controller: _identificacionController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: 'Número de Identificación',
-                  prefixIcon: Icon(Icons.badge),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-              ),
-              SizedBox(height: 12),
-              StatefulBuilder(
-                builder: (context, setModalState) => DropdownButtonFormField<String>(
-                  value: _rolSeleccionado,
-                  decoration: InputDecoration(
-                    labelText: 'Rol',
-                    prefixIcon: Icon(Icons.security),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                  items: ['USER', 'ADMIN', 'SECRE'].map((rol) {
-                    return DropdownMenuItem(value: rol, child: Text(rol));
-                  }).toList(),
-                  onChanged: (value) {
-                    setModalState(() => _rolSeleccionado = value!);
-                  },
-                ),
-              ),
-              SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  icon: Icon(Icons.save),
-                  label: Text('Guardar Usuario'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF4A6B5A),
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  onPressed: () {
-                    // TODO: context.read<UserBloc>().add(CrearUsuarioEvent(...));
-                    Navigator.pop(context);
-                  },
-                ),
-              ),
-            ],
+      backgroundColor: Colors.transparent,
+      builder: (_) => FractionallySizedBox(
+        heightFactor: 0.95,
+        child: ClipRRect(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          child: BlocProvider.value(
+            value: context.read<AuthBloc>(),
+            child: const RegisterAdminPage(),
           ),
         ),
       ),
-    );
+    ).then((_) {
+      // ← Se ejecuta cuando se cierra el modal
+      // Recarga la lista de usuarios
+      context.read<UserBloc>().add(GetUserEvent());
+    });
   }
 
   Widget _infoFila(IconData icono, String etiqueta, String valor) {
@@ -354,6 +240,12 @@ class _UserState extends State<User> {
       ),
     );
   }
+  void _showProfile(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => ProfilePage()),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -367,7 +259,11 @@ class _UserState extends State<User> {
           PopupMenuButton<String>(
             icon: Icon(Icons.account_circle, color: Colors.white),
             onSelected: (value) {
-              if (value == 'cerrar_sesion') _signOut(context);
+              if (value == 'perfil') {
+                _showProfile(context);
+              } else if (value == 'cerrar_sesion') {
+                _signOut(context);
+              }
             },
             itemBuilder: (context) => [
               PopupMenuItem(
