@@ -1,113 +1,232 @@
 import 'package:flutter/material.dart';
+import 'dart:math' as math;
 
-class ActivationPage extends StatefulWidget {
-  const ActivationPage({Key? key}) : super(key: key);
+class ActivationResultPage extends StatefulWidget {
+  final bool success;
+  const ActivationResultPage({required this.success, Key? key})
+      : super(key: key);
 
   @override
-  State<ActivationPage> createState() => _ActivationPageState();
+  State<ActivationResultPage> createState() => _ActivationResultPageState();
 }
 
-class _ActivationPageState extends State<ActivationPage> {
+class _ActivationResultPageState extends State<ActivationResultPage>
+    with TickerProviderStateMixin {
   static const _verde = Color(0xFF4A6B5A);
-  bool _loading = true;
-  bool _success = false;
+
+  late AnimationController _scaleController;
+  late AnimationController _gradientController;
+  late Animation<double>   _scaleAnim;
+  late Animation<double>   _gradientAnim;
+
+  // Mismo gradiente animado que tu Login
+  final List<Color> _gradientColors = [
+    Color(0xFF3F5A4C),
+    Color(0xFF2D4A5A),
+    Color(0xFF1A3A4A),
+    Color(0xFF4A6B5A),
+  ];
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final token =
-    ModalRoute.of(context)?.settings.arguments as String?;
-    if (token != null) {
-      _activar(token);
+  void initState() {
+    super.initState();
+
+    // Gradiente animado
+    _gradientController = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: 6),
+    )..repeat(reverse: true);
+    _gradientAnim = CurvedAnimation(
+      parent: _gradientController,
+      curve: Curves.easeInOut,
+    );
+
+    // Scale entrada card
+    _scaleController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 700),
+    );
+    _scaleAnim = CurvedAnimation(
+      parent: _scaleController,
+      curve: Curves.elasticOut,
+    );
+    _scaleController.forward();
+
+    // Auto-redirige al login si es éxito
+    if (widget.success) {
+      Future.delayed(Duration(seconds: 4), () {
+        if (mounted) Navigator.pushReplacementNamed(context, '/login');
+      });
     }
   }
 
-  Future<void> _activar(String token) async {
-    try {
-      // TODO: context.read<AuthBloc>().add(ActivateUserEvent(token));
-      await Future.delayed(Duration(seconds: 2)); // simula llamada
-      setState(() {
-        _loading = false;
-        _success = true;
-      });
-      await Future.delayed(Duration(seconds: 2));
-      Navigator.pushReplacementNamed(context, '/login');
-    } catch (e) {
-      setState(() {
-        _loading = false;
-        _success = false;
-      });
-    }
+  @override
+  void dispose() {
+    _scaleController.dispose();
+    _gradientController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF0F2F5),
-      body: Center(
-        child: Container(
-          margin: EdgeInsets.all(32),
-          padding: EdgeInsets.all(32),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.06),
-                blurRadius: 16,
-                offset: Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (_loading) ...[
-                CircularProgressIndicator(color: _verde),
-                SizedBox(height: 20),
-                Text('Activando tu cuenta...',
-                    style: TextStyle(
-                        fontSize: 16, color: Colors.black87)),
-              ] else if (_success) ...[
-                Icon(Icons.check_circle_rounded,
-                    color: _verde, size: 64),
-                SizedBox(height: 16),
-                Text('¡Cuenta activada!',
-                    style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87)),
-                SizedBox(height: 8),
-                Text('Redirigiendo al inicio de sesión...',
-                    style: TextStyle(
-                        fontSize: 14, color: Colors.grey[600])),
-              ] else ...[
-                Icon(Icons.error_outline,
-                    color: Colors.red, size: 64),
-                SizedBox(height: 16),
-                Text('Error al activar',
-                    style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87)),
-                SizedBox(height: 8),
-                Text('El enlace es inválido o ya fue usado.',
-                    style: TextStyle(
-                        fontSize: 14, color: Colors.grey[600])),
-                SizedBox(height: 20),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                      backgroundColor: _verde,
-                      foregroundColor: Colors.white),
-                  onPressed: () =>
-                      Navigator.pushReplacementNamed(context, '/login'),
-                  child: Text('Ir al login'),
+      body: AnimatedBuilder(
+        animation: _gradientAnim,
+        builder: (context, child) {
+          final anim = _gradientAnim.value;
+          return Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment(
+                  math.cos(anim * math.pi),
+                  math.sin(anim * math.pi),
                 ),
-              ],
-            ],
+                end: Alignment(
+                  -math.cos(anim * math.pi),
+                  -math.sin(anim * math.pi),
+                ),
+                colors: [
+                  Color.lerp(_gradientColors[0], _gradientColors[2], anim)!,
+                  Color.lerp(_gradientColors[1], _gradientColors[3], anim)!,
+                  Color.lerp(_gradientColors[3], _gradientColors[0], anim)!,
+                ],
+              ),
+            ),
+            child: child,
+          );
+        },
+        child: Center(
+          child: ScaleTransition(
+            scale: _scaleAnim,
+            child: Container(
+              margin: EdgeInsets.symmetric(horizontal: 32),
+              padding: EdgeInsets.all(36),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.15),
+                    blurRadius: 24,
+                    offset: Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: widget.success
+                    ? _successContent()
+                    : _errorContent(),
+              ),
+            ),
           ),
         ),
       ),
     );
   }
+
+  // ── Contenido éxito ──────────────────────────────────
+  List<Widget> _successContent() => [
+    Container(
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: _verde.withOpacity(0.1),
+        shape: BoxShape.circle,
+      ),
+      child: Icon(Icons.check_circle_rounded, color: _verde, size: 72),
+    ),
+    SizedBox(height: 24),
+    Text(
+      '¡Cuenta activada!',
+      style: TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          color: Colors.black87),
+    ),
+    SizedBox(height: 10),
+    Text(
+      'Tu cuenta ha sido verificada exitosamente.',
+      textAlign: TextAlign.center,
+      style: TextStyle(
+          fontSize: 14, color: Colors.grey[600], height: 1.5),
+    ),
+    SizedBox(height: 28),
+    // Barra de progreso countdown
+    TweenAnimationBuilder<double>(
+      tween: Tween(begin: 1.0, end: 0.0),
+      duration: Duration(seconds: 4),
+      builder: (_, value, __) => Column(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
+              value: value,
+              minHeight: 6,
+              backgroundColor: Colors.grey[200],
+              valueColor: AlwaysStoppedAnimation(_verde),
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Redirigiendo en ${(value * 4).ceil()} segundos...',
+            style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+          ),
+        ],
+      ),
+    ),
+    SizedBox(height: 16),
+    // Botón por si no redirige automático
+    TextButton(
+      onPressed: () =>
+          Navigator.pushReplacementNamed(context, '/login'),
+      child: Text(
+        'Ir al login ahora',
+        style: TextStyle(color: _verde, fontWeight: FontWeight.w600),
+      ),
+    ),
+  ];
+
+  // ── Contenido error ──────────────────────────────────
+  List<Widget> _errorContent() => [
+    Container(
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.red.withOpacity(0.1),
+        shape: BoxShape.circle,
+      ),
+      child: Icon(Icons.error_outline, color: Colors.red, size: 72),
+    ),
+    SizedBox(height: 24),
+    Text(
+      'Enlace inválido',
+      style: TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          color: Colors.black87),
+    ),
+    SizedBox(height: 10),
+    Text(
+      'El enlace expiró o ya fue utilizado.\nSolicita uno nuevo desde la app.',
+      textAlign: TextAlign.center,
+      style: TextStyle(
+          fontSize: 14, color: Colors.grey[600], height: 1.5),
+    ),
+    SizedBox(height: 28),
+    SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _verde,
+          foregroundColor: Colors.white,
+          padding: EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12)),
+        ),
+        onPressed: () =>
+            Navigator.pushReplacementNamed(context, '/login'),
+        child: Text('Ir al login',
+            style: TextStyle(fontSize: 16)),
+      ),
+    ),
+  ];
 }

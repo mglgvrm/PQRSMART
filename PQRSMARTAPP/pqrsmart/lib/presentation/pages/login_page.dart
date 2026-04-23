@@ -98,7 +98,9 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
         }
       },
       child: Scaffold(
+        resizeToAvoidBottomInset: true,
         body: AnimatedBuilder(
+
           animation: _animation ?? const AlwaysStoppedAnimation(0.0),
           builder: (context, child) {
             final anim = _animation?.value ?? 0.0;
@@ -138,7 +140,6 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
     child: SizedBox(
     height: MediaQuery.of(context).size.height,
         child: SingleChildScrollView(
-          physics: NeverScrollableScrollPhysics(),
           scrollDirection: Axis.vertical,
           child: Center(
             child: Padding(

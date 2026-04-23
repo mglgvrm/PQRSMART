@@ -45,6 +45,34 @@ class AuthRepository {
     );
   }
 
+  Future<UserModel> registerAdmin({
+    required String user,
+    required String name,
+    required String lastName,
+    required String email,
+    required String password,
+    required int identificationType,
+    required int identificationNumber,
+    required int personType,
+    required int number,
+    required String role,
+    required int dependence
+  }) {
+    return service.registerAdmin(
+      user: user,
+      name: name,
+      lastName: lastName,
+      email: email,
+      password: password,
+      identificationType: identificationType,
+      identificationNumber: identificationNumber,
+      personType: personType,
+      number: number,
+      dependence: dependence,
+      role: role
+    );
+  }
+
   Future<Map<String, dynamic>> getRegisterFormData() async {
     final results = await Future.wait([
       identificationTypeService.getAll(),
