@@ -11,5 +11,8 @@ class UserRepository {
   Future<UserModel> getMyUserEvent(){
     return userService.getMyUserEvent();
   }
+  Future<UserModel> cancelUser(int id){
+    return userService.cancelUser(id);
+  }
 
 }

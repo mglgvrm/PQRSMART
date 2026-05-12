@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pqrsmart/data/model/DependenceModel.dart';
 import 'package:pqrsmart/presentation/blocs/DependenceBloc.dart';
 import 'package:pqrsmart/presentation/blocs/auth_bloc.dart';
 import 'package:pqrsmart/presentation/pages/ProfilePage.dart';
 import 'package:pqrsmart/presentation/states/DependenceEvent.dart';
 import 'package:pqrsmart/presentation/states/DependenceState.dart';
 import 'package:pqrsmart/presentation/states/auth_event.dart';
+import 'package:pqrsmart/data/model/StateModel.dart';
 
 class DependencePage extends StatefulWidget {
   const DependencePage({Key? key}) : super(key: key);
@@ -35,7 +37,8 @@ class _DependencePageState extends State<DependencePage> {
           children: [
             Center(
               child: Container(
-                width: 40, height: 4,
+                width: 40,
+                height: 4,
                 margin: EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
                   color: Colors.grey[300],
@@ -56,11 +59,21 @@ class _DependencePageState extends State<DependencePage> {
               ),
             ),
             SizedBox(height: 16),
-            Text('Información de la Dependencia',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(
+              'Información de la Dependencia',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             Divider(),
-            _infoFila(Icons.business, 'Nombre', safeStr(dependence.nameDependence)),
-            _infoFila(Icons.toggle_on, 'Estado', safeStr(dependence.state?.description)),
+            _infoFila(
+              Icons.business,
+              'Nombre',
+              safeStr(dependence.nameDependence),
+            ),
+            _infoFila(
+              Icons.toggle_on,
+              'Estado',
+              safeStr(dependence.state?.description),
+            ),
             SizedBox(height: 16),
           ],
         ),
@@ -69,6 +82,11 @@ class _DependencePageState extends State<DependencePage> {
   }
 
   void _showMenuOption(BuildContext context, dynamic dependence) {
+    final activo =
+        safeStr(
+          dependence.state?.description ?? dependence.state,
+        ).toUpperCase() ==
+        'ACTIVADO';
     showModalBottomSheet(
       context: context,
       shape: RoundedRectangleBorder(
@@ -80,7 +98,8 @@ class _DependencePageState extends State<DependencePage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 40, height: 4,
+              width: 40,
+              height: 4,
               margin: EdgeInsets.only(bottom: 12),
               decoration: BoxDecoration(
                 color: Colors.grey[300],
@@ -88,7 +107,10 @@ class _DependencePageState extends State<DependencePage> {
               ),
             ),
             ListTile(
-              leading: Icon(Icons.remove_red_eye_outlined, color: Color(0xFF4A6B5A)),
+              leading: Icon(
+                Icons.remove_red_eye_outlined,
+                color: Color(0xFF4A6B5A),
+              ),
               title: Text('Ver detalle'),
               onTap: () {
                 Navigator.pop(context);
@@ -103,26 +125,40 @@ class _DependencePageState extends State<DependencePage> {
                 // TODO: editar dependencia
               },
             ),
-            ListTile(
-              leading: Icon(Icons.check, color: Colors.green),
-              title: Text('Activar',
-                  style: TextStyle(color: Colors.green)),
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: context.read<DependenceBloc>().add(DesactivarDependenceEvent(dependence.idDependence));
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.delete_forever_rounded, color: Colors.red),
-              title: Text('Desactivar',
-                  style: TextStyle(color: Colors.red)),
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: context.read<DependenceBloc>().add(DesactivarDependenceEvent(dependence.idDependence));
-              },
-            ),
-
-
+            if (activo)
+              ListTile(
+                leading: Icon(Icons.delete_forever_rounded, color: Colors.red),
+                title: Text('Desactivar', style: TextStyle(color: Colors.red)),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.read<DependenceBloc>().add(
+                    CancelDependenceEvent(dependence.idDependence),
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Dependencia desactivada correctamente'),
+                      backgroundColor: Color(0xFF4A6B5A),
+                    ),
+                  );
+                },
+              )
+            else
+              ListTile(
+                leading: Icon(Icons.check, color: Colors.green),
+                title: Text('Activar', style: TextStyle(color: Colors.green)),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.read<DependenceBloc>().add(
+                    ActivateDependenceEvent(dependence.idDependence),
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Dependencia activada correctamente'),
+                      backgroundColor: Color(0xFF4A6B5A),
+                    ),
+                  );
+                },
+              ),
           ],
         ),
       ),
@@ -140,7 +176,9 @@ class _DependencePageState extends State<DependencePage> {
       ),
       builder: (_) => Padding(
         padding: EdgeInsets.only(
-          left: 24, right: 24, top: 24,
+          left: 24,
+          right: 24,
+          top: 24,
           bottom: MediaQuery.of(context).viewInsets.bottom + 24,
         ),
         child: SingleChildScrollView(
@@ -150,7 +188,8 @@ class _DependencePageState extends State<DependencePage> {
             children: [
               Center(
                 child: Container(
-                  width: 40, height: 4,
+                  width: 40,
+                  height: 4,
                   margin: EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
                     color: Colors.grey[300],
@@ -158,8 +197,10 @@ class _DependencePageState extends State<DependencePage> {
                   ),
                 ),
               ),
-              Text('Nueva Dependencia',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text(
+                'Nueva Dependencia',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
               Divider(),
               SizedBox(height: 8),
               TextField(
@@ -198,7 +239,14 @@ class _DependencePageState extends State<DependencePage> {
                       );
                       return;
                     }
-                    // TODO: context.read<DependenceBloc>().add(CreateDependenceEvent(_nombreController.text.trim()));
+                    context.read<DependenceBloc>().add(
+                      SaveDependenceEvent(
+                        DependenceModel(
+                          nameDependence: _nombreController.text,
+                          state: StateModel(id: 1),
+                        ),
+                      ),
+                    );
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -263,12 +311,11 @@ class _DependencePageState extends State<DependencePage> {
       ),
     );
   }
+
   void _showProfile(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => ProfilePage()),
-    );
+    Navigator.push(context, MaterialPageRoute(builder: (_) => ProfilePage()));
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -320,13 +367,28 @@ class _DependencePageState extends State<DependencePage> {
         icon: Icon(Icons.add_business),
         label: Text('Nueva Dependencia'),
       ),
-      body: BlocBuilder<DependenceBloc, DependenceState>(
+      body: BlocConsumer<DependenceBloc, DependenceState>(
+        listener: (context, state) {
+          // ✅ Aquí van los side effects (snackbar, navigation)
+          if (state is SaveDependenceLoaded ||
+              state is ActivateDependenceLoaded ||
+              state is CancelDependenceLoaded) {
+            context.read<DependenceBloc>().add(LoadDependenceEvent());
+          }
+          if (state is DependenceError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        },
         builder: (context, state) {
-
           if (state is DependenceLoading) {
-            return Center(child: CircularProgressIndicator(
-              color: Color(0xFF4A6B5A),
-            ));
+            return Center(
+              child: CircularProgressIndicator(color: Color(0xFF4A6B5A)),
+            );
           }
 
           if (state is DependenceLoaded) {
@@ -334,7 +396,6 @@ class _DependencePageState extends State<DependencePage> {
 
             return Column(
               children: [
-
                 // ── Resumen ──────────────────────────────────────────
                 Container(
                   color: Colors.white,
@@ -354,158 +415,178 @@ class _DependencePageState extends State<DependencePage> {
                 Expanded(
                   child: dependence.isEmpty
                       ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.business_outlined,
-                            size: 64, color: Colors.grey[400]),
-                        SizedBox(height: 12),
-                        Text('No hay dependencias registradas',
-                            style: TextStyle(color: Colors.grey[500])),
-                      ],
-                    ),
-                  )
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.business_outlined,
+                                size: 64,
+                                color: Colors.grey[400],
+                              ),
+                              SizedBox(height: 12),
+                              Text(
+                                'No hay dependencias registradas',
+                                style: TextStyle(color: Colors.grey[500]),
+                              ),
+                            ],
+                          ),
+                        )
                       : ListView.separated(
-                    itemCount: dependence.length,
-                    separatorBuilder: (_, __) => Divider(height: 1),
-                    itemBuilder: (context, index) {
-                      final dep = dependence[index];
-                      final activo = safeStr(dep.state?.description)
-                          .toUpperCase() == 'ACTIVADO';
+                          itemCount: dependence.length,
+                          separatorBuilder: (_, __) => Divider(height: 1),
+                          itemBuilder: (context, index) {
+                            final dep = dependence[index];
+                            final activo =
+                                safeStr(dep.state?.description).toUpperCase() ==
+                                'ACTIVADO';
 
-                      return Container(
-                        color: Colors.white,
-                        padding: EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 12),
-                        child: Row(
-                          children: [
-
-                            // Avatar
-                            Stack(
-                              children: [
-                                CircleAvatar(
-                                  radius: 26,
-                                  backgroundColor:
-                                  Color(0xFF4A6B5A).withOpacity(0.15),
-                                  child: Text(
-                                    safeStr(dep.nameDependence).isNotEmpty
-                                        ? safeStr(dep.nameDependence)[0]
-                                        .toUpperCase()
-                                        : '?',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      color: Color(0xFF4A6B5A),
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                Positioned(
-                                  bottom: 0,
-                                  right: 0,
-                                  child: Container(
-                                    width: 12, height: 12,
-                                    decoration: BoxDecoration(
-                                      color: activo
-                                          ? Colors.green
-                                          : Colors.red,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                          color: Colors.white, width: 2),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                            SizedBox(width: 12),
-
-                            // Info
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment:
-                                CrossAxisAlignment.start,
+                            return Container(
+                              color: Colors.white,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                              child: Row(
                                 children: [
-                                  Text(
-                                    safeStr(dep.nameDependence),
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 15,
+                                  // Avatar
+                                  Stack(
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 26,
+                                        backgroundColor: Color(
+                                          0xFF4A6B5A,
+                                        ).withOpacity(0.15),
+                                        child: Text(
+                                          safeStr(dep.nameDependence).isNotEmpty
+                                              ? safeStr(
+                                                  dep.nameDependence,
+                                                )[0].toUpperCase()
+                                              : '?',
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            color: Color(0xFF4A6B5A),
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      Positioned(
+                                        bottom: 0,
+                                        right: 0,
+                                        child: Container(
+                                          width: 12,
+                                          height: 12,
+                                          decoration: BoxDecoration(
+                                            color: activo
+                                                ? Colors.green
+                                                : Colors.red,
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: Colors.white,
+                                              width: 2,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+
+                                  SizedBox(width: 12),
+
+                                  // Info
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          safeStr(dep.nameDependence),
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                        SizedBox(height: 4),
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Icons.tag,
+                                              size: 13,
+                                              color: Color(0xFF4A6B5A),
+                                            ),
+                                            SizedBox(width: 4),
+                                            Text(
+                                              'ID: ${dep.idDependence}',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.grey[600],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  SizedBox(height: 4),
-                                  Row(
+
+                                  // Badge + menú
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
                                     children: [
-                                      Icon(Icons.tag,
-                                          size: 13,
-                                          color: Color(0xFF4A6B5A)),
-                                      SizedBox(width: 4),
-                                      Text(
-                                        'ID: ${dep.idDependence}',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey[600],
+                                      Container(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 3,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: activo
+                                              ? Colors.green.withOpacity(0.1)
+                                              : Colors.red.withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Container(
+                                              width: 6,
+                                              height: 6,
+                                              decoration: BoxDecoration(
+                                                color: activo
+                                                    ? Colors.green
+                                                    : Colors.red,
+                                                shape: BoxShape.circle,
+                                              ),
+                                            ),
+                                            SizedBox(width: 4),
+                                            Text(
+                                              activo ? 'Activo' : 'Inactivo',
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                color: activo
+                                                    ? Colors.green
+                                                    : Colors.red,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      SizedBox(height: 6),
+                                      GestureDetector(
+                                        onTap: () =>
+                                            _showMenuOption(context, dep),
+                                        child: Icon(
+                                          Icons.more_horiz,
+                                          color: Colors.grey[500],
                                         ),
                                       ),
                                     ],
                                   ),
                                 ],
                               ),
-                            ),
-
-                            // Badge + menú
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 3),
-                                  decoration: BoxDecoration(
-                                    color: activo
-                                        ? Colors.green.withOpacity(0.1)
-                                        : Colors.red.withOpacity(0.1),
-                                    borderRadius:
-                                    BorderRadius.circular(12),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Container(
-                                        width: 6, height: 6,
-                                        decoration: BoxDecoration(
-                                          color: activo
-                                              ? Colors.green
-                                              : Colors.red,
-                                          shape: BoxShape.circle,
-                                        ),
-                                      ),
-                                      SizedBox(width: 4),
-                                      Text(
-                                        activo ? 'Activo' : 'Inactivo',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: activo
-                                              ? Colors.green
-                                              : Colors.red,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                SizedBox(height: 6),
-                                GestureDetector(
-                                  onTap: () =>
-                                      _showMenuOption(context, dep),
-                                  child: Icon(Icons.more_horiz,
-                                      color: Colors.grey[500]),
-                                ),
-                              ],
-                            ),
-                          ],
+                            );
+                          },
                         ),
-                      );
-                    },
-                  ),
                 ),
               ],
             );
@@ -518,8 +599,10 @@ class _DependencePageState extends State<DependencePage> {
                 children: [
                   Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
                   SizedBox(height: 12),
-                  Text(state.message,
-                      style: TextStyle(color: Colors.grey[600])),
+                  Text(
+                    state.message,
+                    style: TextStyle(color: Colors.grey[600]),
+                  ),
                   SizedBox(height: 16),
                   ElevatedButton.icon(
                     icon: Icon(Icons.refresh),

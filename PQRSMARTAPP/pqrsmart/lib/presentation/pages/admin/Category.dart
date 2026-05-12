@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pqrsmart/data/model/CategoryModel.dart';
+import 'package:pqrsmart/data/model/DependenceModel.dart';
+import 'package:pqrsmart/data/model/StateModel.dart';
+import 'package:pqrsmart/data/repository/DependenceRepository.dart';
+import 'package:pqrsmart/data/services/DependenceService.dart';
 import 'package:pqrsmart/presentation/blocs/CategoryBloc.dart';
 import 'package:pqrsmart/presentation/blocs/DependenceBloc.dart';
 import 'package:pqrsmart/presentation/blocs/auth_bloc.dart';
@@ -22,8 +27,10 @@ class _CategoryPageState extends State<CategoryPage> {
     if (value == null) return fallback;
     return value.toString();
   }
+
   String _filtroSeleccionado = 'Todos';
   List<String> _filtrosDependencia = ['Todos'];
+
   void _showDetailsCategory(BuildContext context, dynamic category) {
     showModalBottomSheet(
       context: context,
@@ -85,6 +92,9 @@ class _CategoryPageState extends State<CategoryPage> {
   }
 
   void _showMenuOption(BuildContext context, dynamic category) {
+    final activo =
+        safeStr(category.state?.description ?? category.state).toUpperCase() ==
+        'ACTIVADO';
     showModalBottomSheet(
       context: context,
       shape: RoundedRectangleBorder(
@@ -123,20 +133,22 @@ class _CategoryPageState extends State<CategoryPage> {
                 // TODO: editar dependencia
               },
             ),
-            ListTile(
+            if (activo)
+              ListTile(
+                leading: Icon(Icons.delete_forever_rounded, color: Colors.red),
+                title: Text('Desactivar', style: TextStyle(color: Colors.red)),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.read<CategoryBloc>().add(CancelCategoryEvent(category.idCategory));
+                },
+              )
+            else
+              ListTile(
               leading: Icon(Icons.check, color: Colors.green),
               title: Text('Activar', style: TextStyle(color: Colors.green)),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: context.read<DependenceBloc>().add(DesactivarDependenceEvent(dependence.idDependence));
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.delete_forever_rounded, color: Colors.red),
-              title: Text('Desactivar', style: TextStyle(color: Colors.red)),
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: context.read<DependenceBloc>().add(DesactivarDependenceEvent(dependence.idDependence));
+                context.read<CategoryBloc>().add(ActivateCategoryEvent(category.idCategory));
               },
             ),
           ],
@@ -146,7 +158,10 @@ class _CategoryPageState extends State<CategoryPage> {
   }
 
   void _showFormAddCategory(BuildContext context) {
+    // ← Captura el bloc ANTES de abrir el modal
+    final categoryBloc = context.read<CategoryBloc>();
     final _nombreController = TextEditingController();
+    DependenceModel? _dependenciaSeleccionada;
 
     showModalBottomSheet(
       context: context,
@@ -154,83 +169,214 @@ class _CategoryPageState extends State<CategoryPage> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (_) => Padding(
-        padding: EdgeInsets.only(
-          left: 24,
-          right: 24,
-          top: 24,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  margin: EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              Text(
-                'Nueva Categoria',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              Divider(),
-              SizedBox(height: 8),
-              TextField(
-                controller: _nombreController,
-                decoration: InputDecoration(
-                  labelText: 'Nombre de la Categoria',
-                  prefixIcon: Icon(Icons.business),
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              ),
-              SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  icon: Icon(Icons.save),
-                  label: Text('Guardar Categoria'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF4A6B5A),
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  onPressed: () {
-                    if (_nombreController.text.trim().isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('El nombre es requerido'),
-                          backgroundColor: Colors.red,
+      builder: (modalContext) => BlocProvider(
+        create: (_) =>
+            DependenceBloc(DependenceRepository(DependenceService()))
+              ..add(LoadDependenceEvent()),
+        child: Padding(
+          padding: EdgeInsets.only(
+            left: 24,
+            right: 24,
+            top: 24,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+          ),
+          child: SingleChildScrollView(
+            child: StatefulBuilder(
+              builder: (context, setModalState) {
+                return BlocBuilder<DependenceBloc, DependenceState>(
+                  builder: (context, depState) {
+                    final dependencias = depState is DependenceLoaded
+                        ? depState.dependence
+                              .where((d) => d.idDependence != 7)
+                              .toList()
+                        : <DependenceModel>[];
+
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Handle
+                        Center(
+                          child: Container(
+                            width: 40,
+                            height: 4,
+                            margin: EdgeInsets.only(bottom: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[300],
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
                         ),
-                      );
-                      return;
-                    }
-                    // TODO: context.read<DependenceBloc>().add(CreateDependenceEvent(_nombreController.text.trim()));
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Categoria guardada correctamente'),
-                        backgroundColor: Color(0xFF4A6B5A),
-                      ),
+
+                        Text(
+                          'Nueva Categoría',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Divider(),
+                        SizedBox(height: 8),
+
+                        // Nombre
+                        TextField(
+                          controller: _nombreController,
+                          decoration: InputDecoration(
+                            labelText: 'Nombre de la Categoría',
+                            prefixIcon: Icon(Icons.category_outlined),
+                            filled: true,
+                            fillColor: Colors.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 14),
+
+                        // Dependencia
+                        depState is DependenceLoading
+                            ? Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 14,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: Colors.grey.shade300,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Color(0xFF4A6B5A),
+                                      ),
+                                    ),
+                                    SizedBox(width: 10),
+                                    Text(
+                                      'Cargando dependencias...',
+                                      style: TextStyle(
+                                        color: Colors.grey[500],
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : DropdownButtonFormField<DependenceModel>(
+                                value: _dependenciaSeleccionada,
+                                dropdownColor: Colors.white,
+                                isExpanded: true,
+                                decoration: InputDecoration(
+                                  labelText: 'Dependencia',
+                                  prefixIcon: Icon(
+                                    Icons.business_outlined,
+                                    color: Color(0xFF4A6B5A),
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                selectedItemBuilder: (_) => dependencias
+                                    .map(
+                                      (d) => Text(
+                                        d.nameDependence ?? 'Sin nombre',
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    )
+                                    .toList(),
+                                items: dependencias
+                                    .map(
+                                      (d) => DropdownMenuItem(
+                                        value: d,
+                                        child: Text(
+                                          d.nameDependence ?? 'Sin nombre',
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    )
+                                    .toList(),
+                                onChanged: (v) => setModalState(
+                                  () => _dependenciaSeleccionada = v,
+                                ),
+                              ),
+
+                        SizedBox(height: 20),
+
+                        // Botón guardar
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            icon: Icon(Icons.save),
+                            label: Text('Guardar Categoría'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Color(0xFF4A6B5A),
+                              foregroundColor: Colors.white,
+                              padding: EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            onPressed: () {
+                              if (_nombreController.text.trim().isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('El nombre es requerido'),
+                                    backgroundColor: Colors.red,
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                                return;
+                              }
+                              if (_dependenciaSeleccionada == null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Selecciona una dependencia'),
+                                    backgroundColor: Colors.red,
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                                return;
+                              }
+                              categoryBloc.add(
+                                SaveCategoryEvent(
+                                  CategoryModel(
+                                    nameCategory: _nombreController.text.trim(),
+                                    dependence: DependenceModel(
+                                      idDependence: _dependenciaSeleccionada!
+                                          .idDependence,
+                                    ),
+                                    state: StateModel(id: 1),
+                                  ),
+                                ),
+                              );
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Categoría guardada correctamente',
+                                  ),
+                                  backgroundColor: Color(0xFF4A6B5A),
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                      ],
                     );
                   },
-                ),
-              ),
-            ],
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -284,11 +430,9 @@ class _CategoryPageState extends State<CategoryPage> {
       ),
     );
   }
+
   void _showProfile(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => ProfilePage()),
-    );
+    Navigator.push(context, MaterialPageRoute(builder: (_) => ProfilePage()));
   }
 
   @override
@@ -342,7 +486,21 @@ class _CategoryPageState extends State<CategoryPage> {
         icon: Icon(Icons.add_business),
         label: Text('Nueva Categoria'),
       ),
-      body: BlocBuilder<CategoryBloc, CategoryState>(
+      body: BlocConsumer<CategoryBloc, CategoryState>(
+        listener: (context, state) {
+          if (state is SaveCategoryLoaded) {
+            context.read<CategoryBloc>().add(LoadCategoriesEvent());
+          }
+          if (state is CategoryError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        },
+
         builder: (context, state) {
           if (state is CategoryLoading) {
             return Center(
@@ -353,21 +511,23 @@ class _CategoryPageState extends State<CategoryPage> {
           if (state is CategoryLoaded) {
             final category = state.categories;
 
-          // Construye filtros únicos de dependencia
-          final dependenciasUnicas = category
-              .map((c) => safeStr(c.dependence?.nameDependence))
-              .toSet()
-              .toList();
-          final filtros = ['Todos', ...dependenciasUnicas];
+            // Construye filtros únicos de dependencia
+            final dependenciasUnicas = category
+                .map((c) => safeStr(c.dependence?.nameDependence))
+                .toSet()
+                .toList();
+            final filtros = ['Todos', ...dependenciasUnicas];
 
-          // Aplica filtro
-          final filtradas = _filtroSeleccionado == 'Todos'
-          ? category
-              : category
-              .where((c) =>
-          safeStr(c.dependence?.nameDependence) == _filtroSeleccionado)
-              .toList();
-
+            // Aplica filtro
+            final filtradas = _filtroSeleccionado == 'Todos'
+                ? category
+                : category
+                      .where(
+                        (c) =>
+                            safeStr(c.dependence?.nameDependence) ==
+                            _filtroSeleccionado,
+                      )
+                      .toList();
 
             return Column(
               children: [
@@ -390,7 +550,9 @@ class _CategoryPageState extends State<CategoryPage> {
                             selected: seleccionado,
                             selectedColor: Color(0xFF4A6B5A),
                             labelStyle: TextStyle(
-                              color: seleccionado ? Colors.white : Colors.black87,
+                              color: seleccionado
+                                  ? Colors.white
+                                  : Colors.black87,
                               fontWeight: FontWeight.w500,
                             ),
                             onSelected: (_) {
@@ -410,7 +572,7 @@ class _CategoryPageState extends State<CategoryPage> {
                     alignment: Alignment.centerLeft,
                     child: Text(
                       '${filtradas.length} categoría(s)'
-                          '${_filtroSeleccionado != 'Todos' ? ' en $_filtroSeleccionado' : ' registrada(s)'}',
+                      '${_filtroSeleccionado != 'Todos' ? ' en $_filtroSeleccionado' : ' registrada(s)'}',
                       style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                     ),
                   ),

@@ -104,38 +104,23 @@ class _HomeAdminState extends State<HomeAdmin> {
               },
               items: [
                 BottomNavigationBarItem(
-                  icon: SvgPicture.asset(
-                    'assets/vectors/icons_home.svg',
-                    color: _currentIndex == 0 ? Colors.green : Colors.black,
-                  ),
+                  icon: Icon(Icons.home, color: _currentIndex == 0 ? Colors.green : Colors.black),
                   label: 'Home',
                 ),
                 BottomNavigationBarItem(
-                  icon: SvgPicture.asset(
-                    'assets/vectors/ion_notifications.svg',
-                    color: _currentIndex == 1 ? Colors.green : Colors.black,
-                  ),
+                  icon: Icon(Icons.dashboard, color: _currentIndex == 1 ? Colors.green : Colors.black),
                   label: 'Dashboard',
                 ),
                 BottomNavigationBarItem(
-                  icon: SvgPicture.asset(
-                    'assets/vectors/ion_chatbox-ellipses-outline.svg',
-                    color: _currentIndex == 2 ? Colors.green : Colors.black,
-                  ),
+                  icon: Icon(Icons.people, color: _currentIndex == 2 ? Colors.green : Colors.black),
                   label: 'Users',
                 ),
                 BottomNavigationBarItem(
-                  icon: SvgPicture.asset(
-                    'assets/vectors/ion_chatbox-ellipses-outline.svg',
-                    color: _currentIndex == 3 ? Colors.green : Colors.black,
-                  ),
+                  icon: Icon(Icons.account_tree, color: _currentIndex == 3 ? Colors.green : Colors.black),
                   label: 'Dependence',
                 ),
                 BottomNavigationBarItem(
-                  icon: SvgPicture.asset(
-                    'assets/vectors/ion_chatbox-ellipses-outline.svg',
-                    color: _currentIndex == 4 ? Colors.green : Colors.black,
-                  ),
+                  icon: Icon(Icons.category, color: _currentIndex == 4 ? Colors.green : Colors.black),
                   label: 'Category',
                 ),
               ],

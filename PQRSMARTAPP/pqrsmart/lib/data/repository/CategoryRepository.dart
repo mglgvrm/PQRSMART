@@ -8,4 +8,13 @@ class CategoryRepository {
   Future<List<CategoryModel>> getCategories() {
     return service.getCategories();
   }
+  Future<CategoryModel> saveCategory(CategoryModel category){
+    return service.saveCategory(category);
+  }
+  Future<CategoryModel> activateCategory(int id){
+    return service.activateCategory(id);
+  }
+  Future<CategoryModel> cancelCategory(int id){
+    return service.cancelCategory(id);
+  }
 }

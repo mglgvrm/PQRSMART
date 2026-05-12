@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -35,6 +36,13 @@ public class ChatServiceImpl implements ChatService {
 
     @Value("${groq.api-key}")
     private String apiKey;
+
+    WebClient webClient = WebClient.builder()
+            .baseUrl("https://api.groq.com/openai/v1")
+            .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
+            .defaultHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+            .build();
+
     public String preguntarIA(String mensaje) {
         RestTemplate restTemplate = new RestTemplate();
         String prompt = """
@@ -115,11 +123,7 @@ return "";
     public String chat(ChatRequest request) {
         try {
 
-            WebClient webClient = WebClient.builder()
-                    .baseUrl("https://api.groq.com/openai/v1")
-                    .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
-                    .defaultHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-                    .build();
+
 
             List<Map<String, String>> messages = new ArrayList<>();
 
@@ -187,5 +191,6 @@ return "";
         int max = 1000; // caracteres
         return text.length() > max ? text.substring(0, max) : text;
     }
+
 
 }
