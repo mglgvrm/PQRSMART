@@ -32,10 +32,16 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       await service.activarUsuario(event.id);
       add(GetUsuariosEvent()); // refresca lista
     });
-
+*/
     on<DesactivarUsuarioEvent>((event, emit) async {
-      await service.desactivarUsuario(event.id);
-      add(GetUsuariosEvent());
-    });*/
+      try{
+        final user = await userRepository.cancelUser(event.id);
+        emit(CancelUserLoaded(user));
+      } catch (e) {
+        emit(UserError('Error al guardar usuario'));
+      }
+
+
+    });
   }
 }

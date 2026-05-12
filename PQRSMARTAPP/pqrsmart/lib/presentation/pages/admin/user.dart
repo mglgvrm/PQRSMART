@@ -17,7 +17,13 @@ class User extends StatefulWidget {
 
 class _UserState extends State<User> {
   String _filtroSeleccionado = 'Todos';
-  final List<String> _filtros = ['Todos', 'Administradores', 'Funcionarios', 'Usuarios', 'Inactivos'];
+  final List<String> _filtros = [
+    'Todos',
+    'Administradores',
+    'Funcionarios',
+    'Usuarios',
+    'Inactivos',
+  ];
 
   String safeStr(dynamic value, [String fallback = 'No disponible']) {
     if (value == null) return fallback;
@@ -27,10 +33,14 @@ class _UserState extends State<User> {
   // Mapea el rol del backend al texto visible
   String _rolLegible(String role) {
     switch (role.toUpperCase()) {
-      case 'ADMIN':   return 'Administrador';
-      case 'SECRE':   return 'Funcionarios';
-      case 'USER':    return 'Usuario';
-      default:        return role;
+      case 'ADMIN':
+        return 'Administrador';
+      case 'SECRE':
+        return 'Funcionarios';
+      case 'USER':
+        return 'Usuario';
+      default:
+        return role;
     }
   }
 
@@ -38,13 +48,21 @@ class _UserState extends State<User> {
   List<dynamic> _aplicarFiltro(List<dynamic> users) {
     switch (_filtroSeleccionado) {
       case 'Administradores':
-        return users.where((u) => safeStr(u.role).toUpperCase() == 'ADMIN').toList();
+        return users
+            .where((u) => safeStr(u.role).toUpperCase() == 'ADMIN')
+            .toList();
       case 'Funcionarios':
-        return users.where((u) =>  safeStr(u.role).toUpperCase() == 'SECRE').toList();
+        return users
+            .where((u) => safeStr(u.role).toUpperCase() == 'SECRE')
+            .toList();
       case 'Usuarios':
-        return users.where((u) => safeStr(u.role).toUpperCase() == 'USER').toList();
-        case 'Inactivos':
-        return users.where((u) => safeStr(u.stateUser?.state).toUpperCase() != 'ACTIVO').toList();
+        return users
+            .where((u) => safeStr(u.role).toUpperCase() == 'USER')
+            .toList();
+      case 'Inactivos':
+        return users
+            .where((u) => safeStr(u.stateUser?.state).toUpperCase() != 'ACTIVO')
+            .toList();
       default:
         return users;
     }
@@ -53,10 +71,16 @@ class _UserState extends State<User> {
   // Estadísticas del resumen
   Map<String, int> _estadisticas(List<dynamic> users) {
     return {
-      'total':          users.length,
-      'administradores': users.where((u) => safeStr(u.role).toUpperCase() == 'ADMIN').length,
-      'usuarios':   users.where((u) => safeStr(u.role).toUpperCase() == 'USER').length,
-      'funcionarios':    users.where((u) => safeStr(u.role).toUpperCase() == 'SECRE').length,
+      'total': users.length,
+      'administradores': users
+          .where((u) => safeStr(u.role).toUpperCase() == 'ADMIN')
+          .length,
+      'usuarios': users
+          .where((u) => safeStr(u.role).toUpperCase() == 'USER')
+          .length,
+      'funcionarios': users
+          .where((u) => safeStr(u.role).toUpperCase() == 'SECRE')
+          .length,
     };
   }
 
@@ -75,7 +99,8 @@ class _UserState extends State<User> {
           children: [
             Center(
               child: Container(
-                width: 40, height: 4,
+                width: 40,
+                height: 4,
                 margin: EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
                   color: Colors.grey[300],
@@ -88,23 +113,43 @@ class _UserState extends State<User> {
                 radius: 36,
                 backgroundColor: Color(0xFF4A6B5A).withOpacity(0.15),
                 child: Text(
-                  safeStr(user.name).isNotEmpty ? safeStr(user.name)[0].toUpperCase() : '?',
+                  safeStr(user.name).isNotEmpty
+                      ? safeStr(user.name)[0].toUpperCase()
+                      : '?',
                   style: TextStyle(fontSize: 28, color: Color(0xFF4A6B5A)),
                 ),
               ),
             ),
             SizedBox(height: 16),
-            Text('Información del Usuario',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(
+              'Información del Usuario',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             Divider(),
-            _infoFila(Icons.person,         'Nombre',        '${safeStr(user.name)} ${safeStr(user.lastName)}'),
-            _infoFila(Icons.email,          'Email',          safeStr(user.email)),
-            _infoFila(Icons.account_circle, 'Usuario',        safeStr(user.user)),
-            _infoFila(Icons.phone,          'Número',         safeStr(user.number)),
-            _infoFila(Icons.badge,          'Identificación', safeStr(user.identificationNumber)),
-            _infoFila(Icons.security,       'Rol',            _rolLegible(safeStr(user.role))),
-            _infoFila(Icons.toggle_on,      'Estado',         safeStr(user.stateUser?.state)),
-            _infoFila(Icons.business,       'Dependencia',    safeStr(user.dependence?.nameDependence)),
+            _infoFila(
+              Icons.person,
+              'Nombre',
+              '${safeStr(user.name)} ${safeStr(user.lastName)}',
+            ),
+            _infoFila(Icons.email, 'Email', safeStr(user.email)),
+            _infoFila(Icons.account_circle, 'Usuario', safeStr(user.user)),
+            _infoFila(Icons.phone, 'Número', safeStr(user.number)),
+            _infoFila(
+              Icons.badge,
+              'Identificación',
+              safeStr(user.identificationNumber),
+            ),
+            _infoFila(Icons.security, 'Rol', _rolLegible(safeStr(user.role))),
+            _infoFila(
+              Icons.toggle_on,
+              'Estado',
+              safeStr(user.stateUser?.state),
+            ),
+            _infoFila(
+              Icons.business,
+              'Dependencia',
+              safeStr(user.dependence?.nameDependence),
+            ),
             SizedBox(height: 16),
           ],
         ),
@@ -124,7 +169,8 @@ class _UserState extends State<User> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 40, height: 4,
+              width: 40,
+              height: 4,
               margin: EdgeInsets.only(bottom: 12),
               decoration: BoxDecoration(
                 color: Colors.grey[300],
@@ -132,7 +178,10 @@ class _UserState extends State<User> {
               ),
             ),
             ListTile(
-              leading: Icon(Icons.remove_red_eye_outlined, color: Color(0xFF4A6B5A)),
+              leading: Icon(
+                Icons.remove_red_eye_outlined,
+                color: Color(0xFF4A6B5A),
+              ),
               title: Text('Ver perfil'),
               onTap: () {
                 Navigator.pop(context);
@@ -157,14 +206,21 @@ class _UserState extends State<User> {
             ),
             ListTile(
               leading: Icon(Icons.power_settings_new, color: Colors.orange),
-              title: Text('Desactivar usuario',
-                  style: TextStyle(color: Colors.orange)),
+              title: Text(
+                'Desactivar usuario',
+                style: TextStyle(color: Colors.orange),
+              ),
               onTap: () {
                 Navigator.pop(context);
-                /* context.read<UserBloc>().add(DesactivarUsuarioEvent(user.id)); */
+                context.read<UserBloc>().add(DesactivarUsuarioEvent(user.id));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Usuario desactivado'),
+                    backgroundColor: Color(0xFF4A6B5A),
+                  ),
+                );
               },
             ),
-
           ],
         ),
       ),
@@ -240,11 +296,9 @@ class _UserState extends State<User> {
       ),
     );
   }
+
   void _showProfile(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => ProfilePage()),
-    );
+    Navigator.push(context, MaterialPageRoute(builder: (_) => ProfilePage()));
   }
 
   @override
@@ -297,19 +351,23 @@ class _UserState extends State<User> {
         icon: Icon(Icons.person_add),
         label: Text('Nuevo Usuario'),
       ),
-      body: BlocBuilder<UserBloc, UserState>(
+      body: BlocConsumer<UserBloc, UserState>(
+        listener: (context, state) {
+          if (state is CancelUserLoaded){
+            context.read<UserBloc>().add(GetUserEvent());
+          }
+        },
         builder: (context, state) {
           if (state is UserLoading) {
             return Center(child: CircularProgressIndicator());
           }
 
           if (state is UserLoaded) {
-            final stats    = _estadisticas(state.user);
+            final stats = _estadisticas(state.user);
             final filtered = _aplicarFiltro(state.user);
 
             return Column(
               children: [
-
                 // ── Chips de filtro ──────────────────────────────────
                 Container(
                   color: Colors.white,
@@ -326,7 +384,9 @@ class _UserState extends State<User> {
                             selected: seleccionado,
                             selectedColor: Color(0xFF4A6B5A),
                             labelStyle: TextStyle(
-                              color: seleccionado ? Colors.white : Colors.black87,
+                              color: seleccionado
+                                  ? Colors.white
+                                  : Colors.black87,
                               fontWeight: FontWeight.w500,
                             ),
                             onSelected: (_) {
@@ -345,9 +405,9 @@ class _UserState extends State<User> {
                   padding: EdgeInsets.only(left: 16, right: 16, bottom: 10),
                   child: Text(
                     '${stats['total']} usuarios encontrados  •  '
-                        'Administradores: ${stats['administradores']}  •  '
-                        'Funcionarios: ${stats['funcionarios']} • '
-                        'Usuarios: ${stats['usuarios']} • ',
+                    'Administradores: ${stats['administradores']}  •  '
+                    'Funcionarios: ${stats['funcionarios']} • '
+                    'Usuarios: ${stats['usuarios']} • ',
                     style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                   ),
                 ),
@@ -358,152 +418,188 @@ class _UserState extends State<User> {
                 Expanded(
                   child: filtered.isEmpty
                       ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.search_off, size: 64, color: Colors.grey[400]),
-                        SizedBox(height: 12),
-                        Text('No se encontraron usuarios',
-                            style: TextStyle(color: Colors.grey[500])),
-                      ],
-                    ),
-                  )
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.search_off,
+                                size: 64,
+                                color: Colors.grey[400],
+                              ),
+                              SizedBox(height: 12),
+                              Text(
+                                'No se encontraron usuarios',
+                                style: TextStyle(color: Colors.grey[500]),
+                              ),
+                            ],
+                          ),
+                        )
                       : ListView.separated(
-                    itemCount: filtered.length,
-                    separatorBuilder: (_, __) => Divider(height: 1),
-                    itemBuilder: (context, index) {
-                      final user = filtered[index];
-                      final activo = safeStr(user.stateUser?.state).toUpperCase() == 'ACTIVO';
+                          itemCount: filtered.length,
+                          separatorBuilder: (_, __) => Divider(height: 1),
+                          itemBuilder: (context, index) {
+                            final user = filtered[index];
+                            final activo =
+                                safeStr(user.stateUser?.state).toUpperCase() ==
+                                'ACTIVO';
 
-                      return Container(
-                        color: Colors.white,
-                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        child: Row(
-                          children: [
-
-                            // Avatar con punto de estado
-                            Stack(
-                              children: [
-                                CircleAvatar(
-                                  radius: 26,
-                                  backgroundColor: Color(0xFF4A6B5A).withOpacity(0.15),
-                                  child: Text(
-                                    safeStr(user.name).isNotEmpty
-                                        ? safeStr(user.name)[0].toUpperCase()
-                                        : '?',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      color: Color(0xFF4A6B5A),
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                Positioned(
-                                  bottom: 0,
-                                  right: 0,
-                                  child: Container(
-                                    width: 12,
-                                    height: 12,
-                                    decoration: BoxDecoration(
-                                      color: activo ? Colors.green : Colors.red,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(color: Colors.white, width: 2),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                            SizedBox(width: 12),
-
-                            // Info principal
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                            return Container(
+                              color: Colors.white,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                              child: Row(
                                 children: [
-                                  Text(
-                                    '${safeStr(user.name)} ${safeStr(user.lastName)}',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                  SizedBox(height: 2),
-                                  Text(
-                                    safeStr(user.email),
-                                    style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                  SizedBox(height: 4),
-                                  Row(
+                                  // Avatar con punto de estado
+                                  Stack(
                                     children: [
-                                      Icon(Icons.shield_outlined,
-                                          size: 13, color: Color(0xFF4A6B5A)),
-                                      SizedBox(width: 4),
-                                      Text(
-                                        'Rol: ${_rolLegible(safeStr(user.role))}',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Color(0xFF4A6B5A),
+                                      CircleAvatar(
+                                        radius: 26,
+                                        backgroundColor: Color(
+                                          0xFF4A6B5A,
+                                        ).withOpacity(0.15),
+                                        child: Text(
+                                          safeStr(user.name).isNotEmpty
+                                              ? safeStr(
+                                                  user.name,
+                                                )[0].toUpperCase()
+                                              : '?',
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            color: Color(0xFF4A6B5A),
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      Positioned(
+                                        bottom: 0,
+                                        right: 0,
+                                        child: Container(
+                                          width: 12,
+                                          height: 12,
+                                          decoration: BoxDecoration(
+                                            color: activo
+                                                ? Colors.green
+                                                : Colors.red,
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: Colors.white,
+                                              width: 2,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+
+                                  SizedBox(width: 12),
+
+                                  // Info principal
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          '${safeStr(user.name)} ${safeStr(user.lastName)}',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                        SizedBox(height: 2),
+                                        Text(
+                                          safeStr(user.email),
+                                          style: TextStyle(
+                                            color: Colors.grey[600],
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                        SizedBox(height: 4),
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Icons.shield_outlined,
+                                              size: 13,
+                                              color: Color(0xFF4A6B5A),
+                                            ),
+                                            SizedBox(width: 4),
+                                            Text(
+                                              'Rol: ${_rolLegible(safeStr(user.role))}',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: Color(0xFF4A6B5A),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+
+                                  // Badge estado + menú
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      // Badge activo/inactivo
+                                      Container(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 3,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: activo
+                                              ? Colors.green.withOpacity(0.1)
+                                              : Colors.red.withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Container(
+                                              width: 6,
+                                              height: 6,
+                                              decoration: BoxDecoration(
+                                                color: activo
+                                                    ? Colors.green
+                                                    : Colors.red,
+                                                shape: BoxShape.circle,
+                                              ),
+                                            ),
+                                            SizedBox(width: 4),
+                                            Text(
+                                              activo ? 'Activo' : 'Inactivo',
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                color: activo
+                                                    ? Colors.green
+                                                    : Colors.red,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      SizedBox(height: 6),
+                                      // Botón menú (···)
+                                      GestureDetector(
+                                        onTap: () =>
+                                            _showMenuOption(context, user),
+                                        child: Icon(
+                                          Icons.more_horiz,
+                                          color: Colors.grey[500],
                                         ),
                                       ),
                                     ],
                                   ),
                                 ],
                               ),
-                            ),
-
-                            // Badge estado + menú
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                // Badge activo/inactivo
-                                Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                  decoration: BoxDecoration(
-                                    color: activo
-                                        ? Colors.green.withOpacity(0.1)
-                                        : Colors.red.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Container(
-                                        width: 6, height: 6,
-                                        decoration: BoxDecoration(
-                                          color: activo ? Colors.green : Colors.red,
-                                          shape: BoxShape.circle,
-                                        ),
-                                      ),
-                                      SizedBox(width: 4),
-                                      Text(
-                                        activo ? 'Activo' : 'Inactivo',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: activo ? Colors.green : Colors.red,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                SizedBox(height: 6),
-                                // Botón menú (···)
-                                GestureDetector(
-                                  onTap: () => _showMenuOption(context, user),
-                                  child: Icon(Icons.more_horiz,
-                                      color: Colors.grey[500]),
-                                ),
-                              ],
-                            ),
-                          ],
+                            );
+                          },
                         ),
-                      );
-                    },
-                  ),
                 ),
               ],
             );

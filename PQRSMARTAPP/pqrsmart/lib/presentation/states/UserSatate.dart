@@ -19,3 +19,9 @@ class UserError extends UserState {
   final String message;
   UserError(this.message);
 }
+
+class CancelUserLoaded extends UserState {
+  final UserModel userModel;
+
+  CancelUserLoaded(this.userModel);
+}

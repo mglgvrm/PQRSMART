@@ -17,5 +17,42 @@ class DependenceBloc extends Bloc<DependenceEvent, DependenceState> {
         emit(DependenceError('Error al cargar dependencias'));
       }
     });
+
+    on<SaveDependenceEvent>((event, emit) async {
+      emit(DependenceLoading());
+
+      try {
+        final dependence = await repository.saveDependence(event.dependence);
+
+        emit(SaveDependenceLoaded(dependence));
+      } catch (e) {
+        emit(DependenceError('Error al guardar dependencia'));
+      }
+    });
+    on<ActivateDependenceEvent>((event, emit) async {
+      emit(DependenceLoading());
+
+      try {
+        final dependence = await repository.activateDependence(event.id);
+
+        emit(ActivateDependenceLoaded(dependence));
+      } catch (e) {
+        emit(DependenceError('Error al guardar dependencia'));
+      }
+    });
+    on<CancelDependenceEvent>((event, emit) async {
+      emit(DependenceLoading());
+
+      try {
+        final dependence = await repository.cancelDependence(event.id);
+
+        emit(CancelDependenceLoaded(dependence));
+      } catch (e) {
+        emit(DependenceError('Error al guardar dependencia'));
+      }
+    });
   }
+
+
+
 }

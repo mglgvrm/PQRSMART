@@ -48,4 +48,33 @@ class UserService {
       throw Exception("Error en al obtener usuarios");
     }
   }
+  Future<UserModel> cancelUser(
+      int id
+      ) async {
+    final token = await storage.getToken();
+
+    final response = await http.patch(
+      Uri.parse('${ApiConstants.baseUrl}/Usuario/cancel/$id'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (kDebugMode) {
+      print("el response ${response.body}");
+    }
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final Map<String, dynamic> data = jsonDecode(response.body);
+
+      if (kDebugMode) {
+        print('Response Usuario: $data');
+      }
+
+      return UserModel.fromJson(data);
+    } else {
+      throw Exception('Error al guardar Usuario: ${response.statusCode}');
+    }
+  }
 }

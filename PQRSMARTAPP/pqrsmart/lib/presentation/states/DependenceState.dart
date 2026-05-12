@@ -14,3 +14,21 @@ class DependenceError    extends DependenceState {
   final String message;
   DependenceError(this.message);
 }
+
+class SaveDependenceLoaded extends DependenceState {
+  final DependenceModel dependence;
+
+  SaveDependenceLoaded(this.dependence);
+}
+
+class ActivateDependenceLoaded extends DependenceState {
+  final DependenceModel dependence;
+
+  ActivateDependenceLoaded(this.dependence);
+}
+
+class CancelDependenceLoaded extends DependenceState {
+  final DependenceModel dependence;
+
+  CancelDependenceLoaded(this.dependence);
+}
