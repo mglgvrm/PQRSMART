@@ -40,4 +40,36 @@ class ChatBoxService {
       throw Exception('Error al enviar mensaje: ${response.statusCode}');
     }
   }
+
+  Future<String> chatBoxUser(String message) async {
+    final token = await _storage.getToken();
+
+
+    final uri = Uri.parse('${ApiConstants.baseUrl}/chat/user')
+        .replace(queryParameters: {
+      'message': message,
+    });
+
+    final response = await http.get(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      // El backend devuelve texto plano — igual que la web
+      final rawText = response.body;
+
+      // Misma limpieza que hace la web
+      final textoLimpio = rawText
+          .replaceAll(RegExp(r'(\*\*|__|--|\*)'), '\n')
+          .trim();
+
+      return textoLimpio;
+    } else {
+      throw Exception('Error al enviar mensaje: ${response.statusCode}');
+    }
+  }
 }

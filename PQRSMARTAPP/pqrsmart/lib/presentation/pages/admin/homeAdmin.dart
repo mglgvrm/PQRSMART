@@ -6,9 +6,11 @@ import 'package:pqrsmart/data/repository/CategoryRepository.dart';
 import 'package:pqrsmart/data/repository/DependenceRepository.dart';
 import 'package:pqrsmart/data/repository/UserRepository.dart';
 import 'package:pqrsmart/data/services/CategoryService.dart';
+import 'package:pqrsmart/data/services/ChatBoxService.dart';
 import 'package:pqrsmart/data/services/DependenceService.dart';
 import 'package:pqrsmart/data/services/UserService.dart';
 import 'package:pqrsmart/presentation/blocs/CategoryBloc.dart';
+import 'package:pqrsmart/presentation/blocs/ChatBoxBloc.dart';
 import 'package:pqrsmart/presentation/blocs/DependenceBloc.dart';
 import 'package:pqrsmart/presentation/blocs/UserBloc.dart';
 import 'package:pqrsmart/presentation/pages/admin/Category.dart';
@@ -17,8 +19,11 @@ import 'package:pqrsmart/presentation/pages/admin/dashboard.dart';
 import 'package:pqrsmart/presentation/pages/admin/home.dart';
 import 'package:pqrsmart/presentation/pages/admin/user.dart';
 import 'package:pqrsmart/presentation/states/CategoryEvent.dart';
+import 'package:pqrsmart/presentation/states/ChatBoxEvent.dart';
 import 'package:pqrsmart/presentation/states/DependenceEvent.dart';
 import 'package:pqrsmart/presentation/states/UserEvent.dart';
+
+import '../../../data/repository/ChatBoxRepository.dart';
 
 class HomeAdmin extends StatefulWidget {
   const HomeAdmin({Key? key}) : super(key: key);
@@ -65,7 +70,11 @@ class _HomeAdminState extends State<HomeAdmin> {
         ),
         BlocProvider<CategoryBloc>(
             create: (_) => CategoryBloc(CategoryRepository(CategoryService()))
-              ..add(LoadCategoriesEvent())),
+              ..add(LoadCategoriesEvent())
+    ),
+        BlocProvider<ChatBoxBloc>(
+          create: (_) => ChatBoxBloc()..add(LoadChatBoxUser()),
+        ),
 
       ],
       child: WillPopScope(

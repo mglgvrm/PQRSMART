@@ -8,4 +8,7 @@ class ChatBoxRepository {
   Future<String> sendMessage(List<ChatBoxModel> messages) {
     return chatBoxService.sendMessage(messages);
   }
+  Future<String> chatBoxUser(String message){
+    return chatBoxUser(message);
+  }
 }

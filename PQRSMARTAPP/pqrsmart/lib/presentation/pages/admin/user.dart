@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pqrsmart/presentation/blocs/ChatBoxBloc.dart';
 import 'package:pqrsmart/presentation/blocs/UserBloc.dart';
 import 'package:pqrsmart/presentation/blocs/auth_bloc.dart';
 import 'package:pqrsmart/presentation/pages/ProfilePage.dart';
 import 'package:pqrsmart/presentation/pages/admin/register/RegisterAdminPage.dart';
+import 'package:pqrsmart/presentation/states/ChatBoxEvent.dart';
+import 'package:pqrsmart/presentation/states/ChatBoxState.dart';
 import 'package:pqrsmart/presentation/states/UserEvent.dart';
 import 'package:pqrsmart/presentation/states/UserSatate.dart';
 import 'package:pqrsmart/presentation/states/auth_event.dart';
@@ -25,12 +28,22 @@ class _UserState extends State<User> {
     'Inactivos',
   ];
 
+  bool _chatAbierto = false;
+  final TextEditingController _chatController = TextEditingController();
+  final ScrollController _chatScrollController = ScrollController();
+
+  void _enviarMensaje() {
+    final texto = _chatController.text.trim();
+    if (texto.isEmpty) return;
+    context.read<ChatBoxBloc>().add(SendMessageChatBoxUser(texto));
+    _chatController.clear();
+  }
+
   String safeStr(dynamic value, [String fallback = 'No disponible']) {
     if (value == null) return fallback;
     return value.toString();
   }
 
-  // Mapea el rol del backend al texto visible
   String _rolLegible(String role) {
     switch (role.toUpperCase()) {
       case 'ADMIN':
@@ -44,21 +57,14 @@ class _UserState extends State<User> {
     }
   }
 
-  // Filtra la lista según el chip seleccionado
   List<dynamic> _aplicarFiltro(List<dynamic> users) {
     switch (_filtroSeleccionado) {
       case 'Administradores':
-        return users
-            .where((u) => safeStr(u.role).toUpperCase() == 'ADMIN')
-            .toList();
+        return users.where((u) => safeStr(u.role).toUpperCase() == 'ADMIN').toList();
       case 'Funcionarios':
-        return users
-            .where((u) => safeStr(u.role).toUpperCase() == 'SECRE')
-            .toList();
+        return users.where((u) => safeStr(u.role).toUpperCase() == 'SECRE').toList();
       case 'Usuarios':
-        return users
-            .where((u) => safeStr(u.role).toUpperCase() == 'USER')
-            .toList();
+        return users.where((u) => safeStr(u.role).toUpperCase() == 'USER').toList();
       case 'Inactivos':
         return users
             .where((u) => safeStr(u.stateUser?.state).toUpperCase() != 'ACTIVO')
@@ -68,19 +74,12 @@ class _UserState extends State<User> {
     }
   }
 
-  // Estadísticas del resumen
   Map<String, int> _estadisticas(List<dynamic> users) {
     return {
       'total': users.length,
-      'administradores': users
-          .where((u) => safeStr(u.role).toUpperCase() == 'ADMIN')
-          .length,
-      'usuarios': users
-          .where((u) => safeStr(u.role).toUpperCase() == 'USER')
-          .length,
-      'funcionarios': users
-          .where((u) => safeStr(u.role).toUpperCase() == 'SECRE')
-          .length,
+      'administradores': users.where((u) => safeStr(u.role).toUpperCase() == 'ADMIN').length,
+      'usuarios': users.where((u) => safeStr(u.role).toUpperCase() == 'USER').length,
+      'funcionarios': users.where((u) => safeStr(u.role).toUpperCase() == 'SECRE').length,
     };
   }
 
@@ -126,30 +125,14 @@ class _UserState extends State<User> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             Divider(),
-            _infoFila(
-              Icons.person,
-              'Nombre',
-              '${safeStr(user.name)} ${safeStr(user.lastName)}',
-            ),
+            _infoFila(Icons.person, 'Nombre', '${safeStr(user.name)} ${safeStr(user.lastName)}'),
             _infoFila(Icons.email, 'Email', safeStr(user.email)),
             _infoFila(Icons.account_circle, 'Usuario', safeStr(user.user)),
             _infoFila(Icons.phone, 'Número', safeStr(user.number)),
-            _infoFila(
-              Icons.badge,
-              'Identificación',
-              safeStr(user.identificationNumber),
-            ),
+            _infoFila(Icons.badge, 'Identificación', safeStr(user.identificationNumber)),
             _infoFila(Icons.security, 'Rol', _rolLegible(safeStr(user.role))),
-            _infoFila(
-              Icons.toggle_on,
-              'Estado',
-              safeStr(user.stateUser?.state),
-            ),
-            _infoFila(
-              Icons.business,
-              'Dependencia',
-              safeStr(user.dependence?.nameDependence),
-            ),
+            _infoFila(Icons.toggle_on, 'Estado', safeStr(user.stateUser?.state)),
+            _infoFila(Icons.business, 'Dependencia', safeStr(user.dependence?.nameDependence)),
             SizedBox(height: 16),
           ],
         ),
@@ -178,10 +161,7 @@ class _UserState extends State<User> {
               ),
             ),
             ListTile(
-              leading: Icon(
-                Icons.remove_red_eye_outlined,
-                color: Color(0xFF4A6B5A),
-              ),
+              leading: Icon(Icons.remove_red_eye_outlined, color: Color(0xFF4A6B5A)),
               title: Text('Ver perfil'),
               onTap: () {
                 Navigator.pop(context);
@@ -189,11 +169,17 @@ class _UserState extends State<User> {
               },
             ),
             ListTile(
+              leading: Icon(Icons.chat_bubble_outline, color: Color(0xFF4A6B5A)),
+              title: Text('Enviar mensaje'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
               leading: Icon(Icons.edit_outlined, color: Color(0xFF4A6B5A)),
               title: Text('Editar usuario'),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: navegar a editar usuario
               },
             ),
             ListTile(
@@ -201,15 +187,11 @@ class _UserState extends State<User> {
               title: Text('Cambiar rol'),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: cambiar rol
               },
             ),
             ListTile(
               leading: Icon(Icons.power_settings_new, color: Colors.orange),
-              title: Text(
-                'Desactivar usuario',
-                style: TextStyle(color: Colors.orange),
-              ),
+              title: Text('Desactivar usuario', style: TextStyle(color: Colors.orange)),
               onTap: () {
                 Navigator.pop(context);
                 context.read<UserBloc>().add(DesactivarUsuarioEvent(user.id));
@@ -243,8 +225,6 @@ class _UserState extends State<User> {
         ),
       ),
     ).then((_) {
-      // ← Se ejecuta cuando se cierra el modal
-      // Recarga la lista de usuarios
       context.read<UserBloc>().add(GetUserEvent());
     });
   }
@@ -301,6 +281,261 @@ class _UserState extends State<User> {
     Navigator.push(context, MaterialPageRoute(builder: (_) => ProfilePage()));
   }
 
+  void _scrollAlFinal() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_chatScrollController.hasClients) {
+        _chatScrollController.animateTo(
+          _chatScrollController.position.maxScrollExtent,
+          duration: Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  Widget _buildChatDesplegable() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        if (_chatAbierto)
+          BlocBuilder<ChatBoxBloc, ChatBoxState>(
+            builder: (context, state) {
+              final mensajes = state is ChatBoxUserLoaded
+                  ? state.messages
+                  : state is ChatBoxSending
+                  ? state.messages
+                  : <dynamic>[];
+
+              final enviando = state is ChatBoxSending;
+
+              if (mensajes.isNotEmpty) _scrollAlFinal();
+
+              return Container(
+                width: 300,
+                height: 380,
+                margin: EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.15),
+                      blurRadius: 12,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    // ── Header ──────────────────────────────────────
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Color(0xFF4A6B5A),
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.smart_toy_outlined, color: Colors.white, size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            'Asistente IA',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15,
+                            ),
+                          ),
+                          Spacer(),
+                          GestureDetector(
+                            onTap: () => setState(() => _chatAbierto = false),
+                            child: Icon(Icons.close, color: Colors.white, size: 20),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // ── Mensajes ─────────────────────────────────────
+                    Expanded(
+                      child: mensajes.isEmpty
+                          ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.smart_toy_outlined,
+                              size: 40,
+                              color: Color(0xFF4A6B5A).withOpacity(0.4),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              '¡Hola! ¿En qué te puedo ayudar?',
+                              style: TextStyle(color: Colors.grey[500], fontSize: 13),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      )
+                          : ListView.builder(
+                        controller: _chatScrollController,
+                        padding: EdgeInsets.all(12),
+                        itemCount: mensajes.length + (enviando ? 1 : 0),
+                        itemBuilder: (context, index) {
+                          // Burbuja typing al final
+                          if (enviando && index == mensajes.length) {
+                            return Align(
+                              alignment: Alignment.centerLeft,
+                              child: Container(
+                                margin: EdgeInsets.only(bottom: 8),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[100],
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    _TypingDot(delay: 0),
+                                    SizedBox(width: 4),
+                                    _TypingDot(delay: 200),
+                                    SizedBox(width: 4),
+                                    _TypingDot(delay: 400),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }
+
+                          final msg = mensajes[index];
+                          final esUsuario = msg.role == 'user';
+
+                          return Align(
+                            alignment: esUsuario
+                                ? Alignment.centerRight
+                                : Alignment.centerLeft,
+                            child: Container(
+                              margin: EdgeInsets.only(bottom: 8),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
+                              constraints: BoxConstraints(maxWidth: 220),
+                              decoration: BoxDecoration(
+                                color: esUsuario
+                                    ? Color(0xFF4A6B5A)
+                                    : Colors.grey[100],
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                msg.content,
+                                style: TextStyle(
+                                  color: esUsuario
+                                      ? Colors.white
+                                      : Colors.black87,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+
+                    // ── Input ────────────────────────────────────────
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          top: BorderSide(color: Colors.grey[200]!, width: 1),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _chatController,
+                              enabled: !enviando,
+                              style: TextStyle(fontSize: 13),
+                              decoration: InputDecoration(
+                                hintText: enviando
+                                    ? 'Esperando respuesta...'
+                                    : 'Escribe un mensaje...',
+                                hintStyle: TextStyle(fontSize: 13),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                  borderSide: BorderSide(color: Colors.grey[300]!),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                  borderSide: BorderSide(color: Colors.grey[300]!),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                  borderSide: BorderSide(color: Color(0xFF4A6B5A)),
+                                ),
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
+                                isDense: true,
+                              ),
+                              onSubmitted: enviando ? null : (_) => _enviarMensaje(),
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: enviando ? null : _enviarMensaje,
+                            child: Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: enviando
+                                    ? Colors.grey[400]
+                                    : Color(0xFF4A6B5A),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(Icons.send, color: Colors.white, size: 18),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+
+        // ── FABs ──────────────────────────────────────────────────
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            FloatingActionButton(
+              heroTag: 'chat',
+              onPressed: () {
+                setState(() => _chatAbierto = !_chatAbierto);
+                if (!_chatAbierto) {
+                  context.read<ChatBoxBloc>().add(LoadChatBox());
+                }
+              },
+              backgroundColor: Color(0xFF4A6B5A),
+              foregroundColor: Colors.white,
+              shape: CircleBorder(),
+              child: Icon(Icons.smart_toy_outlined),
+            ),
+            SizedBox(height: 10),
+            FloatingActionButton(
+              heroTag: 'nuevo_usuario',
+              onPressed: () => _showViewFormAddUser(context),
+              backgroundColor: Color(0xFF4A6B5A),
+              foregroundColor: Colors.white,
+              child: Icon(Icons.person_add),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -344,16 +579,10 @@ class _UserState extends State<User> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showViewFormAddUser(context),
-        backgroundColor: Color(0xFF4A6B5A),
-        foregroundColor: Colors.white,
-        icon: Icon(Icons.person_add),
-        label: Text('Nuevo Usuario'),
-      ),
+      floatingActionButton: _buildChatDesplegable(),
       body: BlocConsumer<UserBloc, UserState>(
         listener: (context, state) {
-          if (state is CancelUserLoaded){
+          if (state is CancelUserLoaded) {
             context.read<UserBloc>().add(GetUserEvent());
           }
         },
@@ -384,9 +613,7 @@ class _UserState extends State<User> {
                             selected: seleccionado,
                             selectedColor: Color(0xFF4A6B5A),
                             labelStyle: TextStyle(
-                              color: seleccionado
-                                  ? Colors.white
-                                  : Colors.black87,
+                              color: seleccionado ? Colors.white : Colors.black87,
                               fontWeight: FontWeight.w500,
                             ),
                             onSelected: (_) {
@@ -399,207 +626,160 @@ class _UserState extends State<User> {
                   ),
                 ),
 
-                // ── Resumen de estadísticas ──────────────────────────
+                // ── Estadísticas ─────────────────────────────────────
                 Container(
                   color: Colors.white,
                   padding: EdgeInsets.only(left: 16, right: 16, bottom: 10),
                   child: Text(
                     '${stats['total']} usuarios encontrados  •  '
-                    'Administradores: ${stats['administradores']}  •  '
-                    'Funcionarios: ${stats['funcionarios']} • '
-                    'Usuarios: ${stats['usuarios']} • ',
+                        'Administradores: ${stats['administradores']}  •  '
+                        'Funcionarios: ${stats['funcionarios']} • '
+                        'Usuarios: ${stats['usuarios']}',
                     style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                   ),
                 ),
 
                 Divider(height: 1),
 
-                // ── Lista de usuarios ────────────────────────────────
+                // ── Lista ────────────────────────────────────────────
                 Expanded(
                   child: filtered.isEmpty
                       ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.search_off,
-                                size: 64,
-                                color: Colors.grey[400],
-                              ),
-                              SizedBox(height: 12),
-                              Text(
-                                'No se encontraron usuarios',
-                                style: TextStyle(color: Colors.grey[500]),
-                              ),
-                            ],
-                          ),
-                        )
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.search_off, size: 64, color: Colors.grey[400]),
+                        SizedBox(height: 12),
+                        Text(
+                          'No se encontraron usuarios',
+                          style: TextStyle(color: Colors.grey[500]),
+                        ),
+                      ],
+                    ),
+                  )
                       : ListView.separated(
-                          itemCount: filtered.length,
-                          separatorBuilder: (_, __) => Divider(height: 1),
-                          itemBuilder: (context, index) {
-                            final user = filtered[index];
-                            final activo =
-                                safeStr(user.stateUser?.state).toUpperCase() ==
-                                'ACTIVO';
+                    itemCount: filtered.length,
+                    separatorBuilder: (_, __) => Divider(height: 1),
+                    itemBuilder: (context, index) {
+                      final user = filtered[index];
+                      final activo =
+                          safeStr(user.stateUser?.state).toUpperCase() == 'ACTIVO';
 
-                            return Container(
-                              color: Colors.white,
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 12,
-                              ),
-                              child: Row(
+                      return InkWell(
+                        onTap: () => _showMenuOption(context, user),
+                        child: Container(
+                          color: Colors.white,
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                          child: Row(
+                            children: [
+                              Stack(
                                 children: [
-                                  // Avatar con punto de estado
-                                  Stack(
-                                    children: [
-                                      CircleAvatar(
-                                        radius: 26,
-                                        backgroundColor: Color(
-                                          0xFF4A6B5A,
-                                        ).withOpacity(0.15),
-                                        child: Text(
-                                          safeStr(user.name).isNotEmpty
-                                              ? safeStr(
-                                                  user.name,
-                                                )[0].toUpperCase()
-                                              : '?',
-                                          style: TextStyle(
-                                            fontSize: 18,
-                                            color: Color(0xFF4A6B5A),
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
+                                  CircleAvatar(
+                                    radius: 26,
+                                    backgroundColor:
+                                    Color(0xFF4A6B5A).withOpacity(0.15),
+                                    child: Text(
+                                      safeStr(user.name).isNotEmpty
+                                          ? safeStr(user.name)[0].toUpperCase()
+                                          : '?',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        color: Color(0xFF4A6B5A),
+                                        fontWeight: FontWeight.bold,
                                       ),
-                                      Positioned(
-                                        bottom: 0,
-                                        right: 0,
-                                        child: Container(
-                                          width: 12,
-                                          height: 12,
-                                          decoration: BoxDecoration(
-                                            color: activo
-                                                ? Colors.green
-                                                : Colors.red,
-                                            shape: BoxShape.circle,
-                                            border: Border.all(
-                                              color: Colors.white,
-                                              width: 2,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-
-                                  SizedBox(width: 12),
-
-                                  // Info principal
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          '${safeStr(user.name)} ${safeStr(user.lastName)}',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 15,
-                                          ),
-                                        ),
-                                        SizedBox(height: 2),
-                                        Text(
-                                          safeStr(user.email),
-                                          style: TextStyle(
-                                            color: Colors.grey[600],
-                                            fontSize: 13,
-                                          ),
-                                        ),
-                                        SizedBox(height: 4),
-                                        Row(
-                                          children: [
-                                            Icon(
-                                              Icons.shield_outlined,
-                                              size: 13,
-                                              color: Color(0xFF4A6B5A),
-                                            ),
-                                            SizedBox(width: 4),
-                                            Text(
-                                              'Rol: ${_rolLegible(safeStr(user.role))}',
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                color: Color(0xFF4A6B5A),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
                                     ),
                                   ),
-
-                                  // Badge estado + menú
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      // Badge activo/inactivo
-                                      Container(
-                                        padding: EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 3,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: activo
-                                              ? Colors.green.withOpacity(0.1)
-                                              : Colors.red.withOpacity(0.1),
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Container(
-                                              width: 6,
-                                              height: 6,
-                                              decoration: BoxDecoration(
-                                                color: activo
-                                                    ? Colors.green
-                                                    : Colors.red,
-                                                shape: BoxShape.circle,
-                                              ),
-                                            ),
-                                            SizedBox(width: 4),
-                                            Text(
-                                              activo ? 'Activo' : 'Inactivo',
-                                              style: TextStyle(
-                                                fontSize: 11,
-                                                color: activo
-                                                    ? Colors.green
-                                                    : Colors.red,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
+                                  Positioned(
+                                    bottom: 0,
+                                    right: 0,
+                                    child: Container(
+                                      width: 12,
+                                      height: 12,
+                                      decoration: BoxDecoration(
+                                        color: activo ? Colors.green : Colors.red,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                            color: Colors.white, width: 2),
                                       ),
-                                      SizedBox(height: 6),
-                                      // Botón menú (···)
-                                      GestureDetector(
-                                        onTap: () =>
-                                            _showMenuOption(context, user),
-                                        child: Icon(
-                                          Icons.more_horiz,
-                                          color: Colors.grey[500],
-                                        ),
-                                      ),
-                                    ],
+                                    ),
                                   ),
                                 ],
                               ),
-                            );
-                          },
+                              SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '${safeStr(user.name)} ${safeStr(user.lastName)}',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                    SizedBox(height: 2),
+                                    Text(
+                                      safeStr(user.email),
+                                      style: TextStyle(
+                                          color: Colors.grey[600], fontSize: 13),
+                                    ),
+                                    SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        Icon(Icons.shield_outlined,
+                                            size: 13, color: Color(0xFF4A6B5A)),
+                                        SizedBox(width: 4),
+                                        Text(
+                                          'Rol: ${_rolLegible(safeStr(user.role))}',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Color(0xFF4A6B5A),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: activo
+                                      ? Colors.green.withOpacity(0.1)
+                                      : Colors.red.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      width: 6,
+                                      height: 6,
+                                      decoration: BoxDecoration(
+                                        color: activo ? Colors.green : Colors.red,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      activo ? 'Activo' : 'Inactivo',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: activo ? Colors.green : Colors.red,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
+                      );
+                    },
+                  ),
                 ),
               ],
             );
@@ -617,6 +797,57 @@ class _UserState extends State<User> {
 
   @override
   void dispose() {
+    _chatController.dispose();
+    _chatScrollController.dispose();
+    super.dispose();
+  }
+}
+
+// ── Widget animado de typing ─────────────────────────────────────────────────
+class _TypingDot extends StatefulWidget {
+  final int delay;
+  const _TypingDot({required this.delay});
+
+  @override
+  State<_TypingDot> createState() => _TypingDotState();
+}
+
+class _TypingDotState extends State<_TypingDot>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  late Animation<double> _anim;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 600),
+    );
+    Future.delayed(Duration(milliseconds: widget.delay), () {
+      if (mounted) _ctrl.repeat(reverse: true);
+    });
+    _anim = Tween(begin: 0.3, end: 1.0).animate(_ctrl);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _anim,
+      child: Container(
+        width: 7,
+        height: 7,
+        decoration: BoxDecoration(
+          color: Colors.grey[500],
+          shape: BoxShape.circle,
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
     super.dispose();
   }
 }
