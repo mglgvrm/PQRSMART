@@ -10,6 +10,11 @@ class ChatBoxLoaded extends ChatBoxState {
   final List<ChatBoxModel> messages;
   ChatBoxLoaded(this.messages);
 }
+class ChatBoxUserLoaded extends ChatBoxState {
+  final List<ChatBoxModel> messages;
+  ChatBoxUserLoaded(this.messages);
+}
+
 
 class ChatBoxSending extends ChatBoxState {
   final List<ChatBoxModel> messages; // muestra mensajes mientras espera respuesta

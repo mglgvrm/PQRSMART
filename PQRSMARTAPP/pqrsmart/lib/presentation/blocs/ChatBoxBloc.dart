@@ -5,21 +5,37 @@ import 'package:pqrsmart/presentation/states/ChatBoxEvent.dart';
 import 'package:pqrsmart/presentation/states/ChatBoxState.dart';
 
 class ChatBoxBloc extends Bloc<ChatBoxEvent, ChatBoxState> {
-
   final ChatBoxService _service = ChatBoxService();
 
   // Historial completo de mensajes
   final List<ChatBoxModel> _messages = [
     ChatBoxModel(
       role: 'assistant',
-      content: 'Hola 👋, soy tu asistente de PQRS. '
+      content:
+          'Hola 👋, soy tu asistente de PQRS. '
           'Puedo ayudarte a redactar quejas, reclamos o peticiones. '
           '¿Qué necesitas hoy?',
     ),
   ];
+  // Historial completo de mensajes
+  final List<ChatBoxModel> _message = [
+    ChatBoxModel(
+      role: 'assistant',
+      content:
+      '¡Hola! Soy tu asistente administrador de PQRSMART 👋\n\n'
+          'Puedo ayudarte con las siguientes acciones:\n\n'
+          '• Listar todos los usuarios.\n'
+          '• Buscar un usuario por correo electrónico.\n'
+          '• Cambiar el rol de un usuario.\n'
+          '• Actualizar nombre y apellido.\n'
+          '• Actualizar número de teléfono.\n'
+          '• Eliminar usuarios por ID o correo.\n'
+          '• Crear un nuevo usuario con sus datos (nombre, apellido, username, correo, contraseña, rol, tipo de identificación, número de identificación, teléfono, tipo de persona y dependencia).\n\n'
+          'Escribe la acción que deseas realizar.',
+    ),
+  ];
 
   ChatBoxBloc() : super(ChatBoxInitial()) {
-
     // ── Cargar historial inicial ──────────────────────────
     on<LoadChatBox>((event, emit) async {
       emit(ChatBoxLoading());
@@ -28,6 +44,17 @@ class ChatBoxBloc extends Bloc<ChatBoxEvent, ChatBoxState> {
         // final history = await _service.getChatBox();
         // _messages.addAll(history);
         emit(ChatBoxLoaded(List.from(_messages)));
+      } catch (e) {
+        emit(ChatBoxError('Error al cargar el chat: $e'));
+      }
+    });
+    on<LoadChatBoxUser>((event, emit) async {
+      emit(ChatBoxLoading());
+      try {
+        // Si tu backend guarda historial, cárgalo aquí
+        // final history = await _service.getChatBox();
+        // _messages.addAll(history);
+        emit(ChatBoxUserLoaded(List.from(_message)));
       } catch (e) {
         emit(ChatBoxError('Error al cargar el chat: $e'));
       }
@@ -53,11 +80,40 @@ class ChatBoxBloc extends Bloc<ChatBoxEvent, ChatBoxState> {
         emit(ChatBoxLoaded(List.from(_messages)));
       } catch (e) {
         // Agrega mensaje de error en el chat
-        _messages.add(ChatBoxModel(
-          role: 'assistant',
-          content: 'Error al conectar con el asistente. Intenta de nuevo.',
-        ));
+        _messages.add(
+          ChatBoxModel(
+            role: 'assistant',
+            content: 'Error al conectar con el asistente. Intenta de nuevo.',
+          ),
+        );
         emit(ChatBoxLoaded(List.from(_messages)));
+      }
+    });
+
+    on<SendMessageChatBoxUser>((event, emit) async {
+      if (event.message.trim().isEmpty) return;
+      // 1. Agrega mensaje del usuario al historial
+      _message.add(ChatBoxModel(role: 'user', content: event.message));
+
+      // 2. Emite estado "enviando" para mostrar el typing bubble
+      emit(ChatBoxSending(List.from(_message)));
+      try {
+        // 3. Llama al servicio con el historial completo
+        final respuesta = await _service.chatBoxUser(event.message);
+
+        // 4. Agrega respuesta del asistente
+        _message.add(ChatBoxModel(role: 'assistant', content: respuesta));
+
+        emit(ChatBoxUserLoaded(List.from(_message)));
+      } catch (e) {
+        // Agrega mensaje de error en el chat
+        _message.add(
+          ChatBoxModel(
+            role: 'assistant',
+            content: 'Error al conectar con el asistente. Intenta de nuevo.',
+          ),
+        );
+        emit(ChatBoxUserLoaded(List.from(_message)));
       }
     });
   }

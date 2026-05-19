@@ -47,6 +47,17 @@ function Navbar() {
       href: "/admin/users",
       current: pathname === "/admin/users",
     },
+     {
+      name: t("dependence"),
+      href: "/admin/dependence",
+      current: pathname === "/admin/dependence",
+    },
+     {
+      name: t("category"),
+      href: "/admin/category",
+      current: pathname === "/admin/category",
+    },
+
   ];
 
   const router = useRouter();

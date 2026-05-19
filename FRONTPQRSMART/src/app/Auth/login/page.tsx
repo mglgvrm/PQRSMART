@@ -79,10 +79,10 @@ function Page() {
       }
       localStorage.setItem("role", res.data.authorities[0]);
       console.log(res.data.authorities[0]);
-      /*localStorage.setItem(
+      localStorage.setItem(
           "initial",
           login.data.name.charAt(0).toUpperCase(),
-        );*/
+        );
 
       if (res.data.authorities[0] === "ROLE_ADMIN") router.push("/admin/home");
       if (res.data.authorities[0] === "ROLE_USER") router.push("/user/home");
