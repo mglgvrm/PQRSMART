@@ -121,28 +121,42 @@ public class UserTools {
         }
     }
 
-    // ── ELIMINAR ──────────────────────────────────────────────────────────────
-    @Tool(description = "Elimina un usuario del sistema. Se puede buscar por id o por email")
-    public String eliminarUsuario(
-            @ToolParam(description = "ID del usuario a eliminar (opcional si se da email)") Long id,
-            @ToolParam(description = "Email del usuario a eliminar (opcional si se da id)") String email
+
+    // ── ELIMINAR POR EMAIL ────────────────────────────────────────────────────────
+    @Tool(description = """
+        Elimina un usuario del sistema usando su correo electrónico.
+        Úsala cuando el usuario proporcione un email o correo para eliminar.
+        """)
+    public String eliminarUsuarioPorEmail(
+            @ToolParam(description = "Correo electrónico del usuario a eliminar") String email
     ) {
-        // Por ID
-        if (id != null) {
-            if (!userRepository.existsById(id)) return "No existe ningún usuario con id: " + id;
-            userRepository.deleteById(id);
-            return "✅ Usuario con id " + id + " eliminado correctamente.";
-        }
+        if (email == null || email.isBlank())
+            return "❌ Debes proporcionar un correo electrónico.";
 
-        // Por email
-        if (email != null && !email.isBlank()) {
-            User u = userRepository.findByEmail(email);
-            if (u == null) return "No encontrado";
-            userRepository.delete(u);
-            return "✅ Usuario con email " + email + " eliminado correctamente.";
-        }
+        User u = userRepository.findByEmail(email);
+        if (u == null)
+            return "❌ No existe ningún usuario con el correo: " + email;
 
-        return "❌ Debes proporcionar un id o un email para eliminar el usuario.";
+        userRepository.delete(u);
+        return "✅ Usuario con correo " + email + " eliminado correctamente.";
+    }
+
+    // ── ELIMINAR POR ID ───────────────────────────────────────────────────────────
+    @Tool(description = """
+        Elimina un usuario del sistema usando su ID numérico.
+        Úsala cuando el usuario proporcione un número de id para eliminar.
+        """)
+    public String eliminarUsuarioPorId(
+            @ToolParam(description = "ID numérico del usuario a eliminar") Long id
+    ) {
+        if (id == null)
+            return "❌ Debes proporcionar un ID válido.";
+
+        if (!userRepository.existsById(id))
+            return "❌ No existe ningún usuario con id: " + id;
+
+        userRepository.deleteById(id);
+        return "✅ Usuario con id " + id + " eliminado correctamente.";
     }
 
     @Tool(description = "Crea un nuevo usuario en el sistema")
