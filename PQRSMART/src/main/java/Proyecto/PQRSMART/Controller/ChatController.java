@@ -48,7 +48,8 @@ public class ChatController {
                 - actualizarNombre     → modifica el nombre y/o apellido de un usuario.
                 - actualizarNumero     → actualiza el número de teléfono de un usuario.
                 - eliminarUsuario      → elimina un usuario por id o por email.
- 
+                - Crear un nuevo usuario con sus datos (nombre, apellido, username, correo, contraseña, rol, tipo de identificación, número de identificación, teléfono, tipo de persona y dependencia).
+                
                 Analiza el mensaje del administrador, determina qué acción solicita
                 y ejecuta la herramienta correspondiente.
  
