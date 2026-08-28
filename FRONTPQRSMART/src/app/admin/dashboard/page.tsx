@@ -41,6 +41,7 @@ import { CalendarDays } from "lucide-react";
 
 function DashboardPageAdmin() {
   const [pqrsData, setPqrsData] = useState<any[]>([]);
+  const [pqrsDataPrediction, setPqrsDataPrediction] = useState<any[]>([]);
   const { t } = useTranslation("common");
   const [totalPQRS, setTotalPQRS] = useState(0);
   const [totalPQRSPorDependencia, setTotalPQRSPorDependencia] = useState<
@@ -69,8 +70,25 @@ function DashboardPageAdmin() {
         console.error("Error fetching PQRS data:", error);
       }
     };
+    const fetchDataPrediction = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token)
+          return console.error("No se encontró el token de autenticación");
+        console.log("Token de autenticación encontrado:", token);
+        const response = await api.get("/prediction/dependencies", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = response.data;
+        console.log("Fetched prediction PQRS data:", data);
+        setPqrsDataPrediction(data);
+      } catch (error) {
+        console.error("Error fetching prediction PQRS data:", error);
+      }
+    };
 
     fetchData();
+    fetchDataPrediction();
   }, []);
 
   const calcularTotales = (data: any[]) => {
@@ -306,6 +324,56 @@ function DashboardPageAdmin() {
             </p>
           </div>
 
+          <div className="bg-white rounded-2xl shadow-md p-6 flex flex-col items-center text-center hover:shadow-lg transition">
+            <CalendarDays className="text-red-500 mb-3" size={36} />
+
+            <h2 className="font-semibold text-gray-700 text-lg">
+              Dependencia con más PQRS
+            </h2>
+
+            <p className="text-3xl font-bold text-[#023047] mt-2">
+              {pqrsDataPrediction[0]?.dependence || "Sin datos"}
+            </p>
+
+            <p className="text-lg text-gray-500 mt-1">
+              {pqrsDataPrediction[0]?.percentage?.toFixed(1) || 0}%
+            </p>
+
+            <p className="text-sm text-gray-400 mt-1">
+              {pqrsDataPrediction[0]?.predictedRequests?.toFixed(0) || 0}{" "}
+              solicitudes
+            </p>
+          </div>
+          <div className="bg-white rounded-2xl shadow-md p-6">
+            <h2 className="text-xl font-bold text-[#023047] mb-5">
+              Predicción IA Próximo Mes
+            </h2>
+
+            <div className="space-y-4">
+              {pqrsDataPrediction.map((item, index) => (
+                <div
+                  key={index}
+                  className="flex justify-between items-center bg-gray-50 rounded-xl p-4"
+                >
+                  <div>
+                    <p className="font-semibold text-[#023047]">
+                      {index + 1}. {item.dependence}
+                    </p>
+
+                    <p className="text-sm text-gray-500">
+                      {item.predictedRequests.toFixed(0)} solicitudes estimadas
+                    </p>
+                  </div>
+
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-red-500">
+                      {item.percentage.toFixed(1)}%
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
           {/* PQRS por Dependencia */}
           {Object.keys(totalPQRSPorDependencia).length > 0 && (
             <div className="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition">
