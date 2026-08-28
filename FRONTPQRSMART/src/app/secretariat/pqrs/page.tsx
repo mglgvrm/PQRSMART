@@ -123,7 +123,7 @@ function PqrsPageSecretariat() {
         </div>
 
         {/* Tabla de usuarios */}
-        <div className="overflow-hidden border border-gray-200 rounded-lg shadow-lg">
+        <div className=" border border-gray-200 rounded-lg shadow-lg">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -217,20 +217,24 @@ function PqrsPageSecretariat() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                     <span className="span-descargar">
-                      {pqrs.archivoAnswer ? (
-                        <a
-                          href={pqrs.archivoAnswer}
-                          download
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <button className="btn-descargar">Descargar</button>
-                        </a>
-                      ) : (
-                        <div>
+                      <div
+                        style={{
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          maxWidth: "150px",
+                        }}
+                      >
+                        {pqrs.answer ? (
+                          pqrs.answer.length > 50 ? (
+                            `${pqrs.answer.slice(0, 50)}...`
+                          ) : (
+                            pqrs.answer
+                          )
+                        ) : (
                           <span>No disponible</span>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
@@ -273,13 +277,6 @@ function PqrsPageSecretariat() {
                           }}
                         >
                           {"📩"}
-                        </span>
-                        <span
-                          className="mr-4 cursor-pointer cancel-button"
-                          title="Cancel"
-                          onClick={() => handleCancel(pqrs.idRequest)}
-                        >
-                          ❌
                         </span>
                       </div>
                     ) : (

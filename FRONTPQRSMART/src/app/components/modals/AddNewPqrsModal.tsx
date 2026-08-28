@@ -47,6 +47,7 @@ export default function AddNewPqrsModal({
   const [showPopup, setShowPopup] = useState(false);
   const [error, setError] = useState("");
   const { t } = useTranslation("common");
+  const [isChatOpen, setIsChatOpen] = useState(true);
   const [messages, setMessages] = useState<any[]>([
     {
       role: "assistant",
@@ -77,10 +78,7 @@ export default function AddNewPqrsModal({
 
       const response = res.data;
 
-      const textoLimpio = response
-        .replace(/(\*\*|__|--|\*)/g, "\n") // **, __ o * → salto de línea
-
-        .trim();
+      const textoLimpio = response.replace(/(\*\*|__|--|\*)/g, "\n").trim();
 
       setMessage([...newMessages, { role: "assistant", content: textoLimpio }]);
       setMessages([
@@ -130,7 +128,7 @@ export default function AddNewPqrsModal({
     if (onSave) onSave(formData);
 
     console.log("Datos del usuario:", formData);
-    onClose(); // Cierra el modal después de guardar
+    onClose();
   };
   document.title = "Crear Solicitud";
   const fetchCategorias = async () => {
@@ -361,41 +359,69 @@ export default function AddNewPqrsModal({
         </form>
       </div>
 
-      <div className="w-1/2 bg-white border rounded-lg p-3 flex flex-col h-[500px] w-[400px]">
-        <h3 className="font-semibold mb-2">Asistente IA 🤖</h3>
+      {/* CHATBOX — desplegable y ajustable */}
+      <div
+        className="bg-white border rounded-lg flex flex-col overflow-hidden shadow-lg"
+        style={{
+          resize: isChatOpen ? "both" : "none",
+          overflow: isChatOpen ? "auto" : "hidden",
+          width: "400px",
+          minWidth: "280px",
+          maxWidth: "700px",
+          height: isChatOpen ? "500px" : "auto",
+          minHeight: isChatOpen ? "300px" : "auto",
+          maxHeight: "80vh",
+        }}
+      >
+        {/* HEADER toggle */}
+        <div
+          className="flex items-center justify-between px-3 py-2 cursor-pointer select-none bg-green-50 border-b flex-shrink-0"
+          onClick={() => setIsChatOpen((prev) => !prev)}
+        >
+          <h3 className="font-semibold text-gray-800">Asistente IA 🤖</h3>
+          <span className="text-gray-500 text-sm leading-none">
+            {isChatOpen ? "▼" : "▲"}
+          </span>
+        </div>
 
-        {/* MENSAJES */}
-        <div className="flex-1 overflow-y-auto space-y-2 mb-2">
-          {message.map((msg, index) => (
-            <div
-              key={index}
-              className={`p-2 rounded text-sm ${
-                msg.role === "user"
-                  ? "bg-green-100 text-right"
-                  : "bg-gray-100 text-left"
-              }`}
-            >
-              {msg.content}
+        {isChatOpen && (
+          <>
+            {/* MENSAJES */}
+            <div className="flex-1 overflow-y-auto space-y-2 p-3">
+              {message.map((msg, index) => (
+                <div
+                  key={index}
+                  className={`p-2 rounded text-sm ${
+                    msg.role === "user"
+                      ? "bg-green-100 text-right"
+                      : "bg-gray-100 text-left"
+                  }`}
+                >
+                  {msg.content}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
 
-        {/* INPUT */}
-        <div className="flex gap-2">
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            className="flex-1 border rounded px-2 py-1"
-            placeholder="Escribe aquí..."
-          />
-          <button
-            onClick={sendMessage}
-            className="bg-green-500 text-white px-3 rounded"
-          >
-            Enviar
-          </button>
-        </div>
+            {/* INPUT */}
+            <div className="flex gap-2 p-2 border-t flex-shrink-0">
+              <input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+                className="flex-1 border rounded px-2 py-1"
+                placeholder="Escribe aquí..."
+              />
+              <button
+                onClick={sendMessage}
+                className="bg-green-500 text-white px-3 rounded"
+              >
+                Enviar
+              </button>
+            </div>
+          </>
+        )}
       </div>
+
       {showPopup && <Popup message={error} onClose={closePopup} />}
     </div>
   );

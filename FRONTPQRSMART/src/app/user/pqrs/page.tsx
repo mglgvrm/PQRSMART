@@ -9,6 +9,7 @@ import { set } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import Popup from "@/app/components/modals/Popup";
 import { uploadFile } from "@/app/utils/supabase/uploadFile";
+import { AxiosError } from "axios";
 
 function PqrsPageUser() {
   type Pqrs = {
@@ -55,8 +56,6 @@ function PqrsPageUser() {
   useEffect(() => {
     const fetchPqrs = async () => {
       try {
-        /*console.log("Fetching PQRS for User ID:", userId);
-        if (!userId) return; // Espera hasta tener el userId*/
         const token = localStorage.getItem("token");
         if (!token)
           return console.error("No se encontró el token de autenticación");
@@ -132,8 +131,19 @@ function PqrsPageUser() {
         );
         setShowPopup(true); // Mostrar popup
       }
-    } catch (error) {
-      console.error("Error al guardar usuario:", error);
+    } catch (error: unknown) {
+      const err = error as AxiosError;
+
+      console.error("Error al radicar solicitud:", err);
+
+      if (err.response?.status === 400) {
+        setError("Error al radicar la solicitud: " + err.response.data);
+
+        setShowPopup(true);
+      } else {
+        setError("Ocurrió un error inesperado");
+        setShowPopup(true);
+      }
     }
   };
   const handleCancel = async (idRequest: number) => {

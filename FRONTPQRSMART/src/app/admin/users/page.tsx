@@ -7,6 +7,7 @@ import Navbar from "@/app/components/navbar";
 import AddUserModal from "@/app/components/modals/AddUserModal";
 import EditUserModal from "@/app/components/modals/EditUserModal";
 import { useTranslation } from "react-i18next";
+import TokenWatcher from "@/app/utils/auth/TokenWatcher";
 
 type User = {
   id: number;
@@ -41,9 +42,9 @@ function DashboardPageAdmin() {
   // ── Estado del chat ──────────────────────────────────────────────────────
   const [chatAbierto, setChatAbierto] = useState(false);
   const [mensajes, setMensajes] = useState<Mensaje[]>([
-  {
-    de: "bot",
-    texto: `¡Hola! Soy tu asistente administrador de PQRSMART 👋
+    {
+      de: "bot",
+      texto: `¡Hola! Soy tu asistente administrador de PQRSMART 👋
 
 Puedo ayudarte con las siguientes acciones: 
 
@@ -56,8 +57,8 @@ Puedo ayudarte con las siguientes acciones:
 • Crear un nuevo usuario con sus datos (nombre, apellido, username, correo, contraseña, rol, tipo de identificación, número de identificación, teléfono, tipo de persona y dependencia).
 
 Escribe la acción que deseas realizar.`,
-  },
-]);
+    },
+  ]);
   const [inputChat, setInputChat] = useState("");
   const [chatCargando, setChatCargando] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
@@ -78,7 +79,9 @@ Escribe la acción que deseas realizar.`,
     const fetchUsers = async () => {
       try {
         const token = localStorage.getItem("token");
-        if (!token) return console.error("No se encontró el token de autenticación");
+        console.log(token);
+        if (!token)
+          return console.error("No se encontró el token de autenticación");
 
         const response = await api.get("/Usuario/get", {
           headers: { Authorization: `Bearer ${token}` },
@@ -104,12 +107,10 @@ Escribe la acción que deseas realizar.`,
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No se encontró el token de autenticación");
 
-      const response = await api.get(
-        "/chat/user", {
-         params: { message: texto },
-         headers: { Authorization: `Bearer ${token}` } ,
-        }
-      );
+      const response = await api.get("/chat/user", {
+        params: { message: texto },
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       if (response.status === 200) {
         // ✅ Éxito → mostrar respuesta del bot y refrescar la tabla
@@ -134,8 +135,13 @@ Escribe la acción que deseas realizar.`,
         ...prev,
         {
           de: "bot",
-          texto: `❌ ${// Primero intenta el string plano, luego el objeto con .message
-error?.response?.data ?? error?.response?.data?.message ?? error.message?? "Error al procesar la solicitud."}`,
+          texto: `❌ ${
+            // Primero intenta el string plano, luego el objeto con .message
+            error?.response?.data ??
+            error?.response?.data?.message ??
+            error.message ??
+            "Error al procesar la solicitud."
+          }`,
         },
       ]);
     }
@@ -172,7 +178,8 @@ error?.response?.data ?? error?.response?.data?.message ?? error.message?? "Erro
     try {
       const token = localStorage.getItem("token");
       if (!token) return console.error("No se encontró el token");
-      if (!selectedUser?.id) return console.error("Usuario seleccionado inválido");
+      if (!selectedUser?.id)
+        return console.error("Usuario seleccionado inválido");
 
       const response = await api.put(`/Usuario/Update`, data, {
         headers: { Authorization: `Bearer ${token}` },
@@ -268,7 +275,9 @@ error?.response?.data ?? error?.response?.data?.message ?? error.message?? "Erro
                 responseType: "blob",
               });
               if (response.status === 200) {
-                const url = window.URL.createObjectURL(new Blob([response.data]));
+                const url = window.URL.createObjectURL(
+                  new Blob([response.data]),
+                );
                 const link = document.createElement("a");
                 link.href = url;
                 link.setAttribute("download", "user_report.xlsx");
@@ -323,31 +332,50 @@ error?.response?.data ?? error?.response?.data?.message ?? error.message?? "Erro
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                {["ID", t("admin.users.table_name_header"), t("admin.users.table_email_header"), t("admin.users.table_role_header"), t("admin.users.table_dependence_header"), t("admin.users.table_actions_header")].map(
-                  (h, i) => (
-                    <th
-                      key={i}
-                      className={`px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider ${i === 5 ? "text-right" : "text-left"}`}
-                    >
-                      {h}
-                    </th>
-                  ),
-                )}
+                {[
+                  "ID",
+                  t("admin.users.table_name_header"),
+                  t("admin.users.table_email_header"),
+                  t("admin.users.table_role_header"),
+                  t("admin.users.table_dependence_header"),
+                  t("admin.users.table_actions_header"),
+                ].map((h, i) => (
+                  <th
+                    key={i}
+                    className={`px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider ${i === 5 ? "text-right" : "text-left"}`}
+                  >
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-100">
               {currentUsers.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-100 transition duration-200">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{user.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{user.email}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{user.role}</td>
+                <tr
+                  key={user.id}
+                  className="hover:bg-gray-100 transition duration-200"
+                >
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                    {user.id}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
+                    {user.name}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    {user.email}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    {user.role}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                     {user.dependence ? user.dependence.nameDependence : "N/A"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
                     <button
-                      onClick={() => { setIsOpenEditUser(true); setSelectedUser(user); }}
+                      onClick={() => {
+                        setIsOpenEditUser(true);
+                        setSelectedUser(user);
+                      }}
                       className="text-green-600 hover:text-green-500 font-medium"
                     >
                       | {t("admin.users.table_edit_button")}
@@ -357,7 +385,10 @@ error?.response?.data ?? error?.response?.data?.message ?? error.message?? "Erro
               ))}
               {users.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="text-center text-gray-500 py-6 text-sm">
+                  <td
+                    colSpan={6}
+                    className="text-center text-gray-500 py-6 text-sm"
+                  >
                     There are no registered users.
                   </td>
                 </tr>
@@ -368,7 +399,10 @@ error?.response?.data ?? error?.response?.data?.message ?? error.message?? "Erro
 
         {isOpenEditUser && selectedUser && (
           <EditUserModal
-            onClose={() => { setIsOpenEditUser(false); setSelectedUser(null); }}
+            onClose={() => {
+              setIsOpenEditUser(false);
+              setSelectedUser(null);
+            }}
             user={selectedUser}
             onSave={handleSaveUser}
           />
@@ -384,10 +418,15 @@ error?.response?.data ?? error?.response?.data?.message ?? error.message?? "Erro
             {t("admin.users.pagination_previous_button")}
           </button>
           <span className="text-sm text-gray-700">
-            {t("admin.users.table_pagination_info", { start: currentPage, total: totalPages })}
+            {t("admin.users.table_pagination_info", {
+              start: currentPage,
+              total: totalPages,
+            })}
           </span>
           <button
-            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+            }
             disabled={currentPage === totalPages}
             className={`px-3 py-1 rounded-md border text-sm ${currentPage === totalPages ? "text-gray-400 border-gray-200 cursor-not-allowed" : "text-green-600 border-green-300 hover:bg-green-100"}`}
           >
@@ -402,7 +441,9 @@ error?.response?.data ?? error?.response?.data?.message ?? error.message?? "Erro
           {/* Header */}
           <div className="flex items-center gap-3 bg-gradient-to-r from-green-700 to-[#023047] px-4 py-3.5">
             <span className="text-xl">🤖</span>
-            <span className="flex-1 text-sm font-bold text-white">Asistente de Usuarios</span>
+            <span className="flex-1 text-sm font-bold text-white">
+              Asistente de Usuarios
+            </span>
             <button
               onClick={() => setChatAbierto(false)}
               className="text-white/70 transition hover:text-white text-lg leading-none"
@@ -488,17 +529,71 @@ error?.response?.data ?? error?.response?.data?.message ?? error.message?? "Erro
 // ── Ícono SVG del robot ───────────────────────────────────────────────────────
 function RobotIcon() {
   return (
-    <svg width="28" height="28" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="18" y="20" width="28" height="24" rx="6" fill="white" fillOpacity=".95" />
-      <rect x="24" y="27" width="6"  height="6"  rx="3" fill="#16a34a" />
-      <rect x="34" y="27" width="6"  height="6"  rx="3" fill="#16a34a" />
-      <rect x="26" y="37" width="12" height="3"  rx="1.5" fill="#16a34a" />
-      <rect x="30" y="12" width="4"  height="8"  rx="2" fill="white" fillOpacity=".95" />
+    <svg
+      width="28"
+      height="28"
+      viewBox="0 0 64 64"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect
+        x="18"
+        y="20"
+        width="28"
+        height="24"
+        rx="6"
+        fill="white"
+        fillOpacity=".95"
+      />
+      <rect x="24" y="27" width="6" height="6" rx="3" fill="#16a34a" />
+      <rect x="34" y="27" width="6" height="6" rx="3" fill="#16a34a" />
+      <rect x="26" y="37" width="12" height="3" rx="1.5" fill="#16a34a" />
+      <rect
+        x="30"
+        y="12"
+        width="4"
+        height="8"
+        rx="2"
+        fill="white"
+        fillOpacity=".95"
+      />
       <circle cx="32" cy="10" r="3" fill="white" fillOpacity=".95" />
-      <rect x="10" y="28" width="6"  height="10" rx="3" fill="white" fillOpacity=".8" />
-      <rect x="48" y="28" width="6"  height="10" rx="3" fill="white" fillOpacity=".8" />
-      <rect x="22" y="44" width="6"  height="8"  rx="3" fill="white" fillOpacity=".8" />
-      <rect x="36" y="44" width="6"  height="8"  rx="3" fill="white" fillOpacity=".8" />
+      <rect
+        x="10"
+        y="28"
+        width="6"
+        height="10"
+        rx="3"
+        fill="white"
+        fillOpacity=".8"
+      />
+      <rect
+        x="48"
+        y="28"
+        width="6"
+        height="10"
+        rx="3"
+        fill="white"
+        fillOpacity=".8"
+      />
+      <rect
+        x="22"
+        y="44"
+        width="6"
+        height="8"
+        rx="3"
+        fill="white"
+        fillOpacity=".8"
+      />
+      <rect
+        x="36"
+        y="44"
+        width="6"
+        height="8"
+        rx="3"
+        fill="white"
+        fillOpacity=".8"
+      />
     </svg>
   );
 }
