@@ -8,8 +8,12 @@ import Proyecto.PQRSMART.Persistence.Repository.DependenceRepository;
 import Proyecto.PQRSMART.Persistence.Repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+
+import javax.sql.DataSource;
 
 @Component
 @RequiredArgsConstructor
@@ -18,6 +22,7 @@ public class AdminInitializer implements CommandLineRunner {
     private final UsuarioRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final DependenceRepository dependenciaRepository;
+    private final DataSource dataSource;
 
     @Override
     public void run(String... args) {
@@ -39,6 +44,17 @@ public class AdminInitializer implements CommandLineRunner {
                     .build();
 
             userRepository.save(admin);
+        }
+    }
+
+    private void ejecutarScriptSQL() {
+        try {
+            ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
+            populator.addScript(new ClassPathResource("sql/data.sql"));
+            populator.execute(dataSource);
+            System.out.println("Script SQL ejecutado correctamente.");
+        } catch (Exception e) {
+            throw new RuntimeException("Error ejecutando el archivo SQL de inicialización", e);
         }
     }
 }
