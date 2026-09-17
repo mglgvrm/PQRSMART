@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import api from "@/app/api/api";
 
 type Dependence = { idDependence: number; nameDependence: string };
-
+type State = { idState: number; nameState: string };
 
 type Props = {
   onClose: () => void;
@@ -29,13 +29,16 @@ export default function AddCategoryModal({ onClose, onSave }: Props) {
     Promise.all([
       api.get("/dependence/get", { headers }),
       api.get("/state/get", { headers }),
-    ]).then(([depRes, stateRes]) => {
-      if (depRes.status === 200) setDependences(depRes.data);
-      if (stateRes.status === 200) setStates(stateRes.data);
-    }).catch((e) => console.error("Error cargando catálogos:", e));
+    ])
+      .then(([depRes, stateRes]) => {
+        if (depRes.status === 200) setDependences(depRes.data);
+        if (stateRes.status === 200) setStates(stateRes.data);
+      })
+      .catch((e) => console.error("Error cargando catálogos:", e));
   }, []);
 
-  const isValid = nameCategory.trim() && selectedDependence !== "" && selectedState !== "";
+  const isValid =
+    nameCategory.trim() && selectedDependence !== "" && selectedState !== "";
 
   const handleSubmit = async () => {
     if (!isValid) return;
@@ -58,13 +61,27 @@ export default function AddCategoryModal({ onClose, onSave }: Props) {
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
 
-        <h2 className="text-xl font-bold text-gray-800 mb-1">Nueva Categoría</h2>
-        <p className="text-sm text-gray-400 mb-6">Completa los datos para registrar la categoría.</p>
+        <h2 className="text-xl font-bold text-gray-800 mb-1">
+          Nueva Categoría
+        </h2>
+        <p className="text-sm text-gray-400 mb-6">
+          Completa los datos para registrar la categoría.
+        </p>
 
         <div className="space-y-4">
           {/* Nombre */}
@@ -99,8 +116,6 @@ export default function AddCategoryModal({ onClose, onSave }: Props) {
               ))}
             </select>
           </div>
-
-        
         </div>
 
         <div className="flex justify-end gap-3 mt-8">
