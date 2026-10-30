@@ -11,7 +11,7 @@ import { useTranslation } from "react-i18next";
 type Dependence = {
   idDependence: number;
   nameDependence: string;
-  state: { idState: number; nameState: string } | null;
+  state: { id: number; description: string } | null;
 };
 
 function DependencePageAdmin() {
@@ -45,6 +45,7 @@ function DependencePageAdmin() {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (response.status === 200) setDependences(response.data);
+        console.log("Dependences fetched:", response.data);
       } catch (error) {
         console.error("Error fetching dependences:", error);
       }
@@ -53,9 +54,7 @@ function DependencePageAdmin() {
   }, [refreshFlag]); // ← se relanza al crear/editar
 
   // ── Crear dependencia ────────────────────────────────────────────────────
-  const handleNew = async (data: {
-    nameDependence: string;
-  }) => {
+  const handleNew = async (data: { nameDependence: string }) => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
@@ -75,9 +74,7 @@ function DependencePageAdmin() {
   };
 
   // ── Editar dependencia ───────────────────────────────────────────────────
-  const handleSave = async (data: {
-    nameDependence: string;
-  }) => {
+  const handleSave = async (data: { nameDependence: string }) => {
     try {
       const token = localStorage.getItem("token");
       if (!token || !selected) return;
@@ -101,7 +98,7 @@ function DependencePageAdmin() {
       setSelected(null);
     }
   };
-  
+
   // ── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-white flex flex-col items-center font-sans">
@@ -113,10 +110,11 @@ function DependencePageAdmin() {
         <div className="flex justify-between items-center mb-5">
           <div>
             <h2 className="text-2xl font-bold text-gray-800">Dependencias</h2>
-            <p className="text-gray-500 text-sm">Gestión de dependencias del sistema</p>
+            <p className="text-gray-500 text-sm">
+              Gestión de dependencias del sistema
+            </p>
           </div>
           <div className="flex gap-3">
-           
             <button
               onClick={() => setIsOpenAdd(true)}
               className="bg-[#023047] hover:bg-[#023053] text-white font-semibold px-4 py-2 rounded-lg shadow-md transition"
@@ -127,7 +125,10 @@ function DependencePageAdmin() {
         </div>
 
         {isOpenAdd && (
-          <AddDependenceModal onClose={() => setIsOpenAdd(false)} onSave={handleNew} />
+          <AddDependenceModal
+            onClose={() => setIsOpenAdd(false)}
+            onSave={handleNew}
+          />
         )}
 
         {/* Buscador */}
@@ -136,11 +137,24 @@ function DependencePageAdmin() {
             type="text"
             placeholder="Buscar por nombre..."
             value={search}
-            onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full py-2 pl-10 pr-4 text-gray-700 bg-white border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          <svg className="absolute left-3 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          <svg
+            className="absolute left-3 h-5 w-5 text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
           </svg>
         </div>
 
@@ -149,25 +163,39 @@ function DependencePageAdmin() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                {["ID", "Nombre Dependencia", "Estado", "Acciones"].map((h, i) => (
-                  <th
-                    key={i}
-                    className={`px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider ${i === 3 ? "text-right" : "text-left"}`}
-                  >
-                    {h}
-                  </th>
-                ))}
+                {["ID", "Nombre Dependencia", "Estado", "Acciones"].map(
+                  (h, i) => (
+                    <th
+                      key={i}
+                      className={`px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider ${i === 3 ? "text-right" : "text-left"}`}
+                    >
+                      {h}
+                    </th>
+                  ),
+                )}
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-100">
               {currentItems.map((dep) => (
-                <tr key={dep.idDependence} className="hover:bg-gray-100 transition duration-200">
-                  <td className="px-6 py-4 text-sm text-gray-700">{dep.idDependence}</td>
-                  <td className="px-6 py-4 text-sm font-medium text-gray-800">{dep.nameDependence}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{dep.state?.nameState ?? "N/A"}</td>
+                <tr
+                  key={dep.idDependence}
+                  className="hover:bg-gray-100 transition duration-200"
+                >
+                  <td className="px-6 py-4 text-sm text-gray-700">
+                    {dep.idDependence}
+                  </td>
+                  <td className="px-6 py-4 text-sm font-medium text-gray-800">
+                    {dep.nameDependence}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-600">
+                    {dep.state?.description ?? "N/A"}
+                  </td>
                   <td className="px-6 py-4 text-right">
                     <button
-                      onClick={() => { setSelected(dep); setIsOpenEdit(true); }}
+                      onClick={() => {
+                        setSelected(dep);
+                        setIsOpenEdit(true);
+                      }}
                       className="text-green-600 hover:text-green-500 font-medium"
                     >
                       Editar
@@ -177,7 +205,10 @@ function DependencePageAdmin() {
               ))}
               {dependences.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="text-center text-gray-500 py-6 text-sm">
+                  <td
+                    colSpan={4}
+                    className="text-center text-gray-500 py-6 text-sm"
+                  >
                     No hay dependencias registradas.
                   </td>
                 </tr>
@@ -188,7 +219,10 @@ function DependencePageAdmin() {
 
         {isOpenEdit && selected && (
           <EditDependenceModal
-            onClose={() => { setIsOpenEdit(false); setSelected(null); }}
+            onClose={() => {
+              setIsOpenEdit(false);
+              setSelected(null);
+            }}
             dependence={selected}
             onSave={handleSave}
           />

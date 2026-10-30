@@ -11,7 +11,10 @@ type Dependence = {
   nameDependence: string;
 };
 
-
+type State = {
+  id: number;
+  description: string;
+};
 type Category = {
   idCategory: number;
   nameCategory: string;
@@ -30,9 +33,10 @@ function CategoryPageAdmin() {
   const itemsPerPage = 6;
 
   // ── Paginación ───────────────────────────────────────────────────────────
-  const filtered = categories.filter((c) =>
-    c.nameCategory.toLowerCase().includes(search.toLowerCase()) ||
-    c.dependence?.nameDependence.toLowerCase().includes(search.toLowerCase()),
+  const filtered = categories.filter(
+    (c) =>
+      c.nameCategory.toLowerCase().includes(search.toLowerCase()) ||
+      c.dependence?.nameDependence.toLowerCase().includes(search.toLowerCase()),
   );
   const indexOfLast = currentPage * itemsPerPage;
   const indexOfFirst = indexOfLast - itemsPerPage;
@@ -108,8 +112,6 @@ function CategoryPageAdmin() {
     }
   };
 
-
-
   // ── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-white flex flex-col items-center font-sans">
@@ -121,10 +123,11 @@ function CategoryPageAdmin() {
         <div className="flex justify-between items-center mb-5">
           <div>
             <h2 className="text-2xl font-bold text-gray-800">Categorías</h2>
-            <p className="text-gray-500 text-sm">Gestión de categorías del sistema</p>
+            <p className="text-gray-500 text-sm">
+              Gestión de categorías del sistema
+            </p>
           </div>
           <div className="flex gap-3">
-            
             <button
               onClick={() => setIsOpenAdd(true)}
               className="bg-[#023047] hover:bg-[#023053] text-white font-semibold px-4 py-2 rounded-lg shadow-md transition"
@@ -135,7 +138,10 @@ function CategoryPageAdmin() {
         </div>
 
         {isOpenAdd && (
-          <AddCategoryModal onClose={() => setIsOpenAdd(false)} onSave={handleNew} />
+          <AddCategoryModal
+            onClose={() => setIsOpenAdd(false)}
+            onSave={handleNew}
+          />
         )}
 
         {/* Buscador */}
@@ -144,11 +150,24 @@ function CategoryPageAdmin() {
             type="text"
             placeholder="Buscar por nombre o dependencia..."
             value={search}
-            onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full py-2 pl-10 pr-4 text-gray-700 bg-white border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          <svg className="absolute left-3 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          <svg
+            className="absolute left-3 h-5 w-5 text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
           </svg>
         </div>
 
@@ -157,7 +176,13 @@ function CategoryPageAdmin() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                {["ID", "Nombre Categoría", "Dependencia", "Estado", "Acciones"].map((h, i) => (
+                {[
+                  "ID",
+                  "Nombre Categoría",
+                  "Dependencia",
+                  "Estado",
+                  "Acciones",
+                ].map((h, i) => (
                   <th
                     key={i}
                     className={`px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider ${i === 4 ? "text-right" : "text-left"}`}
@@ -169,14 +194,28 @@ function CategoryPageAdmin() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-100">
               {currentItems.map((cat) => (
-                <tr key={cat.idCategory} className="hover:bg-gray-100 transition duration-200">
-                  <td className="px-6 py-4 text-sm text-gray-700">{cat.idCategory}</td>
-                  <td className="px-6 py-4 text-sm font-medium text-gray-800">{cat.nameCategory}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{cat.dependence?.nameDependence ?? "N/A"}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{cat.state?.nameState ?? "N/A"}</td>
+                <tr
+                  key={cat.idCategory}
+                  className="hover:bg-gray-100 transition duration-200"
+                >
+                  <td className="px-6 py-4 text-sm text-gray-700">
+                    {cat.idCategory}
+                  </td>
+                  <td className="px-6 py-4 text-sm font-medium text-gray-800">
+                    {cat.nameCategory}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-600">
+                    {cat.dependence?.nameDependence ?? "N/A"}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-600">
+                    {cat.state?.description ?? "N/A"}
+                  </td>
                   <td className="px-6 py-4 text-right">
                     <button
-                      onClick={() => { setSelected(cat); setIsOpenEdit(true); }}
+                      onClick={() => {
+                        setSelected(cat);
+                        setIsOpenEdit(true);
+                      }}
                       className="text-green-600 hover:text-green-500 font-medium text-sm"
                     >
                       Editar
@@ -186,7 +225,10 @@ function CategoryPageAdmin() {
               ))}
               {categories.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="text-center text-gray-500 py-6 text-sm">
+                  <td
+                    colSpan={5}
+                    className="text-center text-gray-500 py-6 text-sm"
+                  >
                     No hay categorías registradas.
                   </td>
                 </tr>
@@ -197,7 +239,10 @@ function CategoryPageAdmin() {
 
         {isOpenEdit && selected && (
           <EditCategoryModal
-            onClose={() => { setIsOpenEdit(false); setSelected(null); }}
+            onClose={() => {
+              setIsOpenEdit(false);
+              setSelected(null);
+            }}
             category={selected}
             onSave={handleSave}
           />

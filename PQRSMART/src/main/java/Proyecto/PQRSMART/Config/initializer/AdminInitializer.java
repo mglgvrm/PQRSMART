@@ -26,11 +26,13 @@ public class AdminInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        var dependencia = dependenciaRepository.findById(7L)
-                .orElseThrow(() -> new RuntimeException("Dependencia 7 no existe"));
+
 
         if (!userRepository.existsByUser("admin")) {
+            executeScriptSQL();
 
+            var dependencia = dependenciaRepository.findById(7L)
+                    .orElseThrow(() -> new RuntimeException("Dependencia 7 no existe"));
             var admin = User.builder()
                     .user("admin")
                     .name("Administrador")
@@ -44,13 +46,27 @@ public class AdminInitializer implements CommandLineRunner {
                     .build();
 
             userRepository.save(admin);
+
+            executeScriptSQLUsers();
+            
         }
     }
 
-    private void ejecutarScriptSQL() {
+    private void executeScriptSQL() {
         try {
             ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
             populator.addScript(new ClassPathResource("sql/data.sql"));
+            populator.execute(dataSource);
+            System.out.println("Script SQL ejecutado correctamente.");
+        } catch (Exception e) {
+            throw new RuntimeException("Error ejecutando el archivo SQL de inicialización", e);
+        }
+    }
+
+    private void executeScriptSQLUsers() {
+        try {
+            ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
+            populator.addScript(new ClassPathResource("sql/users.sql"));
             populator.execute(dataSource);
             System.out.println("Script SQL ejecutado correctamente.");
         } catch (Exception e) {

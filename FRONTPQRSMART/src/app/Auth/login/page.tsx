@@ -86,6 +86,8 @@ function Page() {
         //localStorage.setItem("type", res.data.pqrsType.id);
         router.push("/secretariat/dashboard");
       }
+      if (res.data.authorities[0] === "ROLE_SUPER")
+        router.push("/super/dashboard");
     } catch (err: any) {
       const status = err.status ?? err.response.status;
       setServerError(String(status));

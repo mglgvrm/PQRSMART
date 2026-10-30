@@ -21,7 +21,6 @@ import {
   TrendingUp,
   ListTodo,
 } from "lucide-react";
-import Navbar from "@/app/components/navbar";
 import api from "@/app/api/api";
 import withAuth from "@/app/utils/withAuth";
 import { useTranslation } from "react-i18next";
@@ -38,8 +37,9 @@ ChartJS.register(
 );
 
 import { CalendarDays } from "lucide-react";
+import NavbarSuper from "@/app/components/navbar_super";
 
-function DashboardPageAdmin() {
+function DashboardPageSuper() {
   const [pqrsData, setPqrsData] = useState<any[]>([]);
   const [pqrsDataPrediction, setPqrsDataPrediction] = useState<any[]>([]);
   const { t } = useTranslation("common");
@@ -216,7 +216,7 @@ function DashboardPageAdmin() {
     <div className="min-h-screen bg-white flex flex-col items-center font-sans">
       {/* Header */}
       <header className="w-full bg-green-600 text-white shadow-md">
-        <Navbar />
+        <NavbarSuper />
       </header>
       <div className="px-6 py-10 max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
@@ -458,4 +458,4 @@ function DashboardPageAdmin() {
     </div>
   );
 }
-export default withAuth(DashboardPageAdmin, ["ROLE_ADMIN"]);
+export default withAuth(DashboardPageSuper, ["ROLE_SUPER"]);
