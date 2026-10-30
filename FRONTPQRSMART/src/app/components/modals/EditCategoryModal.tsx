@@ -4,7 +4,10 @@ import api from "@/app/api/api";
 
 type Dependence = { idDependence: number; nameDependence: string };
 
-
+type State = {
+  id: number;
+  description: string;
+};
 type Category = {
   idCategory: number;
   nameCategory: string;
@@ -22,14 +25,22 @@ type Props = {
   }) => void;
 };
 
-export default function EditCategoryModal({ onClose, category, onSave }: Props) {
+export default function EditCategoryModal({
+  onClose,
+  category,
+  onSave,
+}: Props) {
   const [nameCategory, setNameCategory] = useState(category.nameCategory);
   const [selectedDependence, setSelectedDependence] = useState<number | "">(
     category.dependence?.idDependence ?? "",
   );
 
   const [dependences, setDependences] = useState<Dependence[]>([]);
- 
+  const [states, setStates] = useState<State[]>([]);
+  const [selectedState, setSelectedState] = useState<number | "">(
+    category.state?.id ?? "",
+  );
+
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -38,13 +49,16 @@ export default function EditCategoryModal({ onClose, category, onSave }: Props) 
 
     Promise.all([
       api.get("/dependence/get", { headers }),
-    ]).then(([depRes, stateRes]) => {
-      if (depRes.status === 200) setDependences(depRes.data);
-      if (stateRes.status === 200) setStates(stateRes.data);
-    }).catch((e) => console.error("Error cargando catálogos:", e));
+      api.get("/state/get", { headers }),
+    ])
+      .then(([depRes, stateRes]) => {
+        if (depRes.status === 200) setDependences(depRes.data);
+        if (stateRes.status === 200) setStates(stateRes.data);
+      })
+      .catch((e) => console.error("Error cargando catálogos:", e));
   }, []);
 
-  const isValid = nameCategory.trim() && selectedDependence !== "" ;
+  const isValid = nameCategory.trim() && selectedDependence !== "";
 
   const handleSubmit = async () => {
     if (!isValid) return;
@@ -53,6 +67,7 @@ export default function EditCategoryModal({ onClose, category, onSave }: Props) 
       await onSave({
         nameCategory,
         dependence: { idDependence: Number(selectedDependence) },
+        state: { idState: Number(selectedState) },
       });
     } finally {
       setLoading(false);
@@ -66,8 +81,18 @@ export default function EditCategoryModal({ onClose, category, onSave }: Props) 
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
 
@@ -77,7 +102,9 @@ export default function EditCategoryModal({ onClose, category, onSave }: Props) 
             #{category.idCategory}
           </span>
         </div>
-        <p className="text-sm text-gray-400 mb-6">Modifica los datos de la categoría.</p>
+        <p className="text-sm text-gray-400 mb-6">
+          Modifica los datos de la categoría.
+        </p>
 
         <div className="space-y-4">
           {/* Nombre */}
@@ -111,8 +138,6 @@ export default function EditCategoryModal({ onClose, category, onSave }: Props) 
               ))}
             </select>
           </div>
-
-         
         </div>
 
         <div className="flex justify-end gap-3 mt-8">

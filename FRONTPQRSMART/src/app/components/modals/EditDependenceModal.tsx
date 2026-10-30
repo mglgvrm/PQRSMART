@@ -3,29 +3,32 @@ import { useState, useEffect } from "react";
 import api from "@/app/api/api";
 
 type State = {
-  idState: number;
-  nameState: string;
+  id: number;
+  description: string;
 };
 
 type Dependence = {
   idDependence: number;
   nameDependence: string;
-  state: { idState: number; nameState: string } | null;
+  state: { id: number; description: string } | null;
 };
 
 type Props = {
   onClose: () => void;
   dependence: Dependence;
-  onSave: (data: {
-    nameDependence: string;
-    state: { idState: number };
-  }) => void;
+  onSave: (data: { nameDependence: string; state: { id: number } }) => void;
 };
 
-export default function EditDependenceModal({ onClose, dependence, onSave }: Props) {
-  const [nameDependence, setNameDependence] = useState(dependence.nameDependence);
+export default function EditDependenceModal({
+  onClose,
+  dependence,
+  onSave,
+}: Props) {
+  const [nameDependence, setNameDependence] = useState(
+    dependence.nameDependence,
+  );
   const [selectedState, setSelectedState] = useState<number | "">(
-    dependence.state?.idState ?? "",
+    dependence.state?.id ?? "",
   );
   const [states, setStates] = useState<State[]>([]);
   const [loading, setLoading] = useState(false);
@@ -51,7 +54,7 @@ export default function EditDependenceModal({ onClose, dependence, onSave }: Pro
     try {
       await onSave({
         nameDependence,
-        state: { idState: Number(selectedState) },
+        state: { id: Number(selectedState) },
       });
     } finally {
       setLoading(false);
@@ -66,19 +69,33 @@ export default function EditDependenceModal({ onClose, dependence, onSave }: Pro
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
 
         {/* Encabezado con badge del ID */}
         <div className="flex items-center gap-3 mb-1">
-          <h2 className="text-xl font-bold text-gray-800">Editar Dependencia</h2>
+          <h2 className="text-xl font-bold text-gray-800">
+            Editar Dependencia
+          </h2>
           <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-mono">
             #{dependence.idDependence}
           </span>
         </div>
-        <p className="text-sm text-gray-400 mb-6">Modifica los datos de la dependencia.</p>
+        <p className="text-sm text-gray-400 mb-6">
+          Modifica los datos de la dependencia.
+        </p>
 
         <div className="space-y-4">
           {/* Nombre */}
@@ -106,8 +123,8 @@ export default function EditDependenceModal({ onClose, dependence, onSave }: Pro
             >
               <option value="">Selecciona un estado</option>
               {states.map((s) => (
-                <option key={s.idState} value={s.idState}>
-                  {s.nameState}
+                <option key={s.id} value={s.id}>
+                  {s.description}
                 </option>
               ))}
             </select>
