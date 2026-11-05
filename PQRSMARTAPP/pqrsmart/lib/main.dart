@@ -2,6 +2,7 @@ import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pqrsmart/config/routes.dart';
+import 'package:pqrsmart/core/theme/app_theme.dart';
 import 'package:pqrsmart/data/repository/auth_repositories.dart';
 import 'package:pqrsmart/data/services/AuthService.dart';
 import 'package:pqrsmart/data/services/IdentificationTypeService.dart';
@@ -13,10 +14,10 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final authService                = AuthService();
-  final personTypeService          = PersonTypeService();
-  final identificationTypeService  = IdentificationTypeService();
-  final authRepository             = AuthRepository(
+  final authService = AuthService();
+  final personTypeService = PersonTypeService();
+  final identificationTypeService = IdentificationTypeService();
+  final authRepository = AuthRepository(
     authService,
     identificationTypeService,
     personTypeService,
@@ -52,10 +53,7 @@ class _MyAppState extends State<MyApp> {
     } catch (_) {}
 
     // App estaba abierta en segundo plano
-    _appLinks.uriLinkStream.listen(
-          (uri) => _handleLink(uri),
-      onError: (_) {},
-    );
+    _appLinks.uriLinkStream.listen((uri) => _handleLink(uri), onError: (_) {});
   }
 
   void _handleLink(Uri uri) {
@@ -75,17 +73,13 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider<AuthBloc>(
-          create: (_) => AuthBloc(widget.authRepository),
-        ),
+        BlocProvider<AuthBloc>(create: (_) => AuthBloc(widget.authRepository)),
       ],
       child: MaterialApp(
         navigatorKey: navigatorKey,
         debugShowCheckedModeBanner: false,
         title: 'PQRSmart',
-        theme: ThemeData(
-          scaffoldBackgroundColor: const Color(0xFFECF4FD),
-        ),
+        theme: AppTheme.light,
         initialRoute: '/',
         onGenerateRoute: AppRoutes.onGenerateRoute,
       ),

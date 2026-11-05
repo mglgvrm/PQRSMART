@@ -62,9 +62,22 @@ class DependenceService {
       throw Exception('Error al guardar dependencia: ${response.statusCode}');
     }
   }
-  Future<DependenceModel> activateDependence(
-      int id
-      ) async {
+
+  Future<DependenceModel> updateDependence(
+    DependenceModel dependenceModel,
+  ) async {
+    final response = await http.put(
+      Uri.parse('${ApiConstants.baseUrl}/dependence/update'),
+      headers: {'Content-Type': 'application/json', 'Authorization': '******'},
+      body: jsonEncode(dependenceModel.toJson()),
+    );
+    if (response.statusCode == 200 || response.statusCode == 204) {
+      return dependenceModel;
+    }
+    throw Exception('Error al actualizar dependencia: ${response.statusCode}');
+  }
+
+  Future<DependenceModel> activateDependence(int id) async {
     final token = await storage.getToken();
 
     final response = await http.put(
@@ -91,9 +104,8 @@ class DependenceService {
       throw Exception('Error al guardar dependencia: ${response.statusCode}');
     }
   }
-  Future<DependenceModel> cancelDependence(
-      int id
-      ) async {
+
+  Future<DependenceModel> cancelDependence(int id) async {
     final token = await storage.getToken();
 
     final response = await http.put(

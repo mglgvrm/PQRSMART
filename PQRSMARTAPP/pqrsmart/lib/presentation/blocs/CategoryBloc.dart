@@ -28,6 +28,15 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
         emit(CategoryError('Error al guardar Categoria'));
       }
     });
+    on<UpdateCategoryEvent>((event, emit) async {
+      emit(CategoryLoading());
+      try {
+        final category = await repository.updateCategory(event.categoryModel);
+        emit(SaveCategoryLoaded(category));
+      } catch (e) {
+        emit(CategoryError('Error al actualizar categoría: $e'));
+      }
+    });
     on<ActivateCategoryEvent>((event, emit) async {
       emit(CategoryLoading());
 

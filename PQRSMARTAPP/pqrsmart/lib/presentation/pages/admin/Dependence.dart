@@ -49,12 +49,12 @@ class _DependencePageState extends State<DependencePage> {
             Center(
               child: CircleAvatar(
                 radius: 36,
-                backgroundColor: Color(0xFF4A6B5A).withOpacity(0.15),
+                backgroundColor: Color(0xFF0755A8).withOpacity(0.15),
                 child: Text(
                   safeStr(dependence.nameDependence).isNotEmpty
                       ? safeStr(dependence.nameDependence)[0].toUpperCase()
                       : '?',
-                  style: TextStyle(fontSize: 28, color: Color(0xFF4A6B5A)),
+                  style: TextStyle(fontSize: 28, color: Color(0xFF0755A8)),
                 ),
               ),
             ),
@@ -109,7 +109,7 @@ class _DependencePageState extends State<DependencePage> {
             ListTile(
               leading: Icon(
                 Icons.remove_red_eye_outlined,
-                color: Color(0xFF4A6B5A),
+                color: Color(0xFF0755A8),
               ),
               title: Text('Ver detalle'),
               onTap: () {
@@ -118,11 +118,11 @@ class _DependencePageState extends State<DependencePage> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.edit_outlined, color: Color(0xFF4A6B5A)),
+              leading: Icon(Icons.edit_outlined, color: Color(0xFF0755A8)),
               title: Text('Editar dependencia'),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: editar dependencia
+                _showFormAddDependence(context, dependence);
               },
             ),
             if (activo)
@@ -131,15 +131,7 @@ class _DependencePageState extends State<DependencePage> {
                 title: Text('Desactivar', style: TextStyle(color: Colors.red)),
                 onTap: () {
                   Navigator.pop(context);
-                  context.read<DependenceBloc>().add(
-                    CancelDependenceEvent(dependence.idDependence),
-                  );
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Dependencia desactivada correctamente'),
-                      backgroundColor: Color(0xFF4A6B5A),
-                    ),
-                  );
+                  _confirmStateChange(context, dependence, activo);
                 },
               )
             else
@@ -148,15 +140,7 @@ class _DependencePageState extends State<DependencePage> {
                 title: Text('Activar', style: TextStyle(color: Colors.green)),
                 onTap: () {
                   Navigator.pop(context);
-                  context.read<DependenceBloc>().add(
-                    ActivateDependenceEvent(dependence.idDependence),
-                  );
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Dependencia activada correctamente'),
-                      backgroundColor: Color(0xFF4A6B5A),
-                    ),
-                  );
+                  _confirmStateChange(context, dependence, activo);
                 },
               ),
           ],
@@ -165,8 +149,49 @@ class _DependencePageState extends State<DependencePage> {
     );
   }
 
-  void _showFormAddDependence(BuildContext context) {
-    final _nombreController = TextEditingController();
+  Future<void> _confirmStateChange(
+    BuildContext context,
+    DependenceModel dependence,
+    bool isActive,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          isActive ? 'Desactivar dependencia' : 'Activar dependencia',
+        ),
+        content: Text(
+          isActive
+              ? '¿Deseas desactivar esta dependencia?'
+              : '¿Deseas activar esta dependencia?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(isActive ? 'Desactivar' : 'Activar'),
+          ),
+        ],
+      ),
+    );
+    if (!mounted || confirmed != true) return;
+    final id = dependence.idDependence;
+    if (id == null) return;
+    context.read<DependenceBloc>().add(
+      isActive ? CancelDependenceEvent(id) : ActivateDependenceEvent(id),
+    );
+  }
+
+  void _showFormAddDependence(
+    BuildContext context, [
+    DependenceModel? existing,
+  ]) {
+    final nombreController = TextEditingController(
+      text: existing?.nameDependence ?? '',
+    );
 
     showModalBottomSheet(
       context: context,
@@ -198,13 +223,13 @@ class _DependencePageState extends State<DependencePage> {
                 ),
               ),
               Text(
-                'Nueva Dependencia',
+                existing == null ? 'Nueva Dependencia' : 'Editar Dependencia',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               Divider(),
               SizedBox(height: 8),
               TextField(
-                controller: _nombreController,
+                controller: nombreController,
                 decoration: InputDecoration(
                   labelText: 'Nombre de la Dependencia',
                   prefixIcon: Icon(Icons.business),
@@ -220,9 +245,13 @@ class _DependencePageState extends State<DependencePage> {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   icon: Icon(Icons.save),
-                  label: Text('Guardar Dependencia'),
+                  label: Text(
+                    existing == null
+                        ? 'Guardar Dependencia'
+                        : 'Actualizar Dependencia',
+                  ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF4A6B5A),
+                    backgroundColor: Color(0xFF0755A8),
                     foregroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
@@ -230,7 +259,7 @@ class _DependencePageState extends State<DependencePage> {
                     ),
                   ),
                   onPressed: () {
-                    if (_nombreController.text.trim().isEmpty) {
+                    if (nombreController.text.trim().isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text('El nombre es requerido'),
@@ -239,21 +268,36 @@ class _DependencePageState extends State<DependencePage> {
                       );
                       return;
                     }
-                    context.read<DependenceBloc>().add(
-                      SaveDependenceEvent(
-                        DependenceModel(
-                          nameDependence: _nombreController.text,
-                          state: StateModel(id: 1),
+                    final currentState = context.read<DependenceBloc>().state;
+                    if (currentState is DependenceLoaded &&
+                        currentState.dependence.any(
+                          (item) =>
+                              item.idDependence != existing?.idDependence &&
+                              (item.nameDependence ?? '')
+                                      .trim()
+                                      .toLowerCase() ==
+                                  nombreController.text.trim().toLowerCase(),
+                        )) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Ya existe una dependencia con ese nombre.',
+                          ),
                         ),
-                      ),
+                      );
+                      return;
+                    }
+                    final updated = DependenceModel(
+                      idDependence: existing?.idDependence,
+                      nameDependence: nombreController.text.trim(),
+                      state: existing?.state ?? StateModel(id: 1),
+                    );
+                    context.read<DependenceBloc>().add(
+                      existing == null
+                          ? SaveDependenceEvent(updated)
+                          : UpdateDependenceEvent(updated),
                     );
                     Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Dependencia guardada correctamente'),
-                        backgroundColor: Color(0xFF4A6B5A),
-                      ),
-                    );
                   },
                 ),
               ),
@@ -269,7 +313,7 @@ class _DependencePageState extends State<DependencePage> {
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
-          Icon(icono, size: 20, color: Color(0xFF4A6B5A)),
+          Icon(icono, size: 20, color: Color(0xFF0755A8)),
           SizedBox(width: 10),
           Text('$etiqueta: ', style: TextStyle(fontWeight: FontWeight.w600)),
           Expanded(child: Text(valor, overflow: TextOverflow.ellipsis)),
@@ -323,7 +367,7 @@ class _DependencePageState extends State<DependencePage> {
       appBar: AppBar(
         title: Text('Dependencias'),
         centerTitle: true,
-        backgroundColor: Color(0xFF4A6B5A),
+        backgroundColor: Color(0xFF0755A8),
         foregroundColor: Colors.white,
         actions: [
           PopupMenuButton<String>(
@@ -340,7 +384,7 @@ class _DependencePageState extends State<DependencePage> {
                 value: 'perfil',
                 child: Row(
                   children: [
-                    Icon(Icons.person, color: Color(0xFF4A6B5A)),
+                    Icon(Icons.person, color: Color(0xFF0755A8)),
                     SizedBox(width: 10),
                     Text('Perfil'),
                   ],
@@ -362,18 +406,22 @@ class _DependencePageState extends State<DependencePage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showFormAddDependence(context),
-        backgroundColor: Color(0xFF4A6B5A),
+        backgroundColor: Color(0xFF0755A8),
         foregroundColor: Colors.white,
         icon: Icon(Icons.add_business),
         label: Text('Nueva Dependencia'),
       ),
       body: BlocConsumer<DependenceBloc, DependenceState>(
         listener: (context, state) {
-          // ✅ Aquí van los side effects (snackbar, navigation)
           if (state is SaveDependenceLoaded ||
               state is ActivateDependenceLoaded ||
               state is CancelDependenceLoaded) {
             context.read<DependenceBloc>().add(LoadDependenceEvent());
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Dependencia actualizada correctamente.'),
+              ),
+            );
           }
           if (state is DependenceError) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -387,7 +435,7 @@ class _DependencePageState extends State<DependencePage> {
         builder: (context, state) {
           if (state is DependenceLoading) {
             return Center(
-              child: CircularProgressIndicator(color: Color(0xFF4A6B5A)),
+              child: CircularProgressIndicator(color: Color(0xFF0755A8)),
             );
           }
 
@@ -454,7 +502,7 @@ class _DependencePageState extends State<DependencePage> {
                                       CircleAvatar(
                                         radius: 26,
                                         backgroundColor: Color(
-                                          0xFF4A6B5A,
+                                          0xFF0755A8,
                                         ).withOpacity(0.15),
                                         child: Text(
                                           safeStr(dep.nameDependence).isNotEmpty
@@ -464,7 +512,7 @@ class _DependencePageState extends State<DependencePage> {
                                               : '?',
                                           style: TextStyle(
                                             fontSize: 18,
-                                            color: Color(0xFF4A6B5A),
+                                            color: Color(0xFF0755A8),
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
@@ -511,7 +559,7 @@ class _DependencePageState extends State<DependencePage> {
                                             Icon(
                                               Icons.tag,
                                               size: 13,
-                                              color: Color(0xFF4A6B5A),
+                                              color: Color(0xFF0755A8),
                                             ),
                                             SizedBox(width: 4),
                                             Text(
@@ -608,7 +656,7 @@ class _DependencePageState extends State<DependencePage> {
                     icon: Icon(Icons.refresh),
                     label: Text('Reintentar'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF4A6B5A),
+                      backgroundColor: Color(0xFF0755A8),
                       foregroundColor: Colors.white,
                     ),
                     onPressed: () {

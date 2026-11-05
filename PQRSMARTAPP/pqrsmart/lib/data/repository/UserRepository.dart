@@ -5,14 +5,19 @@ class UserRepository {
   final UserService userService;
 
   UserRepository(this.userService);
-  Future<List<UserModel>> getAll(){
+  Future<List<UserModel>> getAll() {
     return userService.getAll();
   }
-  Future<UserModel> getMyUserEvent(){
+
+  Future<UserModel> getMyUserEvent() {
     return userService.getMyUserEvent();
   }
-  Future<UserModel> cancelUser(int id){
+
+  Future<UserModel> cancelUser(int id) {
     return userService.cancelUser(id);
   }
 
+  Future<void> setUserStatus(int id, {required bool active}) {
+    return userService.setUserStatus(id, active: active);
+  }
 }

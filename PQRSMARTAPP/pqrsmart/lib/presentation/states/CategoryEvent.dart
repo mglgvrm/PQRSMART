@@ -9,11 +9,19 @@ class SaveCategoryEvent extends CategoryEvent {
 
   SaveCategoryEvent(this.categoryModel);
 }
-class ActivateCategoryEvent extends CategoryEvent{
+
+class UpdateCategoryEvent extends CategoryEvent {
+  final CategoryModel categoryModel;
+
+  UpdateCategoryEvent(this.categoryModel);
+}
+
+class ActivateCategoryEvent extends CategoryEvent {
   final int id;
   ActivateCategoryEvent(this.id);
 }
-class CancelCategoryEvent extends CategoryEvent{
+
+class CancelCategoryEvent extends CategoryEvent {
   final int id;
   CancelCategoryEvent(this.id);
 }

@@ -29,7 +29,6 @@ class _CategoryPageState extends State<CategoryPage> {
   }
 
   String _filtroSeleccionado = 'Todos';
-  List<String> _filtrosDependencia = ['Todos'];
 
   void _showDetailsCategory(BuildContext context, dynamic category) {
     showModalBottomSheet(
@@ -58,12 +57,12 @@ class _CategoryPageState extends State<CategoryPage> {
             Center(
               child: CircleAvatar(
                 radius: 36,
-                backgroundColor: Color(0xFF4A6B5A).withOpacity(0.15),
+                backgroundColor: Color(0xFF0755A8).withOpacity(0.15),
                 child: Text(
                   safeStr(category.nameCategory).isNotEmpty
                       ? safeStr(category.nameCategory)[0].toUpperCase()
                       : '?',
-                  style: TextStyle(fontSize: 28, color: Color(0xFF4A6B5A)),
+                  style: TextStyle(fontSize: 28, color: Color(0xFF0755A8)),
                 ),
               ),
             ),
@@ -117,7 +116,7 @@ class _CategoryPageState extends State<CategoryPage> {
             ListTile(
               leading: Icon(
                 Icons.remove_red_eye_outlined,
-                color: Color(0xFF4A6B5A),
+                color: Color(0xFF0755A8),
               ),
               title: Text('Ver detalle'),
               onTap: () {
@@ -126,11 +125,11 @@ class _CategoryPageState extends State<CategoryPage> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.edit_outlined, color: Color(0xFF4A6B5A)),
+              leading: Icon(Icons.edit_outlined, color: Color(0xFF0755A8)),
               title: Text('Editar Categoria'),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: editar dependencia
+                _showFormAddCategory(context, category);
               },
             ),
             if (activo)
@@ -139,29 +138,64 @@ class _CategoryPageState extends State<CategoryPage> {
                 title: Text('Desactivar', style: TextStyle(color: Colors.red)),
                 onTap: () {
                   Navigator.pop(context);
-                  context.read<CategoryBloc>().add(CancelCategoryEvent(category.idCategory));
+                  _confirmStateChange(context, category, activo);
                 },
               )
             else
               ListTile(
-              leading: Icon(Icons.check, color: Colors.green),
-              title: Text('Activar', style: TextStyle(color: Colors.green)),
-              onTap: () {
-                Navigator.pop(context);
-                context.read<CategoryBloc>().add(ActivateCategoryEvent(category.idCategory));
-              },
-            ),
+                leading: Icon(Icons.check, color: Colors.green),
+                title: Text('Activar', style: TextStyle(color: Colors.green)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _confirmStateChange(context, category, activo);
+                },
+              ),
           ],
         ),
       ),
     );
   }
 
-  void _showFormAddCategory(BuildContext context) {
-    // ← Captura el bloc ANTES de abrir el modal
+  Future<void> _confirmStateChange(
+    BuildContext context,
+    CategoryModel category,
+    bool isActive,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(isActive ? 'Desactivar categoría' : 'Activar categoría'),
+        content: Text(
+          isActive
+              ? '¿Deseas desactivar esta categoría?'
+              : '¿Deseas activar esta categoría?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(isActive ? 'Desactivar' : 'Activar'),
+          ),
+        ],
+      ),
+    );
+    if (!mounted || confirmed != true) return;
+    final id = category.idCategory;
+    if (id == null) return;
+    context.read<CategoryBloc>().add(
+      isActive ? CancelCategoryEvent(id) : ActivateCategoryEvent(id),
+    );
+  }
+
+  void _showFormAddCategory(BuildContext context, [CategoryModel? existing]) {
     final categoryBloc = context.read<CategoryBloc>();
-    final _nombreController = TextEditingController();
-    DependenceModel? _dependenciaSeleccionada;
+    final nombreController = TextEditingController(
+      text: existing?.nameCategory ?? '',
+    );
+    DependenceModel? dependenciaSeleccionada = existing?.dependence;
 
     showModalBottomSheet(
       context: context,
@@ -190,6 +224,15 @@ class _CategoryPageState extends State<CategoryPage> {
                               .where((d) => d.idDependence != 7)
                               .toList()
                         : <DependenceModel>[];
+                    final currentDependenceId =
+                        dependenciaSeleccionada?.idDependence;
+                    DependenceModel? selectedDependence;
+                    for (final item in dependencias) {
+                      if (item.idDependence == currentDependenceId) {
+                        selectedDependence = item;
+                        break;
+                      }
+                    }
 
                     return Column(
                       mainAxisSize: MainAxisSize.min,
@@ -209,7 +252,9 @@ class _CategoryPageState extends State<CategoryPage> {
                         ),
 
                         Text(
-                          'Nueva Categoría',
+                          existing == null
+                              ? 'Nueva Categoría'
+                              : 'Editar Categoría',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -220,7 +265,7 @@ class _CategoryPageState extends State<CategoryPage> {
 
                         // Nombre
                         TextField(
-                          controller: _nombreController,
+                          controller: nombreController,
                           decoration: InputDecoration(
                             labelText: 'Nombre de la Categoría',
                             prefixIcon: Icon(Icons.category_outlined),
@@ -254,7 +299,7 @@ class _CategoryPageState extends State<CategoryPage> {
                                       height: 16,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
-                                        color: Color(0xFF4A6B5A),
+                                        color: Color(0xFF0755A8),
                                       ),
                                     ),
                                     SizedBox(width: 10),
@@ -269,14 +314,14 @@ class _CategoryPageState extends State<CategoryPage> {
                                 ),
                               )
                             : DropdownButtonFormField<DependenceModel>(
-                                value: _dependenciaSeleccionada,
+                                value: selectedDependence,
                                 dropdownColor: Colors.white,
                                 isExpanded: true,
                                 decoration: InputDecoration(
                                   labelText: 'Dependencia',
                                   prefixIcon: Icon(
                                     Icons.business_outlined,
-                                    color: Color(0xFF4A6B5A),
+                                    color: Color(0xFF0755A8),
                                   ),
                                   filled: true,
                                   fillColor: Colors.white,
@@ -304,7 +349,7 @@ class _CategoryPageState extends State<CategoryPage> {
                                     )
                                     .toList(),
                                 onChanged: (v) => setModalState(
-                                  () => _dependenciaSeleccionada = v,
+                                  () => dependenciaSeleccionada = v,
                                 ),
                               ),
 
@@ -315,9 +360,13 @@ class _CategoryPageState extends State<CategoryPage> {
                           width: double.infinity,
                           child: ElevatedButton.icon(
                             icon: Icon(Icons.save),
-                            label: Text('Guardar Categoría'),
+                            label: Text(
+                              existing == null
+                                  ? 'Guardar Categoría'
+                                  : 'Actualizar Categoría',
+                            ),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xFF4A6B5A),
+                              backgroundColor: Color(0xFF0755A8),
                               foregroundColor: Colors.white,
                               padding: EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(
@@ -325,7 +374,7 @@ class _CategoryPageState extends State<CategoryPage> {
                               ),
                             ),
                             onPressed: () {
-                              if (_nombreController.text.trim().isEmpty) {
+                              if (nombreController.text.trim().isEmpty) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text('El nombre es requerido'),
@@ -335,7 +384,29 @@ class _CategoryPageState extends State<CategoryPage> {
                                 );
                                 return;
                               }
-                              if (_dependenciaSeleccionada == null) {
+                              final currentState = categoryBloc.state;
+                              if (currentState is CategoryLoaded &&
+                                  currentState.categories.any(
+                                    (item) =>
+                                        item.idCategory !=
+                                            existing?.idCategory &&
+                                        item.nameCategory
+                                                .trim()
+                                                .toLowerCase() ==
+                                            nombreController.text
+                                                .trim()
+                                                .toLowerCase(),
+                                  )) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Ya existe una categoría con ese nombre.',
+                                    ),
+                                  ),
+                                );
+                                return;
+                              }
+                              if (selectedDependence == null) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text('Selecciona una dependencia'),
@@ -345,28 +416,20 @@ class _CategoryPageState extends State<CategoryPage> {
                                 );
                                 return;
                               }
-                              categoryBloc.add(
-                                SaveCategoryEvent(
-                                  CategoryModel(
-                                    nameCategory: _nombreController.text.trim(),
-                                    dependence: DependenceModel(
-                                      idDependence: _dependenciaSeleccionada!
-                                          .idDependence,
-                                    ),
-                                    state: StateModel(id: 1),
-                                  ),
+                              final updated = CategoryModel(
+                                idCategory: existing?.idCategory,
+                                nameCategory: nombreController.text.trim(),
+                                dependence: DependenceModel(
+                                  idDependence: selectedDependence.idDependence,
                                 ),
+                                state: existing?.state ?? StateModel(id: 1),
+                              );
+                              categoryBloc.add(
+                                existing == null
+                                    ? SaveCategoryEvent(updated)
+                                    : UpdateCategoryEvent(updated),
                               );
                               Navigator.pop(context);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Categoría guardada correctamente',
-                                  ),
-                                  backgroundColor: Color(0xFF4A6B5A),
-                                  behavior: SnackBarBehavior.floating,
-                                ),
-                              );
                             },
                           ),
                         ),
@@ -388,7 +451,7 @@ class _CategoryPageState extends State<CategoryPage> {
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
-          Icon(icono, size: 20, color: Color(0xFF4A6B5A)),
+          Icon(icono, size: 20, color: Color(0xFF0755A8)),
           SizedBox(width: 10),
           Text('$etiqueta: ', style: TextStyle(fontWeight: FontWeight.w600)),
           Expanded(child: Text(valor, overflow: TextOverflow.ellipsis)),
@@ -442,7 +505,7 @@ class _CategoryPageState extends State<CategoryPage> {
       appBar: AppBar(
         title: Text('Categorias'),
         centerTitle: true,
-        backgroundColor: Color(0xFF4A6B5A),
+        backgroundColor: Color(0xFF0755A8),
         foregroundColor: Colors.white,
         actions: [
           PopupMenuButton<String>(
@@ -459,7 +522,7 @@ class _CategoryPageState extends State<CategoryPage> {
                 value: 'perfil',
                 child: Row(
                   children: [
-                    Icon(Icons.person, color: Color(0xFF4A6B5A)),
+                    Icon(Icons.person, color: Color(0xFF0755A8)),
                     SizedBox(width: 10),
                     Text('Perfil'),
                   ],
@@ -481,15 +544,22 @@ class _CategoryPageState extends State<CategoryPage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showFormAddCategory(context),
-        backgroundColor: Color(0xFF4A6B5A),
+        backgroundColor: Color(0xFF0755A8),
         foregroundColor: Colors.white,
         icon: Icon(Icons.add_business),
         label: Text('Nueva Categoria'),
       ),
       body: BlocConsumer<CategoryBloc, CategoryState>(
         listener: (context, state) {
-          if (state is SaveCategoryLoaded) {
+          if (state is SaveCategoryLoaded ||
+              state is ActivateCategoryLoaded ||
+              state is CancelCategoryLoaded) {
             context.read<CategoryBloc>().add(LoadCategoriesEvent());
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Categoría actualizada correctamente.'),
+              ),
+            );
           }
           if (state is CategoryError) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -504,7 +574,7 @@ class _CategoryPageState extends State<CategoryPage> {
         builder: (context, state) {
           if (state is CategoryLoading) {
             return Center(
-              child: CircularProgressIndicator(color: Color(0xFF4A6B5A)),
+              child: CircularProgressIndicator(color: Color(0xFF0755A8)),
             );
           }
 
@@ -548,7 +618,7 @@ class _CategoryPageState extends State<CategoryPage> {
                               overflow: TextOverflow.ellipsis,
                             ),
                             selected: seleccionado,
-                            selectedColor: Color(0xFF4A6B5A),
+                            selectedColor: Color(0xFF0755A8),
                             labelStyle: TextStyle(
                               color: seleccionado
                                   ? Colors.white
@@ -623,7 +693,7 @@ class _CategoryPageState extends State<CategoryPage> {
                                       CircleAvatar(
                                         radius: 26,
                                         backgroundColor: Color(
-                                          0xFF4A6B5A,
+                                          0xFF0755A8,
                                         ).withOpacity(0.15),
                                         child: Text(
                                           safeStr(cat.nameCategory).isNotEmpty
@@ -633,7 +703,7 @@ class _CategoryPageState extends State<CategoryPage> {
                                               : '?',
                                           style: TextStyle(
                                             fontSize: 18,
-                                            color: Color(0xFF4A6B5A),
+                                            color: Color(0xFF0755A8),
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
@@ -680,7 +750,7 @@ class _CategoryPageState extends State<CategoryPage> {
                                             Icon(
                                               Icons.tag,
                                               size: 13,
-                                              color: Color(0xFF4A6B5A),
+                                              color: Color(0xFF0755A8),
                                             ),
                                             SizedBox(width: 4),
                                             Text(
@@ -791,7 +861,7 @@ class _CategoryPageState extends State<CategoryPage> {
                     icon: Icon(Icons.refresh),
                     label: Text('Reintentar'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF4A6B5A),
+                      backgroundColor: Color(0xFF0755A8),
                       foregroundColor: Colors.white,
                     ),
                     onPressed: () {

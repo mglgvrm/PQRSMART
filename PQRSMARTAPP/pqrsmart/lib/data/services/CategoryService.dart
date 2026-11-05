@@ -8,8 +8,7 @@ import 'package:pqrsmart/data/services/AuthStorage.dart';
 class CategoryService {
   final storage = AuthStorage();
   Future<List<CategoryModel>> getCategories() async {
-
-    final token   = await storage.getToken();
+    final token = await storage.getToken();
 
     final response = await http.get(
       Uri.parse('${ApiConstants.baseUrl}/category/get'), // ← ajusta el endpoint
@@ -27,10 +26,8 @@ class CategoryService {
       throw Exception('Error al obtener categorías: ${response.statusCode}');
     }
   }
-  Future<CategoryModel> saveCategory(
-      CategoryModel categoryModel,
-      ) async
-  {
+
+  Future<CategoryModel> saveCategory(CategoryModel categoryModel) async {
     final token = await storage.getToken();
 
     final response = await http.post(
@@ -58,9 +55,20 @@ class CategoryService {
       throw Exception('Error al guardar categoria: ${response.statusCode}');
     }
   }
-  Future<CategoryModel> activateCategory(
-      int id
-      ) async {
+
+  Future<CategoryModel> updateCategory(CategoryModel categoryModel) async {
+    final response = await http.put(
+      Uri.parse('${ApiConstants.baseUrl}/category/update'),
+      headers: {'Content-Type': 'application/json', 'Authorization': '******'},
+      body: jsonEncode(categoryModel.toJson()),
+    );
+    if (response.statusCode == 200 || response.statusCode == 204) {
+      return categoryModel;
+    }
+    throw Exception('Error al actualizar categoría: ${response.statusCode}');
+  }
+
+  Future<CategoryModel> activateCategory(int id) async {
     final token = await storage.getToken();
 
     final response = await http.put(
@@ -87,9 +95,8 @@ class CategoryService {
       throw Exception('Error al guardar categoria: ${response.statusCode}');
     }
   }
-  Future<CategoryModel> cancelCategory(
-      int id
-      ) async {
+
+  Future<CategoryModel> cancelCategory(int id) async {
     final token = await storage.getToken();
 
     final response = await http.put(

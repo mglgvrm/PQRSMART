@@ -1,9 +1,7 @@
-import 'dart:convert';
+import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pqrsmart/data/model/user_model.dart';
-import 'package:pqrsmart/data/repository/IdentificationTypeRepository.dart';
-import 'package:pqrsmart/data/repository/PersonTypeRepository.dart';
 import 'package:pqrsmart/data/repository/auth_repositories.dart';
 import 'package:pqrsmart/data/services/AuthStorage.dart';
 import 'package:pqrsmart/presentation/states/auth_event.dart';
@@ -13,8 +11,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthStates> {
   final AuthRepository repository;
   final storage = AuthStorage();
 
-
-  AuthBloc(this.repository, ) : super(AuthInitial()) {
+  AuthBloc(this.repository) : super(AuthInitial()) {
     on<LoginEvent>((event, emit) async {
       emit(AuthLoading());
 
@@ -37,6 +34,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthStates> {
         emit(AuthFailure("Error al cerrar sesión"));
       }
     });
+    on<RequestPasswordResetEvent>((event, emit) async {
+      emit(AuthLoading());
+      try {
+        await repository.requestPasswordReset(event.email);
+        emit(ResetPasswordSent());
+      } catch (e) {
+        emit(AuthError(e.toString().replaceFirst('Exception: ', '')));
+      }
+    });
     on<SignInEvent>((event, emit) async {
       emit(AuthLoading());
       try {
@@ -54,7 +60,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthStates> {
         );
         emit(AuthRegisterSuccess(user: user));
       } catch (e) {
-        emit(AuthError(e.toString()));
+        emit(AuthError(e.toString().replaceFirst('Exception: ', '')));
       }
     });
 
@@ -73,8 +79,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthStates> {
           personType: event.personType,
           number: event.number,
           dependence: event.dependence,
-          role: event.role
-
+          role: event.role,
         );
         emit(AuthRegisterSuccess(user: user));
       } catch (e) {
@@ -84,15 +89,27 @@ class AuthBloc extends Bloc<AuthEvent, AuthStates> {
 
     // Carga los dropdowns al abrir el formulario
     on<LoadFormDataEvent>((event, emit) async {
-      emit(AuthLoading());
+      emit(AuthRegisterFormLoading());
       try {
         final data = await repository.getRegisterFormData();
-        emit(AuthRegisterLoaded(
-          identificationTypes: data['identificationTypes'],
-          personTypes: data['personTypes'],
-        ));
+        emit(
+          AuthRegisterLoaded(
+            identificationTypes: data['identificationTypes'],
+            personTypes: data['personTypes'],
+          ),
+        );
+      } on TimeoutException {
+        emit(
+          AuthRegisterFormError(
+            'El servidor tardó demasiado en responder. Verifica que el backend esté iniciado y vuelve a intentarlo.',
+          ),
+        );
       } catch (e) {
-        emit(AuthError( "Error al cargar formulario: ${e.toString()}"));
+        emit(
+          AuthRegisterFormError(
+            'No fue posible cargar los datos del registro: ${e.toString()}',
+          ),
+        );
       }
     });
   }

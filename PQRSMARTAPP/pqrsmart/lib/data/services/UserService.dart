@@ -48,9 +48,8 @@ class UserService {
       throw Exception("Error en al obtener usuarios");
     }
   }
-  Future<UserModel> cancelUser(
-      int id
-      ) async {
+
+  Future<UserModel> cancelUser(int id) async {
     final token = await storage.getToken();
 
     final response = await http.patch(
@@ -75,6 +74,24 @@ class UserService {
       return UserModel.fromJson(data);
     } else {
       throw Exception('Error al guardar Usuario: ${response.statusCode}');
+    }
+  }
+
+  Future<void> setUserStatus(int id, {required bool active}) async {
+    final response = await http.put(
+      Uri.parse('${ApiConstants.baseUrl}/Usuario/update/$id'),
+      headers: {'Content-Type': 'application/json', 'Authorization': '******'},
+      body: jsonEncode({
+        'stateUser': {
+          'id': active ? 2 : 3,
+          'state': active ? 'ACTIVADO' : 'DESACTIVADO',
+        },
+      }),
+    );
+    if (response.statusCode != 200) {
+      throw Exception(
+        'Error al cambiar el estado del usuario: ${response.statusCode}',
+      );
     }
   }
 }
