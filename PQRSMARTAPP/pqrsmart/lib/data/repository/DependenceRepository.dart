@@ -8,13 +8,20 @@ class DependenceRepository {
   Future<List<DependenceModel>> getDependences() {
     return service.getDependences();
   }
-  Future<DependenceModel> saveDependence(DependenceModel dependence){
+
+  Future<DependenceModel> saveDependence(DependenceModel dependence) {
     return service.saveDependence(dependence);
   }
-  Future<DependenceModel> activateDependence(int id){
+
+  Future<DependenceModel> updateDependence(DependenceModel dependence) {
+    return service.updateDependence(dependence);
+  }
+
+  Future<DependenceModel> activateDependence(int id) {
     return service.activateDependence(id);
   }
-  Future<DependenceModel> cancelDependence(int id){
+
+  Future<DependenceModel> cancelDependence(int id) {
     return service.cancelDependence(id);
   }
 }

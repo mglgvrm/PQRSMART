@@ -7,7 +7,6 @@ class DependenceBloc extends Bloc<DependenceEvent, DependenceState> {
   final DependenceRepository repository;
 
   DependenceBloc(this.repository) : super(DependenceInitial()) {
-
     on<LoadDependenceEvent>((event, emit) async {
       emit(DependenceLoading());
       try {
@@ -27,6 +26,15 @@ class DependenceBloc extends Bloc<DependenceEvent, DependenceState> {
         emit(SaveDependenceLoaded(dependence));
       } catch (e) {
         emit(DependenceError('Error al guardar dependencia'));
+      }
+    });
+    on<UpdateDependenceEvent>((event, emit) async {
+      emit(DependenceLoading());
+      try {
+        final dependence = await repository.updateDependence(event.dependence);
+        emit(SaveDependenceLoaded(dependence));
+      } catch (e) {
+        emit(DependenceError('Error al actualizar dependencia: $e'));
       }
     });
     on<ActivateDependenceEvent>((event, emit) async {
@@ -52,7 +60,4 @@ class DependenceBloc extends Bloc<DependenceEvent, DependenceState> {
       }
     });
   }
-
-
-
 }

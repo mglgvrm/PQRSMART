@@ -23,8 +23,8 @@ class SignInEvent extends AuthEvent {
   final String password;
   final int identificationType; // ID del objeto relacional
   final int identificationNumber;
-  final int personType;          // ID del objeto relacional
-  final int number;        // ID del objeto relacional
+  final int personType; // ID del objeto relacional
+  final int number; // ID del objeto relacional
 
   SignInEvent({
     required this.user,
@@ -40,9 +40,15 @@ class SignInEvent extends AuthEvent {
 
   @override
   List<Object> get props => [
-    user, name, lastName, email, password,
-    identificationType, identificationNumber,
-    personType, number,
+    user,
+    name,
+    lastName,
+    email,
+    password,
+    identificationType,
+    identificationNumber,
+    personType,
+    number,
   ];
 }
 
@@ -54,10 +60,10 @@ class SignInEventAmin extends AuthEvent {
   final String password;
   final int identificationType; // ID del objeto relacional
   final int identificationNumber;
-  final int personType;          // ID del objeto relacional
+  final int personType; // ID del objeto relacional
   final int number;
   final int dependence;
-  final String role;// ID del objeto relacional
+  final String role; // ID del objeto relacional
 
   SignInEventAmin({
     required this.user,
@@ -70,17 +76,34 @@ class SignInEventAmin extends AuthEvent {
     required this.personType,
     required this.number,
     required this.dependence,
-    required this.role
+    required this.role,
   });
 
   @override
   List<Object> get props => [
-    user, name, lastName, email, password,
-    identificationType, identificationNumber,
-    personType, number, dependence, role
+    user,
+    name,
+    lastName,
+    email,
+    password,
+    identificationType,
+    identificationNumber,
+    personType,
+    number,
+    dependence,
+    role,
   ];
 }
 
 class LogoutEvent extends AuthEvent {}
+
+class RequestPasswordResetEvent extends AuthEvent {
+  final String email;
+
+  RequestPasswordResetEvent(this.email);
+
+  @override
+  List<Object> get props => [email];
+}
 
 class LoadFormDataEvent extends AuthEvent {}

@@ -12,7 +12,7 @@ import 'package:pqrsmart/presentation/states/auth_event.dart';
 class Home extends StatelessWidget {
   const Home({Key? key}) : super(key: key);
 
-  static const _verde = Color(0xFF4A6B5A);
+  static const _verde = Color(0xFF0755A8);
   static const _bg    = Color(0xFFF0F2F5);
 
   String safeStr(dynamic v, [String fallback = '']) =>
@@ -85,7 +85,7 @@ class Home extends StatelessWidget {
                   value: 'perfil',
                   child: Row(
                     children: [
-                      Icon(Icons.person, color: Color(0xFF4A6B5A)),
+                      Icon(Icons.person, color: Color(0xFF0755A8)),
                       SizedBox(width: 10),
                       Text('Perfil'),
                     ],
@@ -197,7 +197,7 @@ class Home extends StatelessWidget {
                             icon: Icons.admin_panel_settings_outlined,
                             label: 'Admins',
                             valor: admins,
-                            color: Color(0xFF4A6B5A),
+                            color: Color(0xFF0755A8),
                           ),
                         ),
                         SizedBox(width: 12),

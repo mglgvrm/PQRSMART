@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:pqrsmart/data/model/AuthResponse.dart';
 import 'package:pqrsmart/data/model/user_model.dart';
@@ -15,14 +14,37 @@ class AuthService {
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({"user": user, "password": password}),
     );
-    if (kDebugMode) {
-      print("el response ${response.body}");
-    }
     if (response.statusCode == 200) {
       return AuthResponse.fromJson(jsonDecode(response.body));
     } else {
       throw Exception("Error en login");
     }
+  }
+
+  Future<void> requestPasswordReset(String email) async {
+    final response = await http.post(
+      Uri.parse('${ApiConstants.baseUrl}/auth/forgot-password/email'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email}),
+    );
+    if (response.statusCode == 200) return;
+
+    var message = response.body.trim();
+    try {
+      final error = jsonDecode(response.body);
+      if (error is Map<String, dynamic>) {
+        message = error['message']?.toString() ?? message;
+      } else if (error is String) {
+        message = error;
+      }
+    } on FormatException {
+      // The Spring endpoint may return a plain-text error.
+    }
+    throw Exception(
+      message.isEmpty
+          ? 'No fue posible solicitar la recuperación de contraseña.'
+          : message,
+    );
   }
 
   Future<UserModel> register({
@@ -57,13 +79,24 @@ class AuthService {
       headers: {'Content-Type': 'application/json'},
       body: body,
     );
-    if (kDebugMode) print("Response register: ${response.body}");
     if (response.statusCode == 200 || response.statusCode == 201) {
       final json = jsonDecode(response.body);
       return UserModel.fromJson(json);
     } else {
-      final error = jsonDecode(response.body);
-      throw Exception(error['message'] ?? 'Error en el registro');
+      var message = response.body.trim();
+      try {
+        final error = jsonDecode(response.body);
+        if (error is Map<String, dynamic>) {
+          message = error['message']?.toString() ?? message;
+        } else if (error is String) {
+          message = error;
+        }
+      } on FormatException {
+        // Some existing Spring endpoints return plain-text validation errors.
+      }
+      throw Exception(
+        message.isEmpty ? 'No fue posible crear la cuenta.' : message,
+      );
     }
   }
 
@@ -106,7 +139,6 @@ class AuthService {
       },
       body: body,
     );
-    if (kDebugMode) print("Response register: ${response.body}");
     if (response.statusCode == 200 || response.statusCode == 201) {
       final json = jsonDecode(response.body);
       return UserModel.fromJson(json);

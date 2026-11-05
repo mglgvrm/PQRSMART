@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pqrsmart/core/theme/app_colors.dart';
 import 'package:pqrsmart/presentation/blocs/ChatBoxBloc.dart';
+import 'package:pqrsmart/presentation/blocs/RequestBloc.dart';
 import 'package:pqrsmart/presentation/blocs/UserBloc.dart';
 import 'package:pqrsmart/presentation/blocs/auth_bloc.dart';
 import 'package:pqrsmart/presentation/pages/ProfilePage.dart';
 import 'package:pqrsmart/presentation/pages/admin/register/RegisterAdminPage.dart';
 import 'package:pqrsmart/presentation/states/ChatBoxEvent.dart';
 import 'package:pqrsmart/presentation/states/ChatBoxState.dart';
+import 'package:pqrsmart/presentation/states/RequestState.dart';
 import 'package:pqrsmart/presentation/states/UserEvent.dart';
 import 'package:pqrsmart/presentation/states/UserSatate.dart';
 import 'package:pqrsmart/presentation/states/auth_event.dart';
@@ -23,8 +26,9 @@ class _UserState extends State<User> {
   final List<String> _filtros = [
     'Todos',
     'Administradores',
-    'Funcionarios',
+    'Secretarios',
     'Usuarios',
+    'Activos',
     'Inactivos',
   ];
 
@@ -49,7 +53,7 @@ class _UserState extends State<User> {
       case 'ADMIN':
         return 'Administrador';
       case 'SECRE':
-        return 'Funcionarios';
+        return 'Secretario';
       case 'USER':
         return 'Usuario';
       default:
@@ -60,30 +64,53 @@ class _UserState extends State<User> {
   List<dynamic> _aplicarFiltro(List<dynamic> users) {
     switch (_filtroSeleccionado) {
       case 'Administradores':
-        return users.where((u) => safeStr(u.role).toUpperCase() == 'ADMIN').toList();
-      case 'Funcionarios':
-        return users.where((u) => safeStr(u.role).toUpperCase() == 'SECRE').toList();
-      case 'Usuarios':
-        return users.where((u) => safeStr(u.role).toUpperCase() == 'USER').toList();
-      case 'Inactivos':
         return users
-            .where((u) => safeStr(u.stateUser?.state).toUpperCase() != 'ACTIVO')
+            .where((u) => safeStr(u.role).toUpperCase() == 'ADMIN')
             .toList();
+      case 'Secretarios':
+        return users
+            .where((u) => safeStr(u.role).toUpperCase() == 'SECRE')
+            .toList();
+      case 'Usuarios':
+        return users
+            .where((u) => safeStr(u.role).toUpperCase() == 'USER')
+            .toList();
+      case 'Activos':
+        return users.where(_isActive).toList();
+      case 'Inactivos':
+        return users.where((u) => !_isActive(u)).toList();
       default:
         return users;
     }
   }
 
+  bool _isActive(dynamic user) {
+    final state = safeStr(user.stateUser?.state).toUpperCase();
+    return state == 'ACTIVO' || state == 'ACTIVADO';
+  }
+
   Map<String, int> _estadisticas(List<dynamic> users) {
     return {
       'total': users.length,
-      'administradores': users.where((u) => safeStr(u.role).toUpperCase() == 'ADMIN').length,
-      'usuarios': users.where((u) => safeStr(u.role).toUpperCase() == 'USER').length,
-      'funcionarios': users.where((u) => safeStr(u.role).toUpperCase() == 'SECRE').length,
+      'administradores': users
+          .where((u) => safeStr(u.role).toUpperCase() == 'ADMIN')
+          .length,
+      'usuarios': users
+          .where((u) => safeStr(u.role).toUpperCase() == 'USER')
+          .length,
+      'funcionarios': users
+          .where((u) => safeStr(u.role).toUpperCase() == 'SECRE')
+          .length,
     };
   }
 
   void _showDetailsUser(BuildContext context, dynamic user) {
+    final requestState = context.read<RequestBloc>().state;
+    final relatedRequests = requestState is RequestLoaded
+        ? requestState.request
+              .where((request) => request.user?.id == user.id)
+              .toList()
+        : null;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -110,12 +137,12 @@ class _UserState extends State<User> {
             Center(
               child: CircleAvatar(
                 radius: 36,
-                backgroundColor: Color(0xFF4A6B5A).withOpacity(0.15),
+                backgroundColor: Color(0xFF0755A8).withOpacity(0.15),
                 child: Text(
                   safeStr(user.name).isNotEmpty
                       ? safeStr(user.name)[0].toUpperCase()
                       : '?',
-                  style: TextStyle(fontSize: 28, color: Color(0xFF4A6B5A)),
+                  style: TextStyle(fontSize: 28, color: Color(0xFF0755A8)),
                 ),
               ),
             ),
@@ -125,14 +152,64 @@ class _UserState extends State<User> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             Divider(),
-            _infoFila(Icons.person, 'Nombre', '${safeStr(user.name)} ${safeStr(user.lastName)}'),
+            _infoFila(
+              Icons.person,
+              'Nombre',
+              '${safeStr(user.name)} ${safeStr(user.lastName)}',
+            ),
             _infoFila(Icons.email, 'Email', safeStr(user.email)),
             _infoFila(Icons.account_circle, 'Usuario', safeStr(user.user)),
             _infoFila(Icons.phone, 'Número', safeStr(user.number)),
-            _infoFila(Icons.badge, 'Identificación', safeStr(user.identificationNumber)),
+            _infoFila(
+              Icons.badge,
+              'Identificación',
+              safeStr(user.identificationNumber),
+            ),
             _infoFila(Icons.security, 'Rol', _rolLegible(safeStr(user.role))),
-            _infoFila(Icons.toggle_on, 'Estado', safeStr(user.stateUser?.state)),
-            _infoFila(Icons.business, 'Dependencia', safeStr(user.dependence?.nameDependence)),
+            _infoFila(
+              Icons.toggle_on,
+              'Estado',
+              safeStr(user.stateUser?.state),
+            ),
+            _infoFila(
+              Icons.business,
+              'Dependencia',
+              safeStr(user.dependence?.nameDependence),
+            ),
+            Divider(),
+            Text(
+              'Solicitudes relacionadas',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+            if (relatedRequests == null)
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: Text('Información no disponible.'),
+              )
+            else if (relatedRequests.isEmpty)
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: Text('No hay solicitudes asociadas a esta cuenta.'),
+              )
+            else
+              ...relatedRequests.map(
+                (request) => ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  dense: true,
+                  leading: Icon(
+                    Icons.description_outlined,
+                    color: Color(0xFF0755A8),
+                  ),
+                  title: Text(
+                    request.radicado?.isNotEmpty == true
+                        ? request.radicado!
+                        : '#PQR-${request.idRequest ?? '---'}',
+                  ),
+                  subtitle: Text(
+                    '${request.requestState?.nameRequestState ?? 'Sin estado'} · ${request.date}',
+                  ),
+                ),
+              ),
             SizedBox(height: 16),
           ],
         ),
@@ -141,6 +218,7 @@ class _UserState extends State<User> {
   }
 
   void _showMenuOption(BuildContext context, dynamic user) {
+    final isActive = _isActive(user);
     showModalBottomSheet(
       context: context,
       shape: RoundedRectangleBorder(
@@ -161,7 +239,10 @@ class _UserState extends State<User> {
               ),
             ),
             ListTile(
-              leading: Icon(Icons.remove_red_eye_outlined, color: Color(0xFF4A6B5A)),
+              leading: Icon(
+                Icons.remove_red_eye_outlined,
+                color: Color(0xFF0755A8),
+              ),
               title: Text('Ver perfil'),
               onTap: () {
                 Navigator.pop(context);
@@ -169,43 +250,56 @@ class _UserState extends State<User> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.chat_bubble_outline, color: Color(0xFF4A6B5A)),
-              title: Text('Enviar mensaje'),
+              leading: Icon(
+                isActive ? Icons.block_outlined : Icons.check_circle_outline,
+                color: isActive ? AppColors.cancelled : AppColors.suggestion,
+              ),
+              title: Text(
+                isActive ? 'Desactivar usuario' : 'Activar usuario',
+                style: TextStyle(
+                  color: isActive ? AppColors.cancelled : AppColors.suggestion,
+                ),
+              ),
               onTap: () {
                 Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.edit_outlined, color: Color(0xFF4A6B5A)),
-              title: Text('Editar usuario'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.swap_horiz, color: Color(0xFF4A6B5A)),
-              title: Text('Cambiar rol'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.power_settings_new, color: Colors.orange),
-              title: Text('Desactivar usuario', style: TextStyle(color: Colors.orange)),
-              onTap: () {
-                Navigator.pop(context);
-                context.read<UserBloc>().add(DesactivarUsuarioEvent(user.id));
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Usuario desactivado'),
-                    backgroundColor: Color(0xFF4A6B5A),
-                  ),
-                );
+                _confirmUserStatusChange(context, user, isActive);
               },
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Future<void> _confirmUserStatusChange(
+    BuildContext context,
+    dynamic user,
+    bool isActive,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(isActive ? 'Desactivar usuario' : 'Activar usuario'),
+        content: Text(
+          isActive
+              ? '¿Deseas desactivar esta cuenta?'
+              : '¿Deseas activar esta cuenta?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(isActive ? 'Desactivar' : 'Activar'),
+          ),
+        ],
+      ),
+    );
+    if (!mounted || confirmed != true) return;
+    context.read<UserBloc>().add(
+      isActive ? DesactivarUsuarioEvent(user.id) : ActivarUsuarioEvent(user.id),
     );
   }
 
@@ -234,7 +328,7 @@ class _UserState extends State<User> {
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
-          Icon(icono, size: 20, color: Color(0xFF4A6B5A)),
+          Icon(icono, size: 20, color: Color(0xFF0755A8)),
           SizedBox(width: 10),
           Text('$etiqueta: ', style: TextStyle(fontWeight: FontWeight.w600)),
           Expanded(child: Text(valor, overflow: TextOverflow.ellipsis)),
@@ -330,14 +424,23 @@ class _UserState extends State<User> {
                   children: [
                     // ── Header ──────────────────────────────────────
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
-                        color: Color(0xFF4A6B5A),
-                        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                        color: Color(0xFF0755A8),
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(16),
+                        ),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.smart_toy_outlined, color: Colors.white, size: 20),
+                          Icon(
+                            Icons.smart_toy_outlined,
+                            color: Colors.white,
+                            size: 20,
+                          ),
                           SizedBox(width: 8),
                           Text(
                             'Asistente IA',
@@ -350,7 +453,11 @@ class _UserState extends State<User> {
                           Spacer(),
                           GestureDetector(
                             onTap: () => setState(() => _chatAbierto = false),
-                            child: Icon(Icons.close, color: Colors.white, size: 20),
+                            child: Icon(
+                              Icons.close,
+                              color: Colors.white,
+                              size: 20,
+                            ),
                           ),
                         ],
                       ),
@@ -360,90 +467,100 @@ class _UserState extends State<User> {
                     Expanded(
                       child: mensajes.isEmpty
                           ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.smart_toy_outlined,
-                              size: 40,
-                              color: Color(0xFF4A6B5A).withOpacity(0.4),
-                            ),
-                            SizedBox(height: 8),
-                            Text(
-                              '¡Hola! ¿En qué te puedo ayudar?',
-                              style: TextStyle(color: Colors.grey[500], fontSize: 13),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      )
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.smart_toy_outlined,
+                                    size: 40,
+                                    color: Color(0xFF0755A8).withOpacity(0.4),
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    '¡Hola! ¿En qué te puedo ayudar?',
+                                    style: TextStyle(
+                                      color: Colors.grey[500],
+                                      fontSize: 13,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                            )
                           : ListView.builder(
-                        controller: _chatScrollController,
-                        padding: EdgeInsets.all(12),
-                        itemCount: mensajes.length + (enviando ? 1 : 0),
-                        itemBuilder: (context, index) {
-                          // Burbuja typing al final
-                          if (enviando && index == mensajes.length) {
-                            return Align(
-                              alignment: Alignment.centerLeft,
-                              child: Container(
-                                margin: EdgeInsets.only(bottom: 8),
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 10),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[100],
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    _TypingDot(delay: 0),
-                                    SizedBox(width: 4),
-                                    _TypingDot(delay: 200),
-                                    SizedBox(width: 4),
-                                    _TypingDot(delay: 400),
-                                  ],
-                                ),
-                              ),
-                            );
-                          }
+                              controller: _chatScrollController,
+                              padding: EdgeInsets.all(12),
+                              itemCount: mensajes.length + (enviando ? 1 : 0),
+                              itemBuilder: (context, index) {
+                                // Burbuja typing al final
+                                if (enviando && index == mensajes.length) {
+                                  return Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Container(
+                                      margin: EdgeInsets.only(bottom: 8),
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 10,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[100],
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          _TypingDot(delay: 0),
+                                          SizedBox(width: 4),
+                                          _TypingDot(delay: 200),
+                                          SizedBox(width: 4),
+                                          _TypingDot(delay: 400),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }
 
-                          final msg = mensajes[index];
-                          final esUsuario = msg.role == 'user';
+                                final msg = mensajes[index];
+                                final esUsuario = msg.role == 'user';
 
-                          return Align(
-                            alignment: esUsuario
-                                ? Alignment.centerRight
-                                : Alignment.centerLeft,
-                            child: Container(
-                              margin: EdgeInsets.only(bottom: 8),
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 8),
-                              constraints: BoxConstraints(maxWidth: 220),
-                              decoration: BoxDecoration(
-                                color: esUsuario
-                                    ? Color(0xFF4A6B5A)
-                                    : Colors.grey[100],
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                msg.content,
-                                style: TextStyle(
-                                  color: esUsuario
-                                      ? Colors.white
-                                      : Colors.black87,
-                                  fontSize: 13,
-                                ),
-                              ),
+                                return Align(
+                                  alignment: esUsuario
+                                      ? Alignment.centerRight
+                                      : Alignment.centerLeft,
+                                  child: Container(
+                                    margin: EdgeInsets.only(bottom: 8),
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 8,
+                                    ),
+                                    constraints: BoxConstraints(maxWidth: 220),
+                                    decoration: BoxDecoration(
+                                      color: esUsuario
+                                          ? Color(0xFF0755A8)
+                                          : Colors.grey[100],
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      msg.content,
+                                      style: TextStyle(
+                                        color: esUsuario
+                                            ? Colors.white
+                                            : Colors.black87,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
-                          );
-                        },
-                      ),
                     ),
 
                     // ── Input ────────────────────────────────────────
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         border: Border(
                           top: BorderSide(color: Colors.grey[200]!, width: 1),
@@ -463,21 +580,31 @@ class _UserState extends State<User> {
                                 hintStyle: TextStyle(fontSize: 13),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(20),
-                                  borderSide: BorderSide(color: Colors.grey[300]!),
+                                  borderSide: BorderSide(
+                                    color: Colors.grey[300]!,
+                                  ),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(20),
-                                  borderSide: BorderSide(color: Colors.grey[300]!),
+                                  borderSide: BorderSide(
+                                    color: Colors.grey[300]!,
+                                  ),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(20),
-                                  borderSide: BorderSide(color: Color(0xFF4A6B5A)),
+                                  borderSide: BorderSide(
+                                    color: Color(0xFF0755A8),
+                                  ),
                                 ),
                                 contentPadding: EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 8),
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
                                 isDense: true,
                               ),
-                              onSubmitted: enviando ? null : (_) => _enviarMensaje(),
+                              onSubmitted: enviando
+                                  ? null
+                                  : (_) => _enviarMensaje(),
                             ),
                           ),
                           SizedBox(width: 8),
@@ -489,10 +616,14 @@ class _UserState extends State<User> {
                               decoration: BoxDecoration(
                                 color: enviando
                                     ? Colors.grey[400]
-                                    : Color(0xFF4A6B5A),
+                                    : Color(0xFF0755A8),
                                 shape: BoxShape.circle,
                               ),
-                              child: Icon(Icons.send, color: Colors.white, size: 18),
+                              child: Icon(
+                                Icons.send,
+                                color: Colors.white,
+                                size: 18,
+                              ),
                             ),
                           ),
                         ],
@@ -517,7 +648,7 @@ class _UserState extends State<User> {
                   context.read<ChatBoxBloc>().add(LoadChatBox());
                 }
               },
-              backgroundColor: Color(0xFF4A6B5A),
+              backgroundColor: Color(0xFF0755A8),
               foregroundColor: Colors.white,
               shape: CircleBorder(),
               child: Icon(Icons.smart_toy_outlined),
@@ -526,7 +657,7 @@ class _UserState extends State<User> {
             FloatingActionButton(
               heroTag: 'nuevo_usuario',
               onPressed: () => _showViewFormAddUser(context),
-              backgroundColor: Color(0xFF4A6B5A),
+              backgroundColor: Color(0xFF0755A8),
               foregroundColor: Colors.white,
               child: Icon(Icons.person_add),
             ),
@@ -542,7 +673,7 @@ class _UserState extends State<User> {
       appBar: AppBar(
         title: Text('Usuarios'),
         centerTitle: true,
-        backgroundColor: Color(0xFF4A6B5A),
+        backgroundColor: Color(0xFF0755A8),
         foregroundColor: Colors.white,
         actions: [
           PopupMenuButton<String>(
@@ -559,7 +690,7 @@ class _UserState extends State<User> {
                 value: 'perfil',
                 child: Row(
                   children: [
-                    Icon(Icons.person, color: Color(0xFF4A6B5A)),
+                    Icon(Icons.person, color: Color(0xFF0755A8)),
                     SizedBox(width: 10),
                     Text('Perfil'),
                   ],
@@ -582,8 +713,18 @@ class _UserState extends State<User> {
       floatingActionButton: _buildChatDesplegable(),
       body: BlocConsumer<UserBloc, UserState>(
         listener: (context, state) {
-          if (state is CancelUserLoaded) {
+          if (state is UserStatusUpdated) {
             context.read<UserBloc>().add(GetUserEvent());
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  state.active
+                      ? 'Usuario activado correctamente.'
+                      : 'Usuario desactivado correctamente.',
+                ),
+                backgroundColor: AppColors.primary,
+              ),
+            );
           }
         },
         builder: (context, state) {
@@ -611,9 +752,11 @@ class _UserState extends State<User> {
                           child: ChoiceChip(
                             label: Text(filtro),
                             selected: seleccionado,
-                            selectedColor: Color(0xFF4A6B5A),
+                            selectedColor: Color(0xFF0755A8),
                             labelStyle: TextStyle(
-                              color: seleccionado ? Colors.white : Colors.black87,
+                              color: seleccionado
+                                  ? Colors.white
+                                  : Colors.black87,
                               fontWeight: FontWeight.w500,
                             ),
                             onSelected: (_) {
@@ -632,9 +775,9 @@ class _UserState extends State<User> {
                   padding: EdgeInsets.only(left: 16, right: 16, bottom: 10),
                   child: Text(
                     '${stats['total']} usuarios encontrados  •  '
-                        'Administradores: ${stats['administradores']}  •  '
-                        'Funcionarios: ${stats['funcionarios']} • '
-                        'Usuarios: ${stats['usuarios']}',
+                    'Administradores: ${stats['administradores']}  •  '
+                    'Secretarios: ${stats['funcionarios']} • '
+                    'Usuarios: ${stats['usuarios']}',
                     style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                   ),
                 ),
@@ -645,141 +788,165 @@ class _UserState extends State<User> {
                 Expanded(
                   child: filtered.isEmpty
                       ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.search_off, size: 64, color: Colors.grey[400]),
-                        SizedBox(height: 12),
-                        Text(
-                          'No se encontraron usuarios',
-                          style: TextStyle(color: Colors.grey[500]),
-                        ),
-                      ],
-                    ),
-                  )
-                      : ListView.separated(
-                    itemCount: filtered.length,
-                    separatorBuilder: (_, __) => Divider(height: 1),
-                    itemBuilder: (context, index) {
-                      final user = filtered[index];
-                      final activo =
-                          safeStr(user.stateUser?.state).toUpperCase() == 'ACTIVO';
-
-                      return InkWell(
-                        onTap: () => _showMenuOption(context, user),
-                        child: Container(
-                          color: Colors.white,
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 12),
-                          child: Row(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Stack(
-                                children: [
-                                  CircleAvatar(
-                                    radius: 26,
-                                    backgroundColor:
-                                    Color(0xFF4A6B5A).withOpacity(0.15),
-                                    child: Text(
-                                      safeStr(user.name).isNotEmpty
-                                          ? safeStr(user.name)[0].toUpperCase()
-                                          : '?',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        color: Color(0xFF4A6B5A),
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  Positioned(
-                                    bottom: 0,
-                                    right: 0,
-                                    child: Container(
-                                      width: 12,
-                                      height: 12,
-                                      decoration: BoxDecoration(
-                                        color: activo ? Colors.green : Colors.red,
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                            color: Colors.white, width: 2),
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                              Icon(
+                                Icons.search_off,
+                                size: 64,
+                                color: Colors.grey[400],
                               ),
-                              SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                              SizedBox(height: 12),
+                              Text(
+                                'No se encontraron usuarios',
+                                style: TextStyle(color: Colors.grey[500]),
+                              ),
+                            ],
+                          ),
+                        )
+                      : ListView.separated(
+                          itemCount: filtered.length,
+                          separatorBuilder: (_, __) => Divider(height: 1),
+                          itemBuilder: (context, index) {
+                            final user = filtered[index];
+                            final activo = _isActive(user);
+
+                            return InkWell(
+                              onTap: () => _showMenuOption(context, user),
+                              child: Container(
+                                color: Colors.white,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
+                                child: Row(
                                   children: [
-                                    Text(
-                                      '${safeStr(user.name)} ${safeStr(user.lastName)}',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 15,
-                                      ),
-                                    ),
-                                    SizedBox(height: 2),
-                                    Text(
-                                      safeStr(user.email),
-                                      style: TextStyle(
-                                          color: Colors.grey[600], fontSize: 13),
-                                    ),
-                                    SizedBox(height: 4),
-                                    Row(
+                                    Stack(
                                       children: [
-                                        Icon(Icons.shield_outlined,
-                                            size: 13, color: Color(0xFF4A6B5A)),
-                                        SizedBox(width: 4),
-                                        Text(
-                                          'Rol: ${_rolLegible(safeStr(user.role))}',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Color(0xFF4A6B5A),
+                                        CircleAvatar(
+                                          radius: 26,
+                                          backgroundColor: Color(
+                                            0xFF0755A8,
+                                          ).withOpacity(0.15),
+                                          child: Text(
+                                            safeStr(user.name).isNotEmpty
+                                                ? safeStr(
+                                                    user.name,
+                                                  )[0].toUpperCase()
+                                                : '?',
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              color: Color(0xFF0755A8),
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                        Positioned(
+                                          bottom: 0,
+                                          right: 0,
+                                          child: Container(
+                                            width: 12,
+                                            height: 12,
+                                            decoration: BoxDecoration(
+                                              color: activo
+                                                  ? Colors.green
+                                                  : Colors.red,
+                                              shape: BoxShape.circle,
+                                              border: Border.all(
+                                                color: Colors.white,
+                                                width: 2,
+                                              ),
+                                            ),
                                           ),
                                         ),
                                       ],
                                     ),
-                                  ],
-                                ),
-                              ),
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: activo
-                                      ? Colors.green.withOpacity(0.1)
-                                      : Colors.red.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
+                                    SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            '${safeStr(user.name)} ${safeStr(user.lastName)}',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 15,
+                                            ),
+                                          ),
+                                          SizedBox(height: 2),
+                                          Text(
+                                            safeStr(user.email),
+                                            style: TextStyle(
+                                              color: Colors.grey[600],
+                                              fontSize: 13,
+                                            ),
+                                          ),
+                                          SizedBox(height: 4),
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                Icons.shield_outlined,
+                                                size: 13,
+                                                color: Color(0xFF0755A8),
+                                              ),
+                                              SizedBox(width: 4),
+                                              Text(
+                                                'Rol: ${_rolLegible(safeStr(user.role))}',
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: Color(0xFF0755A8),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                     Container(
-                                      width: 6,
-                                      height: 6,
-                                      decoration: BoxDecoration(
-                                        color: activo ? Colors.green : Colors.red,
-                                        shape: BoxShape.circle,
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 3,
                                       ),
-                                    ),
-                                    SizedBox(width: 4),
-                                    Text(
-                                      activo ? 'Activo' : 'Inactivo',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        color: activo ? Colors.green : Colors.red,
-                                        fontWeight: FontWeight.w600,
+                                      decoration: BoxDecoration(
+                                        color: activo
+                                            ? Colors.green.withOpacity(0.1)
+                                            : Colors.red.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Container(
+                                            width: 6,
+                                            height: 6,
+                                            decoration: BoxDecoration(
+                                              color: activo
+                                                  ? Colors.green
+                                                  : Colors.red,
+                                              shape: BoxShape.circle,
+                                            ),
+                                          ),
+                                          SizedBox(width: 4),
+                                          Text(
+                                            activo ? 'Activo' : 'Inactivo',
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: activo
+                                                  ? Colors.green
+                                                  : Colors.red,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
-                            ],
-                          ),
+                            );
+                          },
                         ),
-                      );
-                    },
-                  ),
                 ),
               ],
             );

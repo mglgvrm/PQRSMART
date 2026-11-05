@@ -18,9 +18,15 @@ class RequestError extends RequestState {
   RequestError(this.message);
 }
 
-
-
 class RequestSaved extends RequestState {
   final RequestModel request;
   RequestSaved(this.request);
+}
+
+class RequestCancelled extends RequestState {}
+
+class RequestAnswered extends RequestState {
+  final RequestModel request;
+
+  RequestAnswered(this.request);
 }

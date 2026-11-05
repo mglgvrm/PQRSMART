@@ -1,161 +1,160 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pqrsmart/core/utils/custom_textFormFiel_utils.dart';
-import 'package:pqrsmart/core/utils/device_utils.dart';
+import 'package:pqrsmart/core/theme/app_colors.dart';
 import 'package:pqrsmart/presentation/blocs/auth_bloc.dart';
+import 'package:pqrsmart/presentation/states/auth_event.dart';
+import 'package:pqrsmart/presentation/states/auth_state.dart';
+import 'package:pqrsmart/presentation/widgets/auth_widgets.dart';
+import 'package:pqrsmart/presentation/widgets/pqr_widgets.dart';
 
 class PasswordRecoveryPage extends StatefulWidget {
-  const PasswordRecoveryPage({Key? key}) : super(key: key);
+  const PasswordRecoveryPage({super.key});
 
   @override
-  _PasswordRecoveryPageState createState() => _PasswordRecoveryPageState();
+  State<PasswordRecoveryPage> createState() => _PasswordRecoveryPageState();
 }
 
 class _PasswordRecoveryPageState extends State<PasswordRecoveryPage> {
-  final TextEditingController _emailController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  bool _requestSent = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
+
   void _submit() {
-    final email = _emailController.text.trim();
-    if (email.isNotEmpty) {
-     // context.read<AuthBloc>().add(SendResetPasswordEmail(email));
-      Navigator.pushNamed(context, '/login');
-    }
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    setState(() => _requestSent = false);
+    context.read<AuthBloc>().add(
+      RequestPasswordResetEvent(_emailController.text.trim()),
+    );
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => BlocListener<AuthBloc, AuthStates>(
+    listener: (context, state) {
+      if (state is ResetPasswordSent) {
+        setState(() => _requestSent = true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Se enviaron las instrucciones de recuperación.'),
+            backgroundColor: AppColors.attended,
+          ),
+        );
+      } else if (state is AuthError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(state.message),
+            backgroundColor: AppColors.cancelled,
+          ),
+        );
+      }
+    },
+    child: Scaffold(
+      backgroundColor: AppColors.backgroundBlue,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        title: const Text('Cambiar contraseña'),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios), // Icono personalizado
-          onPressed: () {
-            Navigator.pop(context); // Navegación manual
-          },
+          tooltip: 'Regresar',
+          onPressed: () => Navigator.maybePop(context),
+          icon: const Icon(Icons.arrow_back),
         ),
-        title: Text(
-          'Verifica tu correo',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ), // Título de la AppBar
-        centerTitle: true, // Centra el título
       ),
-
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 30, vertical: 30),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Tarjeta blanca con borde redondeado
-              Container(
-                padding: EdgeInsets.all(30),
-
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      spreadRadius: 2,
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 80),
-                    Text(
-                      'Enviar código de un solo uso',
-                      style: TextStyle(
-                        fontSize: 45,
-                        fontWeight: FontWeight.bold,
-                        height: 1,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 520),
+              child: PqrCard(
+                padding: const EdgeInsets.all(22),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Center(child: PqrAuthBrandHeader()),
+                      const SizedBox(height: 26),
+                      const Text(
+                        'Recupera el acceso a tu cuenta',
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontSize: 21,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    ),
-                    Text(
-                      'Ingresa tu correo electrónico para recibir un código de verificación.',
-                      style: TextStyle(fontSize: 15, color: Color(0xff8391A1)),
-                    ),
-                    SizedBox(height: 30),
-                    CustomTextField(
-                      label: "Correo Electrónico",
-                      hintText: "tu@email.com",
-                      icon: Icons.email_outlined,
-                      keyboardType: TextInputType.emailAddress,
-                      controller: _emailController,
-                    ),
-                    SizedBox(height: 30),
-                    Align(
-                      alignment: Alignment.center,
-                      child: CustomButton(
-                        text: 'Enviar',
-                        width: DeviceUtils.getWitdh(context) * 1,
-                        color: Color(0xff3F5A4C),
-                        onTap: () {
-                          _submit();
+                      const SizedBox(height: 7),
+                      const Text(
+                        'Ingresa el correo asociado a tu cuenta. Te enviaremos las instrucciones para restablecer la contraseña.',
+                        style: TextStyle(
+                          color: AppColors.muted,
+                          fontSize: 14,
+                          height: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 22),
+                      PqrAuthField(
+                        label: 'Correo electrónico',
+                        hintText: 'tu@email.com',
+                        controller: _emailController,
+                        prefixIcon: Icons.email_outlined,
+                        keyboardType: TextInputType.emailAddress,
+                        validator: (value) {
+                          final email = value?.trim() ?? '';
+                          if (email.isEmpty) return 'Ingresa tu correo.';
+                          if (!RegExp(
+                            r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
+                          ).hasMatch(email)) {
+                            return 'Ingresa un correo válido.';
+                          }
+                          return null;
                         },
                       ),
-                    ),
-                    SizedBox(height: 5),
-                    Align(
-                      alignment: Alignment.center,
-                      child: Text(
-                        'Asegúrate de revisar tu bandeja de \n entrada y la carpeta de spam.',
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Color(0xff8391A1),
+                      if (_requestSent) ...[
+                        const SizedBox(height: 14),
+                        const PqrCard(
+                          color: AppColors.surfaceBlue,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(
+                                Icons.mark_email_read_outlined,
+                                color: AppColors.primary,
+                              ),
+                              SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  'Revisa tu bandeja de entrada y la carpeta de correo no deseado.',
+                                  style: TextStyle(
+                                    color: AppColors.text,
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                        textAlign: TextAlign.center,
+                      ],
+                      const SizedBox(height: 20),
+                      BlocBuilder<AuthBloc, AuthStates>(
+                        builder: (context, state) => PqrPrimaryButton(
+                          label: 'Enviar instrucciones',
+                          icon: Icons.send_outlined,
+                          loading: state is AuthLoading,
+                          onPressed: _submit,
+                        ),
                       ),
-                    ),
-
-                    SizedBox(height: 80),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),
-    );
-  }
-}
-
-class CustomButton extends StatelessWidget {
-  final Function()? onTap;
-  final Color color;
-  final double width;
-  final String text;
-  const CustomButton({
-    super.key,
-    required this.onTap,
-    required this.color,
-    required this.width,
-    required this.text,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 50,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(15),
-        ),
-        width: width,
-        child: Text(
-          text,
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 22,
-          ),
-        ),
-      ),
-    );
-  }
+    ),
+  );
 }

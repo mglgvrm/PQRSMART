@@ -1,56 +1,48 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pqrsmart/core/utils/cusatom_dropdownButtonField_utils.dart';
+import 'package:pqrsmart/core/theme/app_colors.dart';
 import 'package:pqrsmart/core/utils/custom_textFormFiel_utils.dart';
 import 'package:pqrsmart/data/model/IdentificationTypeModal.dart';
 import 'package:pqrsmart/data/model/PersonTypeModal.dart';
-import 'dart:math' as math;
 import 'package:pqrsmart/presentation/blocs/auth_bloc.dart';
 import 'package:pqrsmart/presentation/states/auth_event.dart';
 import 'package:pqrsmart/presentation/states/auth_state.dart';
+import 'package:pqrsmart/presentation/widgets/auth_widgets.dart';
+import 'package:pqrsmart/presentation/widgets/pqr_widgets.dart';
 
 class Register extends StatefulWidget {
   const Register({super.key});
 
   @override
-  _RegisterState createState() => _RegisterState();
+  State<Register> createState() => _RegisterState();
 }
 
-class _RegisterState extends State<Register> with TickerProviderStateMixin {
-  AnimationController? _controller;
-  Animation<double>? _animation;
-
-  // Colores del gradiente (equivalente a --gradient-color-1..4)
-  final List<Color> _gradientColors = [
-    const Color(0xFF3F5A4C), // verde oscuro (base de tu app)
-    const Color(0xFF2D4A5A), // azul verdoso
-    const Color(0xFF1A3A4A), // azul marino
-    const Color(0xFF4A6B5A), // verde medio
-  ];
-
+class _RegisterState extends State<Register> {
+  final _formKey = GlobalKey<FormState>();
   // Variables para los dropdowns
   List<IdentificationTypeModal> _identificationTypes = [];
   List<PersonTypeModal> _personTypes = [];
   IdentificationTypeModal? _selectedIdentificationType;
   PersonTypeModal? _selectedPersonType;
+  String? _formDataError;
+  bool _isLoadingFormData = false;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 6),
-    )
-      ..repeat(reverse: true);
-
-    _animation = CurvedAnimation(parent: _controller!, curve: Curves.easeInOut);
     context.read<AuthBloc>().add(LoadFormDataEvent());
   }
 
   @override
   void dispose() {
-    _controller?.dispose();
+    userController.dispose();
+    nameController.dispose();
+    lastNameController.dispose();
+    emailController.dispose();
+    identificationNumberController.dispose();
+    numberController.dispose();
+    passwordController.dispose();
+    confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -64,9 +56,11 @@ class _RegisterState extends State<Register> with TickerProviderStateMixin {
   final TextEditingController lastNameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController identificationNumberController =
-  TextEditingController();
+      TextEditingController();
   final TextEditingController numberController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
 
   final Map<String, bool> _validationRules = {
     "Al menos 8 caracteres": false,
@@ -102,6 +96,8 @@ class _RegisterState extends State<Register> with TickerProviderStateMixin {
   }
 
   void _registerUser() {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+
     if (!_passwordsMatch) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Las contraseñas no coinciden")),
@@ -159,392 +155,493 @@ class _RegisterState extends State<Register> with TickerProviderStateMixin {
         if (state is AuthRegisterSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('¡Registro exitoso! Por favor verifique su correo electronico para la verificacion'),
-              backgroundColor: Color(0xFF4A6B5A),
+              content: Text(
+                '¡Registro exitoso! Revisa tu correo electrónico para verificar la cuenta.',
+              ),
+              backgroundColor: AppColors.attended,
               behavior: SnackBarBehavior.floating,
-              duration: Duration(seconds: 3),
+              duration: const Duration(seconds: 3),
             ),
           );
           Navigator.pushReplacementNamed(context, '/login');
         } else if (state is AuthError) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message)),
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: AppColors.cancelled,
+              behavior: SnackBarBehavior.floating,
+            ),
           );
+        } else if (state is AuthRegisterFormError) {
+          setState(() {
+            _formDataError = state.message;
+            _isLoadingFormData = false;
+          });
         } else if (state is AuthRegisterLoaded) {
           setState(() {
             _identificationTypes = state.identificationTypes;
             _personTypes = state.personTypes;
+            _formDataError = null;
+            _isLoadingFormData = false;
+          });
+        } else if (state is AuthRegisterFormLoading) {
+          setState(() {
+            _formDataError = null;
+            _isLoadingFormData = true;
           });
         }
       },
       builder: (context, state) {
-        if (state is AuthLoading) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-
         return Scaffold(
-          backgroundColor: const Color(0xFFECF4FD),
-          body: AnimatedBuilder(
-            animation: _animation ?? const AlwaysStoppedAnimation(0.0),
-            builder: (context, child) {
-              final anim = _animation?.value ?? 0.0;
-              return Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment(
-                      math.cos(anim * math.pi),
-                      math.sin(anim * math.pi),
-                    ),
-                    end: Alignment(
-                      -math.cos(anim * math.pi),
-                      -math.sin(anim * math.pi),
-                    ),
-                    colors: [
-                      Color.lerp(_gradientColors[0], _gradientColors[2], anim)!,
-                      Color.lerp(_gradientColors[1], _gradientColors[3], anim)!,
-                      Color.lerp(_gradientColors[3], _gradientColors[0], anim)!,
-                    ],
-                  ),
-                ),
-                child: child,
-              );
-            },
-
+          backgroundColor: AppColors.white,
+          body: SafeArea(
             child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(40.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: MediaQuery
-                        .of(context)
-                        .size
-                        .height * 0.05),
-
-                    const Text(
-                      "Crear Cuenta",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-
-                    RichText(
-                      text: TextSpan(
-                        style: const TextStyle(fontSize: 14, color: Colors
-                            .black),
-                        children: [
-                          const TextSpan(
-                            text:
-                            "Ingrese sus credenciales para crear una cuenta en ",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          const TextSpan(
-                            text: "PQRSMART",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // Usuario
-                    CustomTextField(
-                      label: 'Usuario',
-                      hintText: 'juanperez123',
-                      controller: userController,
-                      suffixIcon: Icons.person_outline,
-                    ),
-                    const SizedBox(height: 14),
-
-                    // Nombre y Apellido
-                    Row(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 22),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 680),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: CustomTextField(
-                            label: 'Nombres',
-                            hintText: 'Juan José',
-                            widthFactor: 0.3,
-                            controller: nameController,
+                        const Center(child: PqrAuthBrandHeader()),
+                        const SizedBox(height: 30),
+                        const Text(
+                          "Crear cuenta",
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.text,
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: CustomTextField(
-                            label: 'Apellidos',
-                            hintText: 'Pérez López',
-                            widthFactor: 0.3,
-                            controller: lastNameController,
+                        const SizedBox(height: 5),
+                        const Text(
+                          'Regístrate para crear y consultar tus solicitudes.',
+                          style: TextStyle(
+                            color: AppColors.muted,
+                            fontSize: 13,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        if (_isLoadingFormData)
+                          const Padding(
+                            padding: EdgeInsets.only(bottom: 12),
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppColors.action,
+                                  ),
+                                ),
+                                SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    'Cargando opciones de registro...',
+                                    style: TextStyle(color: AppColors.muted),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        if (_formDataError != null)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: AppColors.surfaceBlue,
+                                border: Border.all(color: AppColors.border),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _formDataError!,
+                                    style: const TextStyle(
+                                      color: Color(0xFF8A2930),
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: TextButton.icon(
+                                      onPressed: _isLoadingFormData
+                                          ? null
+                                          : () => context.read<AuthBloc>().add(
+                                              LoadFormDataEvent(),
+                                            ),
+                                      icon: const Icon(Icons.refresh, size: 18),
+                                      label: const Text('Volver a intentar'),
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: AppColors.dark,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                        // Usuario
+                        CustomTextField(
+                          label: 'Usuario',
+                          hintText: 'juanperez123',
+                          controller: userController,
+                          icon: Icons.person_outline,
+                          widthFactor: 1,
+                          validator: (value) =>
+                              value == null || value.trim().isEmpty
+                              ? 'Ingresa un nombre de usuario.'
+                              : null,
+                        ),
+                        const SizedBox(height: 14),
+
+                        CustomTextField(
+                          label: 'Nombres',
+                          hintText: 'Juan José',
+                          widthFactor: 1,
+                          controller: nameController,
+                          validator: (value) =>
+                              value == null || value.trim().isEmpty
+                              ? 'Ingresa tus nombres.'
+                              : null,
+                        ),
+                        const SizedBox(height: 14),
+                        CustomTextField(
+                          label: 'Apellidos',
+                          hintText: 'Pérez López',
+                          widthFactor: 1,
+                          controller: lastNameController,
+                          validator: (value) =>
+                              value == null || value.trim().isEmpty
+                              ? 'Ingresa tus apellidos.'
+                              : null,
+                        ),
+                        const SizedBox(height: 14),
+
+                        // Correo
+                        CustomTextField(
+                          label: 'Correo electrónico',
+                          hintText: 'm@ejemplo.com',
+                          widthFactor: 1,
+                          controller: emailController,
+                          icon: Icons.email_outlined,
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (value) {
+                            final email = value?.trim() ?? '';
+                            if (email.isEmpty) {
+                              return 'Ingresa tu correo electrónico.';
+                            }
+                            if (!RegExp(
+                              r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
+                            ).hasMatch(email)) {
+                              return 'Ingresa un correo electrónico válido.';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 14),
+
+                        // Dropdowns dinámicos con los datos del backend:
+                        DropdownButtonFormField<IdentificationTypeModal>(
+                          initialValue: _selectedIdentificationType,
+                          key: ValueKey(
+                            'identification-${_identificationTypes.length}',
+                          ),
+                          dropdownColor: AppColors.white,
+                          isExpanded: true,
+                          decoration: InputDecoration(
+                            labelText: 'Tipo de identificación',
+                            prefixIcon: const Icon(
+                              Icons.badge_outlined,
+                              color: AppColors.muted,
+                            ),
+                            filled: true,
+                            fillColor: AppColors.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(9),
+                              borderSide: const BorderSide(
+                                color: AppColors.border,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(9),
+                              borderSide: const BorderSide(
+                                color: AppColors.border,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(9),
+                              borderSide: const BorderSide(
+                                color: AppColors.icon,
+                                width: 1.4,
+                              ),
+                            ),
+                          ),
+                          validator: (value) => value == null
+                              ? 'Selecciona el tipo de identificación.'
+                              : null,
+                          // Texto seleccionado con ellipsis
+                          selectedItemBuilder: (context) {
+                            return _identificationTypes.map((tipo) {
+                              return Text(
+                                tipo.nameIdentificationType,
+                                overflow: TextOverflow
+                                    .ellipsis, // ← corta el texto largo
+                                maxLines: 1,
+                              );
+                            }).toList();
+                          },
+                          // Items del dropdown desplegado (pueden mostrarse completos)
+                          items: _identificationTypes.map((tipo) {
+                            return DropdownMenuItem<IdentificationTypeModal>(
+                              value: tipo,
+                              child: Text(
+                                tipo.nameIdentificationType,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() => _selectedIdentificationType = value);
+                          },
+                        ),
+                        const SizedBox(height: 14),
+
+                        // Número de identificación
+                        CustomTextField(
+                          label: 'Número de identificación',
+                          hintText: 'Ingrese el número sin puntos ni comas',
+                          widthFactor: 1,
+                          controller: identificationNumberController,
+                          keyboardType: TextInputType.number,
+                          icon: Icons.numbers_outlined,
+                          validator: (value) {
+                            final number = value?.trim() ?? '';
+                            if (number.isEmpty) {
+                              return 'Ingresa tu número de identificación.';
+                            }
+                            if (!RegExp(r'^\d+$').hasMatch(number) ||
+                                int.tryParse(number) == null) {
+                              return 'Usa solo números válidos.';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 14),
+
+                        DropdownButtonFormField<PersonTypeModal>(
+                          initialValue: _selectedPersonType,
+                          key: ValueKey('person-${_personTypes.length}'),
+                          hint: const Text('Tipo de persona'),
+                          dropdownColor: AppColors.white,
+                          decoration: InputDecoration(
+                            labelText: 'Tipo de persona',
+                            prefixIcon: const Icon(
+                              Icons.person_outline,
+                              color: AppColors.muted,
+                            ),
+                            filled: true,
+                            fillColor: AppColors.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(9),
+                              borderSide: const BorderSide(
+                                color: AppColors.border,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(9),
+                              borderSide: const BorderSide(
+                                color: AppColors.border,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(9),
+                              borderSide: const BorderSide(
+                                color: AppColors.icon,
+                                width: 1.4,
+                              ),
+                            ),
+                          ),
+                          validator: (value) => value == null
+                              ? 'Selecciona el tipo de persona.'
+                              : null,
+                          items: _personTypes.map((type) {
+                            return DropdownMenuItem(
+                              value: type,
+                              child: Text(type.namePersonType),
+                            );
+                          }).toList(),
+                          onChanged: (value) =>
+                              setState(() => _selectedPersonType = value),
+                        ),
+                        // Teléfono
+                        CustomTextField(
+                          label: 'Teléfono',
+                          hintText: 'Ingrese el número de teléfono',
+                          widthFactor: 1,
+                          controller: numberController,
+                          keyboardType: TextInputType.phone,
+                          icon: Icons.phone_outlined,
+                          validator: (value) {
+                            final number = value?.trim() ?? '';
+                            if (number.isEmpty) return 'Ingresa tu teléfono.';
+                            if (!RegExp(r'^\d+$').hasMatch(number) ||
+                                int.tryParse(number) == null) {
+                              return 'Usa solo números válidos.';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 14),
+
+                        // Contraseña
+                        CustomTextField(
+                          label: 'Contraseña',
+                          hintText: 'Ingresa una contraseña segura',
+                          icon: Icons.lock_outline,
+                          widthFactor: 1,
+                          controller: passwordController,
+                          obscureText: _obscureText,
+                          suffixIcon: _obscureText
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                          onSuffixIconTap: () =>
+                              setState(() => _obscureText = !_obscureText),
+                          onChanged: (value) {
+                            setState(() => _password = value);
+                            _comparePasswords();
+                            _validatePassword(value);
+                          },
+                          validator: (value) => value == null || value.isEmpty
+                              ? 'Ingresa una contraseña.'
+                              : null,
+                        ),
+                        const SizedBox(height: 10),
+
+                        const Text(
+                          'La contraseña debe cumplir estos requisitos:',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: AppColors.text,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: _validationRules.keys.map((rule) {
+                            return Row(
+                              children: [
+                                Icon(
+                                  _validationRules[rule]!
+                                      ? Icons.check
+                                      : Icons.close,
+                                  color: _validationRules[rule]!
+                                      ? AppColors.attended
+                                      : AppColors.cancelled,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  rule,
+                                  style: const TextStyle(
+                                    color: AppColors.muted,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(height: 14),
+
+                        // Confirmar contraseña
+                        CustomTextField(
+                          label: 'Confirmar contraseña',
+                          hintText: 'Escribe nuevamente tu contraseña',
+                          icon: Icons.lock_outline,
+                          widthFactor: 1,
+                          controller: confirmPasswordController,
+                          obscureText: _obscureText,
+                          suffixIcon: _obscureText
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                          onSuffixIconTap: () =>
+                              setState(() => _obscureText = !_obscureText),
+                          onChanged: (value) {
+                            setState(() {
+                              _confirmPassword = value;
+                              _comparePasswords();
+                            });
+                          },
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Confirma tu contraseña.';
+                            }
+                            if (value != passwordController.text) {
+                              return 'Las contraseñas no coinciden.';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 6),
+
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            _confirmPassword.isEmpty
+                                ? ""
+                                : _passwordsMatch
+                                ? 'Las contraseñas coinciden.'
+                                : 'Las contraseñas no coinciden.',
+                            style: TextStyle(
+                              color: _passwordsMatch
+                                  ? AppColors.attended
+                                  : AppColors.cancelled,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Botón registrar
+                        PqrPrimaryButton(
+                          label: 'Crear cuenta',
+                          icon: Icons.person_add_alt_1_outlined,
+                          loading: state is AuthLoading,
+                          onPressed: _registerUser,
+                        ),
+                        const SizedBox(height: 8),
+
+                        Center(
+                          child: TextButton(
+                            onPressed: () => Navigator.pushReplacementNamed(
+                              context,
+                              '/login',
+                            ),
+                            style: TextButton.styleFrom(
+                              foregroundColor: AppColors.action,
+                            ),
+                            child: const Text(
+                              '¿Ya tienes una cuenta? Inicia sesión',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 14),
-
-                    // Correo
-                    CustomTextField(
-                      label: "Correo electrónico",
-                      hintText: "m@ejemplo.com",
-                      controller: emailController,
-                      suffixIcon: Icons.email_outlined,
-                      keyboardType: TextInputType.emailAddress,
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      "Correo electrónico con que te has registrado",
-                      style: TextStyle(color: Colors.white, fontSize: 14),
-                    ),
-                    const SizedBox(height: 14),
-
-                    // Dropdowns dinámicos con los datos del backend:
-                    DropdownButtonFormField<IdentificationTypeModal>(
-                      value: _selectedIdentificationType,
-                      dropdownColor: Colors.white, // ← fondo blanco del menú desplegado
-                      isExpanded: true, // ← clave: ocupa todo el ancho disponible
-                      decoration: InputDecoration(
-                        labelText: 'Tipo de Identificación',
-                        prefixIcon: Icon(Icons.badge),
-                        filled: true,
-                        fillColor: Colors.white, // ← fondo blanco del campo
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-
-                      ),
-                      // Texto seleccionado con ellipsis
-                      selectedItemBuilder: (context) {
-                        return _identificationTypes.map((tipo) {
-                          return Text(
-                            tipo.nameIdentificationType,
-                            overflow: TextOverflow.ellipsis, // ← corta el texto largo
-                            maxLines: 1,
-                          );
-                        }).toList();
-                      },
-                      // Items del dropdown desplegado (pueden mostrarse completos)
-                      items: _identificationTypes.map((tipo) {
-                        return DropdownMenuItem<IdentificationTypeModal>(
-                          value: tipo,
-                          child: Text(
-                            tipo.nameIdentificationType,
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() => _selectedIdentificationType = value);
-                      },
-                    ),
-                    const SizedBox(height: 14),
-
-                    // Número de identificación
-                    CustomTextField(
-                      label: 'Número de identificación',
-                      hintText: 'Ingrese el número sin puntos ni comas',
-                      widthFactor: 0.9,
-                      controller: identificationNumberController,
-                      keyboardType: TextInputType.number,
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      "Escribe el número de identificación sin puntos ni comas",
-                      style: TextStyle(color: Colors.white, fontSize: 14),
-                    ),
-                    const SizedBox(height: 14),
-
-                    DropdownButtonFormField<PersonTypeModal>(
-                      value: _selectedPersonType,
-                      hint: const Text('Tipo de persona'),
-                      dropdownColor: Colors.white,
-                      decoration: InputDecoration(
-                        prefixIcon: Icon(Icons.person),
-                        filled: true,
-                        fillColor: Colors.white, // ← fondo blanco del campo
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-
-                      ),
-                      items: _personTypes.map((type) {
-                        return DropdownMenuItem(
-                          value: type,
-                          child: Text(type.namePersonType),
-                        );
-                      }).toList(),
-                      onChanged: (value) =>
-                          setState(() => _selectedPersonType = value),
-                    ),
-                    // Teléfono
-                    CustomTextField(
-                      label: 'Teléfono',
-                      hintText: 'Ingrese el número de teléfono',
-                      widthFactor: 0.9,
-                      controller: numberController,
-                      keyboardType: TextInputType.phone,
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      "Escribe el número de teléfono sin puntos ni comas",
-                      style: TextStyle(color: Colors.white, fontSize: 14),
-                    ),
-                    const SizedBox(height: 14),
-
-                    // Contraseña
-                    CustomTextField(
-                      label: "Contraseña",
-                      hintText: "************",
-                      icon: Icons.lock_outline,
-                      widthFactor: 0.9,
-                      obscureText: _obscureText,
-                      suffixIcon: _obscureText
-                          ? Icons.visibility_off
-                          : Icons.visibility,
-                      onSuffixIconTap: () =>
-                          setState(() => _obscureText = !_obscureText),
-                      onChanged: (value) {
-                        setState(() => _password = value);
-                        _comparePasswords();
-                        _validatePassword(value);
-                      },
-                    ),
-                    const SizedBox(height: 10),
-
-                    const Text(
-                      "La contraseña debe cumplir con los siguientes requisitos.",
-                      style: TextStyle(fontSize: 16, color: Colors.white),
-                    ),
-                    const SizedBox(height: 5),
-
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: _validationRules.keys.map((rule) {
-                        return Row(
-                          children: [
-                            Icon(
-                              _validationRules[rule]! ? Icons.check : Icons
-                                  .close,
-                              color: _validationRules[rule]!
-                                  ? Colors.green
-                                  : Colors.red,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              rule,
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                          ],
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: 14),
-
-                    // Confirmar contraseña
-                    CustomTextField(
-                      label: "Confirmar contraseña",
-                      hintText: "************",
-                      icon: Icons.lock_outline,
-                      widthFactor: 0.9,
-                      obscureText: _obscureText,
-                      suffixIcon: _obscureText
-                          ? Icons.visibility_off
-                          : Icons.visibility,
-                      onSuffixIconTap: () =>
-                          setState(() => _obscureText = !_obscureText),
-                      onChanged: (value) {
-                        setState(() {
-                          _confirmPassword = value;
-                          _comparePasswords();
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      "Escribe nuevamente la contraseña",
-                      style: TextStyle(color: Colors.white, fontSize: 14),
-                    ),
-                    const SizedBox(height: 6),
-
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        _confirmPassword.isEmpty
-                            ? ""
-                            : _passwordsMatch
-                            ? "✅ Las contraseñas coinciden"
-                            : "❌ Las contraseñas no coinciden",
-                        style: TextStyle(
-                          color: _passwordsMatch ? Colors.green : Colors.red,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Botón registrar
-                    SizedBox(
-                      width: MediaQuery
-                          .of(context)
-                          .size
-                          .width * 0.9,
-                      height: 50,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF3F5A4C),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                        ),
-                        onPressed: _registerUser,
-                        child: const Text(
-                          "Crear cuenta",
-                          style: TextStyle(fontSize: 22),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-
-                    Align(
-                      alignment: Alignment.center,
-                      child: RichText(
-                        text: TextSpan(
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.white,
-                          ),
-                          children: [
-                            const TextSpan(
-                              text: "¿Ya tienes una cuenta? ",
-                              style: TextStyle(color: Colors.white),
-                            ),
-                            TextSpan(
-                              text: "Iniciar sesión",
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                decoration: TextDecoration.underline,
-                                color: Colors.black,
-                              ),
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () {
-                                  Navigator.pushReplacementNamed(
-                                      context,
-                                      '/login');
-                                },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),

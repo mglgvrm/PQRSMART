@@ -1,4 +1,3 @@
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:pqrsmart/data/model/AuthResponse.dart';
 import 'package:pqrsmart/data/model/IdentificationTypeModal.dart';
 import 'package:pqrsmart/data/model/PersonTypeModal.dart';
@@ -20,10 +19,8 @@ class AuthFailure extends AuthStates {
   AuthFailure(this.errorMessage);
 }
 
-
 class AuthSuccess extends AuthStates {
   final AuthResponse data;
-
 
   AuthSuccess(this.data);
 }
@@ -32,10 +29,8 @@ class AuthRegisterSuccess extends AuthStates {
   final UserModel user;
 
   AuthRegisterSuccess({required this.user});
-
-  @override
-  List<Object> get props => [user];
 }
+
 class AuthRegisterLoaded extends AuthStates {
   final List<IdentificationTypeModal> identificationTypes;
   final List<PersonTypeModal> personTypes;
@@ -45,6 +40,15 @@ class AuthRegisterLoaded extends AuthStates {
     required this.personTypes,
   });
 }
+
+class AuthRegisterFormLoading extends AuthStates {}
+
+class AuthRegisterFormError extends AuthStates {
+  final String message;
+
+  AuthRegisterFormError(this.message);
+}
+
 class AuthError extends AuthStates {
   final String message;
 
