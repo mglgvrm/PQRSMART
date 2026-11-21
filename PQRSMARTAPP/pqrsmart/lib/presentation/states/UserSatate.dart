@@ -10,6 +10,7 @@ class UserLoaded extends UserState {
   final List<UserModel> user;
   UserLoaded(this.user);
 }
+
 class MyUserLoaded extends UserState {
   final UserModel user;
   MyUserLoaded(this.user);
@@ -24,4 +25,10 @@ class CancelUserLoaded extends UserState {
   final UserModel userModel;
 
   CancelUserLoaded(this.userModel);
+}
+
+class UserStatusUpdated extends UserState {
+  final bool active;
+
+  UserStatusUpdated(this.active);
 }

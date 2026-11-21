@@ -20,7 +20,7 @@ class RegisterAdminPage extends StatefulWidget {
 }
 
 class _RegisterAdminPageState extends State<RegisterAdminPage> {
-  static const _verde = Color(0xFF4A6B5A);
+  static const _verde = Color(0xFF0755A8);
   static const _bg    = Color(0xFFF2F4F3);
 
   // Controllers

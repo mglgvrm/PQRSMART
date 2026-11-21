@@ -7,7 +7,6 @@ class UserBloc extends Bloc<UserEvent, UserState> {
   final UserRepository userRepository;
 
   UserBloc(this.userRepository) : super(UserInitial()) {
-
     on<GetUserEvent>((event, emit) async {
       emit(UserLoading());
       try {
@@ -17,31 +16,33 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         emit(UserError(e.toString()));
       }
     });
-    on<GetMyUserEvent>((event, emit) async{
+    on<GetMyUserEvent>((event, emit) async {
       emit(UserLoading());
-      try{
+      try {
         final user = await userRepository.getMyUserEvent();
         emit(MyUserLoaded(user));
-      } catch(e){
+      } catch (e) {
         emit(UserError(e.toString()));
       }
     });
 
-
-    /*on<ActivarUsuarioEvent>((event, emit) async {
-      await service.activarUsuario(event.id);
-      add(GetUsuariosEvent()); // refresca lista
-    });
-*/
-    on<DesactivarUsuarioEvent>((event, emit) async {
-      try{
-        final user = await userRepository.cancelUser(event.id);
-        emit(CancelUserLoaded(user));
+    on<ActivarUsuarioEvent>((event, emit) async {
+      emit(UserLoading());
+      try {
+        await userRepository.setUserStatus(event.id, active: true);
+        emit(UserStatusUpdated(true));
       } catch (e) {
-        emit(UserError('Error al guardar usuario'));
+        emit(UserError('Error al activar el usuario: $e'));
       }
-
-
+    });
+    on<DesactivarUsuarioEvent>((event, emit) async {
+      emit(UserLoading());
+      try {
+        await userRepository.setUserStatus(event.id, active: false);
+        emit(UserStatusUpdated(false));
+      } catch (e) {
+        emit(UserError('Error al desactivar el usuario: $e'));
+      }
     });
   }
 }

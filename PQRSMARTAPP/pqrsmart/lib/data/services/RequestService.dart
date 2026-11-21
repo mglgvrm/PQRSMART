@@ -28,6 +28,46 @@ class RequestService {
     }
   }
 
+  Future<List<RequestModel>> getAllForAdministration() async {
+    final response = await http.get(
+      Uri.parse('${ApiConstants.baseUrl}/request/get'),
+      headers: {"Authorization": "******", "Content-Type": "application/json"},
+    );
+    if (response.statusCode == 200) {
+      final List data = jsonDecode(response.body);
+      return data.map((e) => RequestModel.fromJson(e)).toList();
+    }
+    throw Exception(
+      'Error al obtener solicitudes administrativas: ${response.statusCode}',
+    );
+  }
+
+  Future<List<RequestModel>> getForDependence() async {
+    final response = await http.get(
+      Uri.parse('${ApiConstants.baseUrl}/request/getForDependence'),
+      headers: {"Authorization": "******", "Content-Type": "application/json"},
+    );
+    if (response.statusCode == 200) {
+      final List data = jsonDecode(response.body);
+      return data.map((e) => RequestModel.fromJson(e)).toList();
+    }
+    throw Exception(
+      'Error al obtener solicitudes de la dependencia: ${response.statusCode}',
+    );
+  }
+
+  Future<RequestModel> answerRequest(int idRequest, String answer) async {
+    final response = await http.put(
+      Uri.parse('${ApiConstants.baseUrl}/request/update/$idRequest'),
+      headers: {"Authorization": "******", "Content-Type": "application/json"},
+      body: jsonEncode({"answer": answer}),
+    );
+    if (response.statusCode == 200) {
+      return RequestModel.fromJson(jsonDecode(response.body));
+    }
+    throw Exception('Error al responder la solicitud: ${response.statusCode}');
+  }
+
   Future<RequestModel> save(RequestModel requestModel) async {
     final token = await storage.getToken();
     print("EVENTO RECIBIDO ${requestModel}");
@@ -45,6 +85,17 @@ class RequestService {
       return RequestModel.fromJson(jsonDecode(response.body));
     } else {
       throw Exception('Error al guardar la solicitud: ${response.statusCode}');
+    }
+  }
+
+  Future<void> cancel(int idRequest) async {
+    final response = await http.put(
+      Uri.parse('${ApiConstants.baseUrl}/request/cancel/$idRequest'),
+      headers: {'Authorization': '******', 'Content-Type': 'application/json'},
+      body: jsonEncode(<String, dynamic>{}),
+    );
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      throw Exception('Error al cancelar la solicitud: ${response.statusCode}');
     }
   }
 }

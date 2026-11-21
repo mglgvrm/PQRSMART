@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pqrsmart/presentation/widgets/auth_widgets.dart';
 
 class CustomTextField extends StatelessWidget {
   final String label;
@@ -12,9 +13,10 @@ class CustomTextField extends StatelessWidget {
   final double widthFactor; // Permite modificar el ancho
   final Function(String)?
   onChanged; // Callback para detectar cambios en el texto
+  final FormFieldValidator<String>? validator;
 
   const CustomTextField({
-    Key? key,
+    super.key,
     required this.label,
     required this.hintText,
     this.controller,
@@ -24,61 +26,28 @@ class CustomTextField extends StatelessWidget {
     this.keyboardType,
     this.widthFactor = 0.9, // Valor por defecto
     this.onChanged,
+    this.validator,
     this.obscureText = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.w500, color: Colors.white),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 8,
-                spreadRadius: 3,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: TextFormField(
-            controller: controller,
-            obscureText: obscureText,
-            keyboardType: keyboardType,
-
-            onChanged: onChanged, // Se ejecuta cada vez que el usuario escribe
-            decoration: InputDecoration(
-              hintText: hintText,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide.none,
-              ),
-              filled: true,
-              fillColor: Colors.white,
-              constraints: BoxConstraints(
-                maxWidth: MediaQuery.of(context).size.width * widthFactor,
-                minHeight: 50,
-              ),
-              prefixIcon:
-                  icon != null ? Icon(icon) : null, // Agrega el ícono si existe
-              suffixIcon:
-                  suffixIcon != null
-                      ? IconButton(
-                        icon: Icon(suffixIcon),
-                        onPressed: onSuffixIconTap, // Acción al tocar el ícono
-                      )
-                      : null,
-            ),
-          ),
-        ),
-      ],
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxWidth: MediaQuery.sizeOf(context).width * widthFactor,
+      ),
+      child: PqrAuthField(
+        label: label,
+        hintText: hintText,
+        controller: controller,
+        obscureText: obscureText,
+        prefixIcon: icon,
+        suffixIcon: suffixIcon,
+        onSuffixIconTap: onSuffixIconTap,
+        keyboardType: keyboardType,
+        onChanged: onChanged,
+        validator: validator,
+      ),
     );
   }
 }

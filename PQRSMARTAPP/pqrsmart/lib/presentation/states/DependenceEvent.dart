@@ -10,11 +10,18 @@ class SaveDependenceEvent extends DependenceEvent {
   SaveDependenceEvent(this.dependence);
 }
 
-class ActivateDependenceEvent extends DependenceEvent{
+class UpdateDependenceEvent extends DependenceEvent {
+  final DependenceModel dependence;
+
+  UpdateDependenceEvent(this.dependence);
+}
+
+class ActivateDependenceEvent extends DependenceEvent {
   final int id;
   ActivateDependenceEvent(this.id);
 }
-class CancelDependenceEvent extends DependenceEvent{
+
+class CancelDependenceEvent extends DependenceEvent {
   final int id;
   CancelDependenceEvent(this.id);
 }

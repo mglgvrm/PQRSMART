@@ -21,6 +21,10 @@ class AuthRepository {
     return service.login(user, password);
   }
 
+  Future<void> requestPasswordReset(String email) {
+    return service.requestPasswordReset(email);
+  }
+
   Future<UserModel> register({
     required String user,
     required String name,
@@ -56,7 +60,7 @@ class AuthRepository {
     required int personType,
     required int number,
     required String role,
-    required int dependence
+    required int dependence,
   }) {
     return service.registerAdmin(
       user: user,
@@ -69,7 +73,7 @@ class AuthRepository {
       personType: personType,
       number: number,
       dependence: dependence,
-      role: role
+      role: role,
     );
   }
 
