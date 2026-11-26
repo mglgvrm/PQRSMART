@@ -65,6 +65,12 @@ public class EmailServiceImpl implements IEmailService {
 
     @Override
     public void sendEmails(String[] toUser, String subject, String message) {
+        if (brevoApiKey == null || brevoApiKey.isBlank()) {
+            throw new EmailDeliveryException(
+                    "El servicio de correo no está configurado. Configure BREVO_API_KEY o RESEND_API_KEY.",
+                    new IllegalStateException("No se encontró una clave de API de correo.")
+            );
+        }
         try {
             ApiClient client = Configuration.getDefaultApiClient();
             client.setApiKey(brevoApiKey);
@@ -96,7 +102,7 @@ public class EmailServiceImpl implements IEmailService {
             System.out.println("✅ Correo enviado");
 
         } catch (Exception e) {
-            throw new RuntimeException("❌ Error enviando correo: " + e.getMessage(), e);
+            throw new EmailDeliveryException(e);
         }
     }
 

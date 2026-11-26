@@ -8,7 +8,9 @@ import 'package:pqrsmart/presentation/widgets/auth_widgets.dart';
 import 'package:pqrsmart/presentation/widgets/pqr_widgets.dart';
 
 class PasswordRecoveryPage extends StatefulWidget {
-  const PasswordRecoveryPage({super.key});
+  const PasswordRecoveryPage({super.key, this.initialEmail});
+
+  final String? initialEmail;
 
   @override
   State<PasswordRecoveryPage> createState() => _PasswordRecoveryPageState();
@@ -16,8 +18,14 @@ class PasswordRecoveryPage extends StatefulWidget {
 
 class _PasswordRecoveryPageState extends State<PasswordRecoveryPage> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
+  late final TextEditingController _emailController;
   bool _requestSent = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _emailController = TextEditingController(text: widget.initialEmail ?? '');
+  }
 
   @override
   void dispose() {

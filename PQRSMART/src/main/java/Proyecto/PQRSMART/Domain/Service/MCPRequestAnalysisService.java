@@ -36,13 +36,23 @@ public class MCPRequestAnalysisService {
            BAJA, MEDIA, ALTA o CRITICA.
         4. Nivel de relevancia de 0 a 1.
 
-        Rechazar si:
-        - la descripción no coincide con la dependencia
-        - la categoría no coincide
-        - es spam
-        - no tiene sentido
+        Evalúa la descripción frente a los nombres concretos de dependencia y categoría
+        proporcionados arriba. No marques como ausente un campo que aparece informado.
+        No rechaces una solicitud solo porque su descripción sea breve: recházala solo
+        si es claramente ajena a la dependencia/categoría, spam o carece de sentido.
 
-        Responde SOLO en JSON.
+        Responde exclusivamente con un objeto JSON válido, sin bloques Markdown,
+        usando exactamente estas claves en inglés:
+        {
+          "valid": true,
+          "coherence": true,
+          "relevance": 0.0,
+          "reason": "motivo o explicación breve",
+          "priority": "MEDIA"
+        }
+        "valid" y "coherence" deben ser booleanos, "relevance" un número entre 0 y 1,
+        y "priority" uno de: BAJA, MEDIA, ALTA, CRITICA. No incluyas assignedUserId;
+        el sistema asigna el funcionario.
         """.formatted(
                 request.getDependence().getNameDependence(),
                 request.getCategory().getNameCategory(),

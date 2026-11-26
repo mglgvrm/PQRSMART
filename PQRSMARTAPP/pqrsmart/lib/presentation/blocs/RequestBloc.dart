@@ -46,6 +46,17 @@ class RequestBloc extends Bloc<RequestEvent, RequestState> {
         emit(RequestError(e.toString()));
       }
     });
+    on<SaveAssistedRequestEvent>((event, emit) async {
+      emit(RequestLoading());
+      try {
+        final request = await requestRepository.saveAssisted(
+          event.requestModel,
+        );
+        emit(RequestSaved(request));
+      } catch (e) {
+        emit(RequestError(e.toString()));
+      }
+    });
     on<CancelRequestEvent>((event, emit) async {
       emit(RequestLoading());
       try {

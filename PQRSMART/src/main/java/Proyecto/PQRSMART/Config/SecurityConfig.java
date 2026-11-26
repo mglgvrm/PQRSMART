@@ -54,13 +54,21 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000"
-                // Flutter emulador
-        )); // Reemplaza con la URL de tu frontend
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        configuration.setAllowedOriginPatterns(List.of(
+                "http://localhost:*",
+                "http://127.0.0.1:*"
+        ));
+        configuration.setAllowedMethods(List.of(
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE",
+                "OPTIONS",
+                "PATCH"
+        ));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("Authorization"));
-        configuration.setAllowCredentials(true); // 🔥 importante
+        configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
@@ -99,6 +107,7 @@ public class SecurityConfig {
                 new AntPathRequestMatcher("/api/Usuario/activate/**"),
                 new AntPathRequestMatcher("/api/Usuario/get"),
                 new AntPathRequestMatcher("/api/Usuario/update"),
+                new AntPathRequestMatcher("/api/Usuario/update/**"),
                 new AntPathRequestMatcher("/api/request_type/save"),
                 new AntPathRequestMatcher("/api/request_type/update"),
                 new AntPathRequestMatcher("/api/request_state/update"),
@@ -115,6 +124,11 @@ public class SecurityConfig {
                 new AntPathRequestMatcher("/api/category/activate/**"),
                 new AntPathRequestMatcher("/api/category/save"),
                 new AntPathRequestMatcher("/api/category/update"),
+                new AntPathRequestMatcher("/api/request/get"),
+                new AntPathRequestMatcher("/api/request/save/assisted"),
+                // El acceso al heatmap y al detalle de celda está incluido en la regla ADMIN.
+                new AntPathRequestMatcher("/api/request/geo/heatmap"),
+                new AntPathRequestMatcher("/api/request/geo/heatmap/cell"),
                 new AntPathRequestMatcher("/api/auth/register"),
                 new AntPathRequestMatcher("/api/auth/registerApp"),
                 new AntPathRequestMatcher("/api/chat/user")
@@ -123,28 +137,27 @@ public class SecurityConfig {
 
     private RequestMatcher secreEndpoinds() {
         return new OrRequestMatcher(
-                new AntPathRequestMatcher("/api/request/update/**")
+                new AntPathRequestMatcher("/api/request/getForDependence"),
+                new AntPathRequestMatcher("/api/request/save/assisted"),
+                new AntPathRequestMatcher("/api/request/update/**"),
+                new AntPathRequestMatcher("/api/request/*/state")
         );
     }
 
     private RequestMatcher allEnpoinds() {
         return new OrRequestMatcher(
-                new AntPathRequestMatcher("/api/request/get"),
                 new AntPathRequestMatcher("/api/dependence/get"),
                 new AntPathRequestMatcher("/api/request/cancel/**"),
                 new AntPathRequestMatcher("/api/Usuario/profile"),
                 new AntPathRequestMatcher("/api/request_type/get"),
                 new AntPathRequestMatcher("/api/request_state/get"),
-                new AntPathRequestMatcher("/api/Usuario/update/**"),
-                new AntPathRequestMatcher("/api/request/get"),
                 new AntPathRequestMatcher("/api/identification_type/get"),
                 new AntPathRequestMatcher("/api/dependence/get"),
                 new AntPathRequestMatcher("/api/category/get"),
                 new AntPathRequestMatcher("/api/person_type/get"),
-                new AntPathRequestMatcher("/api/request/getForDependence"),
                 new AntPathRequestMatcher("/api/request/get/pqrs"),
+                new AntPathRequestMatcher("/api/request/geo/municipality"),
                 new AntPathRequestMatcher("/api/Usuario/initial")
         );
     }
 }
-

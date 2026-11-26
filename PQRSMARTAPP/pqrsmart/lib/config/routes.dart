@@ -80,6 +80,25 @@ class AppRoutes {
           '/homeUser',
           const CreateRequestScreen(),
         );
+      case '/newAssistedRequest':
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => FutureBuilder<String?>(
+            future: _getHomeRoute(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Scaffold(
+                  body: Center(child: CircularProgressIndicator()),
+                );
+              }
+              if (snapshot.data == '/homeAdmin' ||
+                  snapshot.data == '/homeSecre') {
+                return const CreateRequestScreen(assisted: true);
+              }
+              return const PqrLoginScreen();
+            },
+          ),
+        );
       case '/register':
         return MaterialPageRoute(builder: (_) => const Register());
 

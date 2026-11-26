@@ -1,6 +1,7 @@
 package Proyecto.PQRSMART.Domain.Dto;
 
 import Proyecto.PQRSMART.Persistence.Entity.Priority;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,6 +15,7 @@ public class AIAnalysisResponse {
 
     private Boolean valid;
 
+    @JsonAlias("coherente")
     private Boolean coherence;
 
     private Double relevance;

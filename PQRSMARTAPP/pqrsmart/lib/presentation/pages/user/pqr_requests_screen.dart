@@ -227,6 +227,22 @@ class _RequestCard extends StatelessWidget {
                               fontSize: 11,
                             ),
                           ),
+                          if (request.updatedAt != null) ...[
+                            const SizedBox(width: 12),
+                            const Icon(
+                              Icons.update,
+                              color: AppColors.muted,
+                              size: 14,
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              'Actualizada ${_shortDate(request.updatedAt!)}',
+                              style: const TextStyle(
+                                color: AppColors.muted,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
                           const Spacer(),
                           const Icon(
                             Icons.chevron_right,
@@ -244,6 +260,13 @@ class _RequestCard extends StatelessWidget {
       ),
     );
   }
+}
+
+String _shortDate(String value) {
+  final date = DateTime.tryParse(value)?.toLocal();
+  if (date == null) return value;
+  return '${date.day.toString().padLeft(2, '0')}/'
+      '${date.month.toString().padLeft(2, '0')}/${date.year}';
 }
 
 Color _statusColor(String status) {

@@ -7,15 +7,20 @@ import Proyecto.PQRSMART.Controller.models.RegisterRequest;
 import Proyecto.PQRSMART.Domain.Dto.UsuarioDto;
 import Proyecto.PQRSMART.Domain.Service.Interfaces.AuthService;
 import Proyecto.PQRSMART.Domain.Service.Interfaces.UsuarioService;
+import Proyecto.PQRSMART.Domain.Service.EmailDeliveryException;
 import Proyecto.PQRSMART.Domain.Service.JwtService;
 import Proyecto.PQRSMART.Domain.Service.UsuarioServiceImpl;
 import Proyecto.PQRSMART.Persistence.Entity.User;
 import Proyecto.PQRSMART.Persistence.Repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
@@ -27,11 +32,14 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthController.class);
+
     @Autowired
     private AuthService authService;
 
@@ -125,27 +133,46 @@ public class AuthController {
     @PostMapping("/registerApp")
     public ResponseEntity<?> registerApp(@RequestBody RegisterRequest request) {
         try {
-            // Intentar registrar al usuario
             AuthResponse authResponse = authService.registerApp(request);
             return ResponseEntity.ok(authResponse);
-        } catch (Exceptions.UserAlreadyExistsException e) {
-            // Manejar usuario duplicado
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("El usuario ya existe.");
-        } catch (Exceptions.EmailAlreadyExistsException e) {
-            // Manejar email duplicado
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("El correo electrónico ya está en uso.");
-        } catch (Exceptions.NumberAlreadyExistsException e) {
-            // Manejar número de identificación duplicado
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("El número ya está registrado.");
-        } catch (Exceptions.IdentificationNumberAlreadyExistsException e) {
-            // Manejar número de identificación duplicado
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("El número de identificación ya está registrado.");
+        } catch (Exceptions.UserAlreadyExistsException
+                 | Exceptions.EmailAlreadyExistsException
+                 | Exceptions.NumberAlreadyExistsException
+                 | Exceptions.IdentificationNumberAlreadyExistsException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("message", e.getMessage()));
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of(
+                            "message",
+                            "Uno de los datos ingresados ya está registrado o no es válido."
+                    ));
+        } catch (EmailDeliveryException e) {
+            LOGGER.error("Falló el envío del correo de verificación del registro.", e);
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                    .body(Map.of(
+                            "code", "EMAIL_DELIVERY_FAILED",
+                            "message", e.getMessage() + " La cuenta no fue creada."
+                    ));
+        } catch (DataAccessException e) {
+            LOGGER.error("Falló el acceso a la base de datos durante el registro.", e);
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                    .body(Map.of(
+                            "code", "DATABASE_UNAVAILABLE",
+                            "message", "No se pudo guardar el usuario en la base de datos. Inténtelo nuevamente."
+                    ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
-            // Manejar otros errores
-            System.out.println(e + "#############################################################################################################################################################");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error en el servidor.");
+            String errorId = UUID.randomUUID().toString();
+            LOGGER.error("Error inesperado en el registro. Referencia: {}", errorId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of(
+                            "code", "REGISTRATION_INTERNAL_ERROR",
+                            "message", "Ocurrió un error inesperado al registrar. Comparta la referencia con soporte.",
+                            "errorId", errorId
+                    ));
         }
-
     }
 
     @GetMapping("/verifyEmail/{token}")

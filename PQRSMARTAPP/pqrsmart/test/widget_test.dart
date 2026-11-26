@@ -10,6 +10,7 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
 import 'package:pqrsmart/core/theme/app_colors.dart';
+import 'package:pqrsmart/core/theme/app_theme.dart';
 import 'package:pqrsmart/core/utils/role_navigation.dart';
 import 'package:pqrsmart/data/model/AuthResponse.dart';
 import 'package:pqrsmart/data/repository/auth_repositories.dart';
@@ -20,10 +21,28 @@ import 'package:pqrsmart/presentation/blocs/auth_bloc.dart';
 import 'package:pqrsmart/presentation/pages/register_page.dart';
 import 'package:pqrsmart/presentation/pages/password_recovery_page.dart';
 import 'package:pqrsmart/presentation/pages/user/pqr_login_screen.dart';
+import 'package:pqrsmart/presentation/widgets/profile_menu_item.dart';
 import 'package:pqrsmart/presentation/widgets/pqr_widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 void main() {
+  test('shared theme keeps institutional typography and action contrast', () {
+    final theme = AppTheme.light;
+
+    expect(theme.textTheme.titleLarge?.color, AppColors.text);
+    expect(theme.textTheme.bodyMedium?.color, AppColors.text);
+    expect(theme.appBarTheme.titleTextStyle?.color, AppColors.text);
+    expect(theme.appBarTheme.titleTextStyle?.fontSize, 18);
+    expect(
+      theme.elevatedButtonTheme.style?.backgroundColor?.resolve({}),
+      AppColors.action,
+    );
+    expect(
+      theme.elevatedButtonTheme.style?.foregroundColor?.resolve({}),
+      AppColors.white,
+    );
+  });
+
   test('authentication roles resolve to their own home routes', () {
     expect(homeRouteForAuthorities(['ROLE_USER']), '/homeUser');
     expect(homeRouteForAuthorities(['ROLE_ADMIN']), '/homeAdmin');
@@ -159,23 +178,48 @@ void main() {
       MaterialApp(
         home: BlocProvider(
           create: (_) => AuthBloc(repository),
-          child: const PasswordRecoveryPage(),
+          child: const PasswordRecoveryPage(
+            initialEmail: 'secretary@example.com',
+          ),
         ),
       ),
     );
 
-    await tester.enterText(find.byType(TextFormField), 'citizen@example.com');
+    expect(
+      tester.widget<TextFormField>(find.byType(TextFormField)).controller?.text,
+      'secretary@example.com',
+    );
     await tester.tap(find.text('Enviar instrucciones'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
 
-    expect(repository.passwordResetEmail, 'citizen@example.com');
+    expect(repository.passwordResetEmail, 'secretary@example.com');
     expect(
       find.text(
         'Revisa tu bandeja de entrada y la carpeta de correo no deseado.',
       ),
       findsOneWidget,
     );
+  });
+
+  testWidgets('profile menu marks unavailable actions as upcoming', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: PqrProfileMenuItem(
+            icon: Icons.notifications_none,
+            title: 'Notificaciones',
+            subtitle: 'Próximamente',
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Notificaciones'), findsOneWidget);
+    expect(find.text('Próximamente'), findsOneWidget);
+    expect(find.byIcon(Icons.schedule_outlined), findsOneWidget);
   });
 
   testWidgets('invalid login credentials do not navigate', (

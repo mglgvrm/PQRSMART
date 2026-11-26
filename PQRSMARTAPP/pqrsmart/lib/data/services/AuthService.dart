@@ -8,6 +8,31 @@ import '../../core/constants/api_service.dart';
 class AuthService {
   final storage = AuthStorage();
 
+  String _responseErrorMessage(http.Response response, String fallback) {
+    final body = response.body.trim();
+    if (body.isEmpty ||
+        response.headers['content-type']?.toLowerCase().contains('text/html') ==
+            true ||
+        body.startsWith('<')) {
+      return '$fallback (HTTP ${response.statusCode}).';
+    }
+
+    try {
+      final decoded = jsonDecode(body);
+      if (decoded is Map) {
+        for (final key in ['message', 'detail', 'error']) {
+          final value = decoded[key]?.toString().trim();
+          if (value != null && value.isNotEmpty) return value;
+        }
+      } else if (decoded is String && decoded.trim().isNotEmpty) {
+        return decoded.trim();
+      }
+    } on FormatException {
+      return body;
+    }
+    return '$fallback (HTTP ${response.statusCode}).';
+  }
+
   Future<AuthResponse> login(String user, String password) async {
     final response = await http.post(
       Uri.parse('${ApiConstants.baseUrl}/auth/authenticate'),
@@ -29,21 +54,11 @@ class AuthService {
     );
     if (response.statusCode == 200) return;
 
-    var message = response.body.trim();
-    try {
-      final error = jsonDecode(response.body);
-      if (error is Map<String, dynamic>) {
-        message = error['message']?.toString() ?? message;
-      } else if (error is String) {
-        message = error;
-      }
-    } on FormatException {
-      // The Spring endpoint may return a plain-text error.
-    }
     throw Exception(
-      message.isEmpty
-          ? 'No fue posible solicitar la recuperación de contraseña.'
-          : message,
+      _responseErrorMessage(
+        response,
+        'No fue posible solicitar la recuperación de contraseña',
+      ),
     );
   }
 
@@ -83,19 +98,8 @@ class AuthService {
       final json = jsonDecode(response.body);
       return UserModel.fromJson(json);
     } else {
-      var message = response.body.trim();
-      try {
-        final error = jsonDecode(response.body);
-        if (error is Map<String, dynamic>) {
-          message = error['message']?.toString() ?? message;
-        } else if (error is String) {
-          message = error;
-        }
-      } on FormatException {
-        // Some existing Spring endpoints return plain-text validation errors.
-      }
       throw Exception(
-        message.isEmpty ? 'No fue posible crear la cuenta.' : message,
+        _responseErrorMessage(response, 'No fue posible crear la cuenta'),
       );
     }
   }
@@ -114,6 +118,11 @@ class AuthService {
     required int dependence,
   }) async {
     final token = await storage.getToken();
+    if (token == null || token.isEmpty) {
+      throw StateError(
+        'La sesión administrativa expiró. Inicia sesión nuevamente.',
+      );
+    }
     final url = Uri.parse('${ApiConstants.baseUrl}/auth/registerApp');
 
     // El backend espera los objetos relacionales como { "id": X }
@@ -140,11 +149,19 @@ class AuthService {
       body: body,
     );
     if (response.statusCode == 200 || response.statusCode == 201) {
-      final json = jsonDecode(response.body);
+      dynamic json;
+      try {
+        json = jsonDecode(response.body);
+      } on FormatException {
+        throw const FormatException(
+          'El servidor no confirmó el registro con una respuesta JSON válida.',
+        );
+      }
       return UserModel.fromJson(json);
     } else {
-      final error = jsonDecode(response.body);
-      throw Exception(error['message'] ?? 'Error en el registro');
+      throw Exception(
+        _responseErrorMessage(response, 'No fue posible registrar el usuario'),
+      );
     }
   }
 }

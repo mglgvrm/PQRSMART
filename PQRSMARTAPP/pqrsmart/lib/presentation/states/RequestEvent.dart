@@ -13,6 +13,11 @@ class SaveRequestEvent extends RequestEvent {
   SaveRequestEvent(this.requestModel);
 }
 
+class SaveAssistedRequestEvent extends RequestEvent {
+  final RequestModel requestModel;
+  SaveAssistedRequestEvent(this.requestModel);
+}
+
 class AnswerRequestEvent extends RequestEvent {
   final int idRequest;
   final String answer;

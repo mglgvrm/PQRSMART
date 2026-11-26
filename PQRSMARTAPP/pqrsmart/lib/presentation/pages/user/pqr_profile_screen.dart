@@ -5,7 +5,7 @@ import 'package:pqrsmart/presentation/blocs/UserBloc.dart';
 import 'package:pqrsmart/presentation/blocs/auth_bloc.dart';
 import 'package:pqrsmart/presentation/states/UserSatate.dart';
 import 'package:pqrsmart/presentation/states/auth_event.dart';
-import 'package:pqrsmart/presentation/widgets/pqr_widgets.dart';
+import 'package:pqrsmart/presentation/widgets/profile_menu_item.dart';
 
 class PqrProfileScreen extends StatelessWidget {
   const PqrProfileScreen({super.key});
@@ -102,14 +102,14 @@ class PqrProfileScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  _ProfileMenuItem(
+                  PqrProfileMenuItem(
                     icon: Icons.person_outline,
                     title: 'Información personal',
                     subtitle: 'Consulta tus datos registrados',
                     onTap: () => Navigator.pushNamed(context, '/profile'),
                   ),
                   const SizedBox(height: 10),
-                  _ProfileMenuItem(
+                  PqrProfileMenuItem(
                     icon: Icons.lock_outline,
                     title: 'Cambiar contraseña',
                     subtitle: 'Solicita instrucciones por correo',
@@ -117,19 +117,19 @@ class PqrProfileScreen extends StatelessWidget {
                         Navigator.pushNamed(context, '/passwordRecovered'),
                   ),
                   const SizedBox(height: 10),
-                  _ProfileMenuItem(
+                  PqrProfileMenuItem(
                     icon: Icons.notifications_none,
                     title: 'Notificaciones',
                     subtitle: 'Próximamente',
                   ),
                   const SizedBox(height: 10),
-                  _ProfileMenuItem(
+                  PqrProfileMenuItem(
                     icon: Icons.help_outline,
                     title: 'Ayuda',
                     subtitle: 'No disponible todavía',
                   ),
                   const SizedBox(height: 10),
-                  _ProfileMenuItem(
+                  PqrProfileMenuItem(
                     icon: Icons.logout,
                     title: 'Cerrar sesión',
                     destructive: true,
@@ -175,75 +175,4 @@ class PqrProfileScreen extends StatelessWidget {
       ),
     );
   }
-}
-
-class _ProfileMenuItem extends StatelessWidget {
-  const _ProfileMenuItem({
-    required this.icon,
-    required this.title,
-    this.onTap,
-    this.subtitle,
-    this.destructive = false,
-  });
-  final IconData icon;
-  final String title;
-  final VoidCallback? onTap;
-  final String? subtitle;
-  final bool destructive;
-
-  @override
-  Widget build(BuildContext context) => Material(
-    color: AppColors.white,
-    borderRadius: BorderRadius.circular(10),
-    child: InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
-      child: PqrCard(
-        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              size: 20,
-              color: destructive ? AppColors.cancelled : AppColors.icon,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      color: destructive ? AppColors.cancelled : AppColors.text,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  if (subtitle != null) ...[
-                    const SizedBox(height: 3),
-                    Text(
-                      subtitle!,
-                      style: const TextStyle(
-                        color: AppColors.muted,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            if (onTap != null)
-              const Icon(Icons.chevron_right, color: AppColors.muted, size: 20)
-            else
-              const Icon(
-                Icons.schedule_outlined,
-                color: AppColors.muted,
-                size: 18,
-              ),
-          ],
-        ),
-      ),
-    ),
-  );
 }

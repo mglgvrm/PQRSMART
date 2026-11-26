@@ -23,6 +23,7 @@ Proyecto\PQRSMART\Config\JwtFilter.class
 Proyecto\PQRSMART\Persistence\Entity\RequestType.class
 Proyecto\PQRSMART\Controller\ForgotPasswordController.class
 Proyecto\PQRSMART\Controller\DependenceController.class
+Proyecto\PQRSMART\Persistence\Entity\Priority.class
 Proyecto\PQRSMART\Persistence\Entity\RequestState$RequestStateBuilder.class
 Proyecto\PQRSMART\Domain\Service\Interfaces\IEmailService.class
 Proyecto\PQRSMART\Config\MailConfiguration.class
@@ -33,6 +34,7 @@ Proyecto\PQRSMART\Persistence\Entity\State$StateBuilder.class
 Proyecto\PQRSMART\Domain\Dto\CategoryDTO.class
 Proyecto\PQRSMART\Domain\Service\IdentificationTypeServiceImpl.class
 Proyecto\PQRSMART\Domain\Mapper\RequestTypeMapper.class
+Proyecto\PQRSMART\Domain\Service\UserTools.class
 Proyecto\PQRSMART\Domain\Service\RequestStateServiceImpl.class
 Proyecto\PQRSMART\Controller\models\RegisterRequest.class
 Proyecto\PQRSMART\Persistence\Repository\DependenceRepository.class
@@ -55,12 +57,15 @@ Proyecto\PQRSMART\Domain\Dto\RequestStateDTO$RequestStateDTOBuilder.class
 Proyecto\PQRSMART\Domain\Service\PdfServicesImpl.class
 Proyecto\PQRSMART\Persistence\Entity\PersonType.class
 Proyecto\PQRSMART\Persistence\Entity\StateUser.class
+Proyecto\PQRSMART\Domain\Dto\AIAnalysisResponse$AIAnalysisResponseBuilder.class
 Proyecto\PQRSMART\Domain\Service\RequestTypeServiceImpl.class
 Proyecto\PQRSMART\Persistence\Entity\IdentificationType.class
 Proyecto\PQRSMART\Domain\Dto\ChatRequest.class
 Proyecto\PQRSMART\Domain\Mapper\CategoryMapper.class
 Proyecto\PQRSMART\Domain\Service\Interfaces\IdentificationTypeService.class
 Proyecto\PQRSMART\Domain\Service\ChatServiceImpl.class
+Proyecto\PQRSMART\Config\UserToolsConfig.class
+Proyecto\PQRSMART\Domain\Dto\AIAnalysisResponse.class
 Proyecto\PQRSMART\Domain\Dto\RequestStateDTO.class
 Proyecto\PQRSMART\Controller\PersonTypeController.class
 Proyecto\PQRSMART\Domain\Dto\UsuarioDto$UsuarioDtoBuilder.class
@@ -106,3 +111,4 @@ Proyecto\PQRSMART\Controller\models\AuthenticationRequest.class
 Proyecto\PQRSMART\Controller\models\AuthResponse.class
 Proyecto\PQRSMART\Persistence\Entity\Dependence$DependenceBuilder.class
 Proyecto\PQRSMART\Persistence\Repository\UsuarioRepository.class
+Proyecto\PQRSMART\Domain\Service\MCPRequestAnalysisService.class

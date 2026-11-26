@@ -12,10 +12,12 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Profile;
 
 import javax.sql.DataSource;
 
 @Component
+@Profile("!testdata")
 @RequiredArgsConstructor
 public class AdminInitializer implements CommandLineRunner {
 

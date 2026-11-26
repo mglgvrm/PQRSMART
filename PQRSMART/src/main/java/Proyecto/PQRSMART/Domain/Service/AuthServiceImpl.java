@@ -8,6 +8,9 @@ import Proyecto.PQRSMART.Domain.Service.Interfaces.AuthService;
 import Proyecto.PQRSMART.Persistence.Entity.Role;
 import Proyecto.PQRSMART.Persistence.Entity.StateUser;
 import Proyecto.PQRSMART.Persistence.Entity.User;
+import Proyecto.PQRSMART.Persistence.Repository.DependenceRepository;
+import Proyecto.PQRSMART.Persistence.Repository.IdentificationTypeRepository;
+import Proyecto.PQRSMART.Persistence.Repository.PersonTypeRepository;
 import Proyecto.PQRSMART.Persistence.Repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,6 +32,9 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final DependenceRepository dependenceRepository;
+    private final IdentificationTypeRepository identificationTypeRepository;
+    private final PersonTypeRepository personTypeRepository;
 
 
     @Override
@@ -317,40 +323,106 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponse registerApp(RegisterRequest request) {
-        if (userRepository.existsByUser(request.getUser())) {
+        if (request == null) {
+            throw new IllegalArgumentException("Los datos del usuario son obligatorios.");
+        }
+
+        String username = requiredText(request.getUser(), "El nombre de usuario es obligatorio.");
+        String name = requiredText(request.getName(), "El nombre es obligatorio.");
+        String lastName = requiredText(request.getLastName(), "El apellido es obligatorio.");
+        String email = requiredText(request.getEmail(), "El correo electrónico es obligatorio.");
+        String password = requiredText(request.getPassword(), "La contraseña es obligatoria.");
+        if (request.getRole() == null) {
+            throw new IllegalArgumentException("El rol es obligatorio.");
+        }
+        if (request.getIdentificationNumber() == null
+                || request.getIdentificationNumber().signum() <= 0
+                || request.getNumber() == null
+                || request.getNumber().signum() <= 0) {
+            throw new IllegalArgumentException(
+                    "El número de identificación y el teléfono deben ser válidos."
+            );
+        }
+
+        if (userRepository.existsByUser(username)) {
             throw new Exceptions.UserAlreadyExistsException("El usuario ya existe.");
         }
 
-        // Verificar si el email ya existe
-        if (userRepository.existsByEmail(request.getEmail())) {
+        if (userRepository.existsByEmail(email)) {
             throw new Exceptions.EmailAlreadyExistsException("El correo electrónico ya está en uso.");
         }
 
-        // Verificar si el número de identificación ya existe
         if (userRepository.existsByIdentificationNumber(request.getIdentificationNumber())) {
             throw new Exceptions.IdentificationNumberAlreadyExistsException("El número de identificación ya está registrado.");
         }
-        // Verificar si el número de numero ya existe
         if (userRepository.existsByNumber(request.getNumber())) {
             throw new Exceptions.NumberAlreadyExistsException("El número ya está registrado.");
         }
+
+        if (request.getIdentificationType() == null
+                || request.getIdentificationType().getIdIdentificationType() == null) {
+            throw new IllegalArgumentException("El tipo de identificación es obligatorio.");
+        }
+        if (request.getPersonType() == null || request.getPersonType().getIdPersonType() == null) {
+            throw new IllegalArgumentException("El tipo de persona es obligatorio.");
+        }
+        var identificationType = identificationTypeRepository
+                .findById(request.getIdentificationType().getIdIdentificationType())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "El tipo de identificación seleccionado no existe."
+                ));
+        var personType = personTypeRepository
+                .findById(request.getPersonType().getIdPersonType())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "El tipo de persona seleccionado no existe."
+                ));
+
+        Long dependenceId = request.getDependence() == null
+                ? null
+                : request.getDependence().getIdDependence();
+        if (request.getRole() == Role.SECRE
+                && (dependenceId == null || dependenceId == 7L)) {
+            throw new IllegalArgumentException(
+                    "Todo secretario debe tener una dependencia institucional asignada."
+            );
+        }
+        var dependence = dependenceId == null
+                ? null
+                : dependenceRepository.findById(dependenceId)
+                        .orElseThrow(() -> new IllegalArgumentException(
+                                "La dependencia seleccionada no existe."
+                        ));
+        if (request.getRole() == Role.SECRE
+                && (dependence.getState() == null
+                || !Long.valueOf(1L).equals(dependence.getState().getId()))) {
+            throw new IllegalArgumentException(
+                    "La dependencia seleccionada no está activa."
+            );
+        }
+
         var user = User.builder()
-                .user(request.getUser())
-                .name(request.getName())
-                .lastName(request.getLastName())
-                .email(request.getEmail())
+                .user(username)
+                .name(name)
+                .lastName(lastName)
+                .email(email)
                 .stateUser(new StateUser(1L, "INACTIVO"))
-                .identificationType(request.getIdentificationType())
+                .identificationType(identificationType)
                 .identificationNumber(request.getIdentificationNumber())
-                .personType(request.getPersonType())
+                .personType(personType)
                 .number(request.getNumber())
-                .password(passwordEncoder.encode(request.getPassword()))
+                .password(passwordEncoder.encode(password))
                 .role(request.getRole())
-                .dependence(request.getDependence())
+                .dependence(dependence)
                 .build();
 
         var jwtToken = jwtService.genereteToken((UserDetails) user);
-        // Enviar correo electrónico de activación
+        if (request.getRole() == Role.SECRE) {
+            user.setStateUser(new StateUser(2L, "ACTIVO"));
+            userRepository.save(user);
+            return AuthResponse.builder().token(jwtToken).build();
+        }
+
+        // Enviar correo electrónico de activación.
         String activationLink1 = "https://pqrsmartback-production.up.railway.app/api/auth/verifyEmail/" + jwtToken;
         String messageHtml = String.format(
                 "<!DOCTYPE html>" +
@@ -423,6 +495,13 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(user);
         return AuthResponse.builder()
                 .token(jwtToken).build();
+    }
+
+    private String requiredText(String value, String message) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(message);
+        }
+        return value.trim();
     }
 
     @Override

@@ -13,7 +13,7 @@ class Home extends StatelessWidget {
   const Home({Key? key}) : super(key: key);
 
   static const _verde = Color(0xFF0755A8);
-  static const _bg    = Color(0xFFF0F2F5);
+  static const _bg = Color(0xFFF0F2F5);
 
   String safeStr(dynamic v, [String fallback = '']) =>
       (v == null || v.toString().isEmpty) ? fallback : v.toString();
@@ -50,17 +50,16 @@ class Home extends StatelessWidget {
       ),
     );
   }
+
   void _showProfile(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => ProfilePage()),
-    );
+    Navigator.push(context, MaterialPageRoute(builder: (_) => ProfilePage()));
   }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider<UserBloc>(
-      create: (_) => UserBloc(UserRepository(UserService()))
-        ..add(GetUserEvent()),
+      create: (_) =>
+          UserBloc(UserRepository(UserService()))..add(GetUserEvent()),
       child: Scaffold(
         backgroundColor: _bg,
         appBar: AppBar(
@@ -68,8 +67,14 @@ class Home extends StatelessWidget {
           foregroundColor: Colors.white,
           centerTitle: true,
           automaticallyImplyLeading: false,
-          title: Text('Home',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+          title: Text(
+            'Home',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+              fontSize: 18,
+            ),
+          ),
           actions: [
             PopupMenuButton<String>(
               icon: Icon(Icons.account_circle, color: Colors.white),
@@ -97,7 +102,10 @@ class Home extends StatelessWidget {
                     children: [
                       Icon(Icons.logout, color: Colors.red),
                       SizedBox(width: 10),
-                      Text('Cerrar Sesión', style: TextStyle(color: Colors.red)),
+                      Text(
+                        'Cerrar Sesión',
+                        style: TextStyle(color: Colors.red),
+                      ),
                     ],
                   ),
                 ),
@@ -108,41 +116,51 @@ class Home extends StatelessWidget {
         body: BlocBuilder<UserBloc, UserState>(
           builder: (context, state) {
             if (state is UserLoading) {
-              return Center(
-                  child: CircularProgressIndicator(color: _verde));
+              return Center(child: CircularProgressIndicator(color: _verde));
             }
 
             if (state is UserLoaded) {
               final usuarios = state.user;
 
               // ── Conteos ──────────────────────────────────
-              final total       = usuarios.length;
-              final activos     = usuarios.where((u) =>
-              safeStr(u.stateUser?.state).toUpperCase() == 'ACTIVO').length;
-              final inactivos   = usuarios.where((u) =>
-              safeStr(u.stateUser?.state).toUpperCase() != 'ACTIVO').length;
-              final admins      = usuarios.where((u) =>
-              safeStr(u.role).toUpperCase() == 'ADMIN').length;
-              final secretarios = usuarios.where((u) =>
-              safeStr(u.role).toUpperCase() == 'SECRE').length;
-              final regulares   = usuarios.where((u) =>
-              safeStr(u.role).toUpperCase() == 'USER').length;
+              final total = usuarios.length;
+              final activos = usuarios
+                  .where(
+                    (u) =>
+                        safeStr(u.stateUser?.state).toUpperCase() == 'ACTIVO',
+                  )
+                  .length;
+              final inactivos = usuarios
+                  .where(
+                    (u) =>
+                        safeStr(u.stateUser?.state).toUpperCase() != 'ACTIVO',
+                  )
+                  .length;
+              final admins = usuarios
+                  .where((u) => safeStr(u.role).toUpperCase() == 'ADMIN')
+                  .length;
+              final secretarios = usuarios
+                  .where((u) => safeStr(u.role).toUpperCase() == 'SECRE')
+                  .length;
+              final regulares = usuarios
+                  .where((u) => safeStr(u.role).toUpperCase() == 'USER')
+                  .length;
 
               return SingleChildScrollView(
                 padding: EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
                     SizedBox(height: 8),
 
                     // ── Saludo ──────────────────────────────
                     RichText(
                       text: TextSpan(
                         style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87),
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
                         children: [
                           TextSpan(text: 'Bienvenido '),
                           TextSpan(text: '👋'),
@@ -225,9 +243,9 @@ class Home extends StatelessWidget {
 
                     // ── Barra visual proporcional ───────────
                     _barraUsuarios(
-                      activos:     activos,
-                      inactivos:   inactivos,
-                      total:       total,
+                      activos: activos,
+                      inactivos: inactivos,
+                      total: total,
                     ),
 
                     SizedBox(height: 24),
@@ -241,16 +259,18 @@ class Home extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.error_outline,
-                        size: 56, color: Colors.red[300]),
+                    Icon(Icons.error_outline, size: 56, color: Colors.red[300]),
                     SizedBox(height: 12),
-                    Text(state.message,
-                        style: TextStyle(color: Colors.grey[600])),
+                    Text(
+                      state.message,
+                      style: TextStyle(color: Colors.grey[600]),
+                    ),
                     SizedBox(height: 16),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                          backgroundColor: _verde,
-                          foregroundColor: Colors.white),
+                        backgroundColor: _verde,
+                        foregroundColor: Colors.white,
+                      ),
                       onPressed: () =>
                           context.read<UserBloc>().add(GetUserEvent()),
                       child: Text('Reintentar'),
@@ -276,9 +296,10 @@ class Home extends StatelessWidget {
       borderRadius: BorderRadius.circular(16),
       boxShadow: [
         BoxShadow(
-            color: _verde.withOpacity(0.35),
-            blurRadius: 12,
-            offset: Offset(0, 4)),
+          color: _verde.withOpacity(0.35),
+          blurRadius: 12,
+          offset: Offset(0, 4),
+        ),
       ],
     ),
     child: Row(
@@ -289,21 +310,24 @@ class Home extends StatelessWidget {
             color: Colors.white.withOpacity(0.15),
             shape: BoxShape.circle,
           ),
-          child: Icon(Icons.group_outlined,
-              color: Colors.white, size: 28),
+          child: Icon(Icons.group_outlined, color: Colors.white, size: 28),
         ),
         SizedBox(width: 16),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('$total',
-                style: TextStyle(
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white)),
-            Text('Total de usuarios',
-                style: TextStyle(
-                    fontSize: 14, color: Colors.white70)),
+            Text(
+              '$total',
+              style: TextStyle(
+                fontSize: 36,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            Text(
+              'Total de usuarios',
+              style: TextStyle(fontSize: 14, color: Colors.white70),
+            ),
           ],
         ),
       ],
@@ -316,43 +340,44 @@ class Home extends StatelessWidget {
     required String label,
     required int valor,
     required Color color,
-  }) =>
-      Container(
-        padding: EdgeInsets.symmetric(vertical: 16, horizontal: 14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 6,
-                offset: Offset(0, 2)),
-          ],
+  }) => Container(
+    padding: EdgeInsets.symmetric(vertical: 16, horizontal: 14),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(14),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.04),
+          blurRadius: 6,
+          offset: Offset(0, 2),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(icon, color: color, size: 20),
-            ),
-            SizedBox(height: 10),
-            Text('$valor',
-                style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87)),
-            SizedBox(height: 2),
-            Text(label,
-                style: TextStyle(
-                    fontSize: 12, color: Colors.grey[500])),
-          ],
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, color: color, size: 20),
         ),
-      );
+        SizedBox(height: 10),
+        Text(
+          '$valor',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+        SizedBox(height: 2),
+        Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[500])),
+      ],
+    ),
+  );
 
   // ── Barra proporcional activos/inactivos ─────────────────
   Widget _barraUsuarios({
@@ -360,7 +385,7 @@ class Home extends StatelessWidget {
     required int inactivos,
     required int total,
   }) {
-    final pActivos   = total > 0 ? activos / total : 0.0;
+    final pActivos = total > 0 ? activos / total : 0.0;
     final pInactivos = total > 0 ? inactivos / total : 0.0;
 
     return Container(
@@ -370,19 +395,23 @@ class Home extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 6,
-              offset: Offset(0, 2)),
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Distribución de usuarios',
-              style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87)),
+          Text(
+            'Distribución de usuarios',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
           SizedBox(height: 14),
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
@@ -407,8 +436,9 @@ class Home extends StatelessWidget {
               _leyenda(color: Colors.green, label: 'Activos ($activos)'),
               SizedBox(width: 16),
               _leyenda(
-                  color: Colors.red[300]!,
-                  label: 'Inactivos ($inactivos)'),
+                color: Colors.red[300]!,
+                label: 'Inactivos ($inactivos)',
+              ),
             ],
           ),
         ],
@@ -420,12 +450,12 @@ class Home extends StatelessWidget {
     mainAxisSize: MainAxisSize.min,
     children: [
       Container(
-          width: 10, height: 10,
-          decoration:
-          BoxDecoration(color: color, shape: BoxShape.circle)),
+        width: 10,
+        height: 10,
+        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+      ),
       SizedBox(width: 6),
-      Text(label,
-          style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+      Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
     ],
   );
 
@@ -433,9 +463,10 @@ class Home extends StatelessWidget {
   Widget _seccion(String titulo) => Text(
     titulo.toUpperCase(),
     style: TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.w700,
-        color: Colors.grey[500],
-        letterSpacing: 1.0),
+      fontSize: 12,
+      fontWeight: FontWeight.w700,
+      color: Colors.grey[500],
+      letterSpacing: 1.0,
+    ),
   );
 }

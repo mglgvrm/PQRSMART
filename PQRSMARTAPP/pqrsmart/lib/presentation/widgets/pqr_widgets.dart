@@ -65,7 +65,14 @@ class PqrCard extends StatelessWidget {
     decoration: BoxDecoration(
       color: color,
       border: Border.all(color: borderColor),
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(14),
+      boxShadow: [
+        BoxShadow(
+          color: AppColors.primary.withValues(alpha: .035),
+          blurRadius: 10,
+          offset: const Offset(0, 3),
+        ),
+      ],
     ),
     child: child,
   );

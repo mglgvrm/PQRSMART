@@ -112,19 +112,7 @@ public class UsuarioServiceImpl implements UsuarioService {
             return ResponseEntity.notFound().build();
         }
 
-        UsuarioDto dto = UsuarioDto.builder()
-                .id(user.getId())
-                .name(user.getName())
-                .lastName(user.getLastName())
-                .email(user.getEmail())
-                .user(user.getUser())
-                .identificationNumber(user.getIdentificationNumber())
-                .stateUser(user.getStateUser())
-                .role(user.getRole())
-                .number(user.getNumber())
-                .build();
-
-        return ResponseEntity.ok(dto);
+        return ResponseEntity.ok(UsuarioMapper.toDto(user));
     }
 
     public ResponseEntity<String> getInitial() {

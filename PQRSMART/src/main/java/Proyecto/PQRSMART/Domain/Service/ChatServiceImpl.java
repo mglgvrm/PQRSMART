@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import jakarta.annotation.PostConstruct;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -37,11 +38,16 @@ public class ChatServiceImpl implements ChatService {
     @Value("${groq.api-key}")
     private String apiKey;
 
-    WebClient webClient = WebClient.builder()
-            .baseUrl("https://api.groq.com/openai/v1")
-            .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
-            .defaultHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-            .build();
+    private WebClient webClient;
+
+    @PostConstruct
+    void initializeWebClient() {
+        webClient = WebClient.builder()
+                .baseUrl("https://api.groq.com/openai/v1")
+                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                .build();
+    }
 
     public String preguntarIA(String mensaje) {
         RestTemplate restTemplate = new RestTemplate();

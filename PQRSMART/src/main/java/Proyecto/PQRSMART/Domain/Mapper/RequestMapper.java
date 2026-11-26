@@ -19,6 +19,15 @@ public class RequestMapper {
         request.setMediumAnswer(dto.getMediumAnswer());
         request.setArchivo(dto.getArchivo());
         request.setArchiveAnswer(dto.getArchiveAnswer());
+        request.setLatitude(dto.getLatitude());
+        request.setLongitude(dto.getLongitude());
+        request.setLocationSource(dto.getLocationSource());
+        request.setLocationMethod(dto.getLocationMethod());
+        request.setLocationDescription(dto.getLocationDescription());
+        request.setLocationCapturedAt(dto.getLocationCapturedAt());
+        request.setCitizenName(dto.getCitizenName());
+        request.setCitizenEmail(dto.getCitizenEmail());
+        request.setCitizenPhone(dto.getCitizenPhone());
 
         // 🔥 Relaciones SOLO con ID (sin traer toda la entidad)
 
@@ -26,6 +35,11 @@ public class RequestMapper {
             User user = new User();
             user.setId(dto.getUser().getId());
             request.setUser(user);
+        }
+        if (dto.getRegisteredBy() != null) {
+            User registeredBy = new User();
+            registeredBy.setId(dto.getRegisteredBy().getId());
+            request.setRegisteredBy(registeredBy);
         }
 
         if (dto.getRequestType() != null) {
@@ -65,10 +79,20 @@ public class RequestMapper {
         dto.setRadicado(request.getRadicado());
         dto.setDescription(request.getDescription());
         dto.setDate(request.getDate());
+        dto.setUpdatedAt(request.getUpdatedAt());
         dto.setAnswer(request.getAnswer());
         dto.setMediumAnswer(request.getMediumAnswer());
         dto.setArchivo(request.getArchivo());
         dto.setArchiveAnswer(request.getArchiveAnswer());
+        dto.setLatitude(request.getLatitude());
+        dto.setLongitude(request.getLongitude());
+        dto.setLocationSource(request.getLocationSource());
+        dto.setLocationMethod(request.getLocationMethod());
+        dto.setLocationDescription(request.getLocationDescription());
+        dto.setLocationCapturedAt(request.getLocationCapturedAt());
+        dto.setCitizenName(request.getCitizenName());
+        dto.setCitizenEmail(request.getCitizenEmail());
+        dto.setCitizenPhone(request.getCitizenPhone());
 
         // 🔥 Convertimos Entity → DTO correctamente
 
@@ -76,8 +100,21 @@ public class RequestMapper {
             dto.setUser(
                     UsuarioDto.builder()
                             .id(request.getUser().getId())
+                            .name(request.getUser().getName())
+                            .lastName(request.getUser().getLastName())
                             .user(request.getUser().getUsername())
                             .email(request.getUser().getEmail())
+                            .build()
+            );
+        }
+        if (request.getRegisteredBy() != null) {
+            dto.setRegisteredBy(
+                    UsuarioDto.builder()
+                            .id(request.getRegisteredBy().getId())
+                            .name(request.getRegisteredBy().getName())
+                            .lastName(request.getRegisteredBy().getLastName())
+                            .user(request.getRegisteredBy().getUsername())
+                            .role(request.getRegisteredBy().getRole())
                             .build()
             );
         }

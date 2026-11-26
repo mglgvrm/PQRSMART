@@ -26,6 +26,10 @@ class RequestRepository {
     return requestService.save(requestModel);
   }
 
+  Future<RequestModel> saveAssisted(RequestModel requestModel) {
+    return requestService.saveAssisted(requestModel);
+  }
+
   Future<void> cancel(int idRequest) {
     return requestService.cancel(idRequest);
   }

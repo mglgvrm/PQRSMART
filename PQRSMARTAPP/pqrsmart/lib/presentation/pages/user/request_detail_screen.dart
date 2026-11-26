@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pqrsmart/core/theme/app_colors.dart';
 import 'package:pqrsmart/data/model/RequestModel.dart';
+import 'package:pqrsmart/data/model/RequestStateHistoryModel.dart';
+import 'package:pqrsmart/data/services/RequestService.dart';
 import 'package:pqrsmart/presentation/blocs/RequestBloc.dart';
 import 'package:pqrsmart/presentation/states/RequestEvent.dart';
 import 'package:pqrsmart/presentation/states/RequestState.dart';
@@ -17,6 +19,16 @@ class RequestDetailScreen extends StatefulWidget {
 
 class _RequestDetailScreenState extends State<RequestDetailScreen> {
   bool _showAnalysis = false;
+  late final Future<List<RequestStateHistoryModel>>? _historyFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    final requestId = widget.request.idRequest;
+    _historyFuture = requestId == null
+        ? null
+        : RequestService().getStateHistory(requestId);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,6 +88,10 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                         request.requestType?.nameRequestType ?? 'No disponible',
                   ),
                   _DetailRow(label: 'Fecha de registro', value: request.date),
+                  _DetailRow(
+                    label: 'Última actualización',
+                    value: _formatDateTime(request.updatedAt),
+                  ),
                   const SizedBox(height: 13),
                   const Text(
                     'Descripción',
@@ -97,6 +113,8 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                 ],
               ),
             ),
+            const SizedBox(height: 16),
+            _StateHistorySection(historyFuture: _historyFuture),
             const SizedBox(height: 16),
             PqrCard(
               padding: EdgeInsets.zero,
@@ -181,6 +199,125 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
       if (id != null) context.read<RequestBloc>().add(CancelRequestEvent(id));
     }
   }
+}
+
+class _StateHistorySection extends StatelessWidget {
+  const _StateHistorySection({required this.historyFuture});
+
+  final Future<List<RequestStateHistoryModel>>? historyFuture;
+
+  @override
+  Widget build(BuildContext context) => PqrCard(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Seguimiento del estado',
+          style: TextStyle(
+            color: AppColors.text,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 10),
+        if (historyFuture == null)
+          const Text(
+            'No hay historial disponible para esta solicitud.',
+            style: TextStyle(color: AppColors.muted, fontSize: 12),
+          )
+        else
+          FutureBuilder<List<RequestStateHistoryModel>>(
+            future: historyFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const LinearProgressIndicator(minHeight: 2);
+              }
+              if (snapshot.hasError) {
+                return Text(
+                  'No se pudo cargar el historial: ${snapshot.error}',
+                  style: const TextStyle(
+                    color: AppColors.cancelled,
+                    fontSize: 12,
+                  ),
+                );
+              }
+              final history = snapshot.data ?? const [];
+              if (history.isEmpty) {
+                return const Text(
+                  'No hay cambios de estado registrados antes de habilitar el historial.',
+                  style: TextStyle(color: AppColors.muted, fontSize: 12),
+                );
+              }
+              return Column(
+                children: [
+                  for (final item in history)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(
+                            Icons.circle,
+                            color: AppColors.primary,
+                            size: 10,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item.previousState == null
+                                      ? 'Registrada · ${item.newState}'
+                                      : '${item.previousState} → ${item.newState}',
+                                  style: const TextStyle(
+                                    color: AppColors.text,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                Text(
+                                  '${_formatDateTime(item.changedAt)}'
+                                  '${item.changedBy == null ? '' : ' · ${item.changedBy}'}',
+                                  style: const TextStyle(
+                                    color: AppColors.muted,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                                if (item.observation?.isNotEmpty == true)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 3),
+                                    child: Text(
+                                      item.observation!,
+                                      style: const TextStyle(
+                                        color: AppColors.muted,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
+      ],
+    ),
+  );
+}
+
+String _formatDateTime(String? value) {
+  if (value == null || value.isEmpty) return 'Sin actualización registrada';
+  final date = DateTime.tryParse(value)?.toLocal();
+  if (date == null) return value;
+  return '${date.day.toString().padLeft(2, '0')}/'
+      '${date.month.toString().padLeft(2, '0')}/${date.year} '
+      '${date.hour.toString().padLeft(2, '0')}:'
+      '${date.minute.toString().padLeft(2, '0')}';
 }
 
 class _DetailRow extends StatelessWidget {

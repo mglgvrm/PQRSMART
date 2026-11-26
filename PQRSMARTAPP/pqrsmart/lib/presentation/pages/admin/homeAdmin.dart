@@ -26,6 +26,7 @@ import 'package:pqrsmart/presentation/states/ChatBoxEvent.dart';
 import 'package:pqrsmart/presentation/states/DependenceEvent.dart';
 import 'package:pqrsmart/presentation/states/RequestEvent.dart';
 import 'package:pqrsmart/presentation/states/UserEvent.dart';
+import 'package:pqrsmart/presentation/utils/request_status_filter.dart';
 
 class HomeAdmin extends StatefulWidget {
   const HomeAdmin({super.key});
@@ -46,7 +47,8 @@ class _HomeAdminState extends State<HomeAdmin> {
   ];
 
   late final PageController _pageController;
-  late final List<Widget> _pages;
+  late List<Widget> _pages;
+  int _requestPageKey = 0;
   int _currentIndex = 0;
   DateTime? _lastPressed;
 
@@ -54,14 +56,17 @@ class _HomeAdminState extends State<HomeAdmin> {
   void initState() {
     super.initState();
     _pageController = PageController();
-    _pages = const [
-      Home(),
-      Dashboard(),
-      User(),
-      DependencePage(),
-      CategoryPage(),
-      RequestsAdminPage(),
-      AdminProfileScreen(),
+    _pages = [
+      const Home(),
+      Dashboard(
+        onRequestFilterSelected: _openRequestsFilter,
+        onUsersSelected: () => _selectPage(2),
+      ),
+      const User(),
+      const DependencePage(),
+      const CategoryPage(),
+      const RequestsAdminPage(),
+      const AdminProfileScreen(),
     ];
   }
 
@@ -74,6 +79,19 @@ class _HomeAdminState extends State<HomeAdmin> {
   void _selectPage(int index) {
     setState(() => _currentIndex = index);
     _pageController.jumpToPage(index);
+  }
+
+  void _openRequestsFilter(RequestStatusFilter filter) {
+    setState(() {
+      final updatedPages = List<Widget>.of(_pages);
+      updatedPages[5] = RequestsAdminPage(
+        key: ValueKey(++_requestPageKey),
+        initialFilter: filter,
+      );
+      _pages = updatedPages;
+      _currentIndex = 5;
+    });
+    _pageController.jumpToPage(5);
   }
 
   Future<bool> _onWillPop() async {

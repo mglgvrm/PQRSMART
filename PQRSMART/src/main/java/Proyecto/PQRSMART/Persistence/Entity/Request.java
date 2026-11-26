@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.Instant;
 
 @Data
 @Builder
@@ -22,8 +23,8 @@ public class Request {
     @Column(name = "Radicado", unique = true)
     private String radicado;
 
-    @JoinColumn(name = "Usuario")
-    @ManyToOne
+    @JoinColumn(name = "Usuario", nullable = true)
+    @ManyToOne(optional = true)
     private User user;
 
     @JoinColumn(name = "ID_Tipo_Solicitud")
@@ -41,6 +42,9 @@ public class Request {
 
     @Column(name = "Fecha_Solicitud")
     private LocalDate date;
+
+    @Column(name = "Fecha_Actualizacion")
+    private Instant updatedAt;
 
     @Column(name = "Respuesta_Solicitud")
     private String answer;
@@ -81,4 +85,43 @@ public class Request {
     @Column(name = "Relevancia")
     private Double relevance;
 
+    // Coordenadas persistidas que determinan la posición de cada PQRS en el mapa.
+    @Column(name = "Latitud")
+    private Double latitude;
+
+    @Column(name = "Longitud")
+    private Double longitude;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "Fuente_Ubicacion")
+    private RequestLocationSource locationSource;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "Metodo_Ubicacion")
+    private RequestLocationMethod locationMethod;
+
+    @Column(name = "Descripcion_Lugar", length = 300)
+    private String locationDescription;
+
+    @Column(name = "Fecha_Captura_Ubicacion")
+    private Instant locationCapturedAt;
+
+    @Column(name = "Nombre_Ciudadano", length = 160)
+    private String citizenName;
+
+    @Column(name = "Correo_Ciudadano", length = 254)
+    private String citizenEmail;
+
+    @Column(name = "Telefono_Ciudadano", length = 40)
+    private String citizenPhone;
+
+    @ManyToOne
+    @JoinColumn(name = "Registrado_Por")
+    private User registeredBy;
+
+    @PrePersist
+    @PreUpdate
+    private void updateTimestamp() {
+        updatedAt = Instant.now();
+    }
 }

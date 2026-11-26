@@ -5,28 +5,33 @@ import 'package:pqrsmart/data/model/RequestModel.dart';
 import 'package:pqrsmart/presentation/blocs/RequestBloc.dart';
 import 'package:pqrsmart/presentation/states/RequestEvent.dart';
 import 'package:pqrsmart/presentation/states/RequestState.dart';
+import 'package:pqrsmart/presentation/utils/request_status_filter.dart';
 
 class RequestsAdminPage extends StatefulWidget {
-  const RequestsAdminPage({super.key});
+  const RequestsAdminPage({
+    super.key,
+    this.initialFilter = RequestStatusFilter.all,
+  });
+
+  final RequestStatusFilter initialFilter;
 
   @override
   State<RequestsAdminPage> createState() => _RequestsAdminPageState();
 }
 
 class _RequestsAdminPageState extends State<RequestsAdminPage> {
-  static const _filters = [
-    'Todas',
-    'Pendientes',
-    'En proceso',
-    'Atendidas',
-    'Canceladas',
-  ];
   final _searchController = TextEditingController();
-  int _selectedFilter = 0;
+  late RequestStatusFilter _selectedFilter;
   String _query = '';
   String? _selectedCategory;
   String? _selectedDependence;
   DateTimeRange? _dateRange;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedFilter = widget.initialFilter;
+  }
 
   @override
   void dispose() {
@@ -35,17 +40,7 @@ class _RequestsAdminPageState extends State<RequestsAdminPage> {
   }
 
   bool _matchesFilter(RequestModel request) {
-    final status = (request.requestState?.nameRequestState ?? '').toUpperCase();
-    return switch (_selectedFilter) {
-      1 => status.contains('PEND'),
-      2 => status.contains('PROCESO'),
-      3 =>
-        status.contains('ATEND') ||
-            status.contains('FINAL') ||
-            status.contains('RESUEL'),
-      4 => status.contains('CANCEL') || status.contains('RECHAZ'),
-      _ => true,
-    };
+    return matchesRequestStatus(request, _selectedFilter);
   }
 
   bool _matchesSearch(RequestModel request) {
@@ -56,6 +51,7 @@ class _RequestsAdminPageState extends State<RequestsAdminPage> {
       request.idRequest?.toString(),
       request.user?.name,
       request.user?.lastName,
+      request.citizenName,
       request.category?.nameCategory,
       request.dependence?.nameDependence,
       request.date,
@@ -193,22 +189,26 @@ class _RequestsAdminPageState extends State<RequestsAdminPage> {
                   vertical: 6,
                 ),
                 scrollDirection: Axis.horizontal,
-                itemCount: _filters.length,
+                itemCount: RequestStatusFilter.values.length,
                 separatorBuilder: (_, __) => const SizedBox(width: 8),
-                itemBuilder: (context, index) => ChoiceChip(
-                  label: Text(_filters[index]),
-                  selected: _selectedFilter == index,
-                  onSelected: (_) => setState(() => _selectedFilter = index),
-                  selectedColor: AppColors.action,
-                  backgroundColor: AppColors.surfaceBlue,
-                  labelStyle: TextStyle(
-                    color: _selectedFilter == index
-                        ? AppColors.white
-                        : AppColors.text,
-                  ),
-                  showCheckmark: false,
-                  side: BorderSide.none,
-                ),
+                itemBuilder: (context, index) {
+                  final filter = RequestStatusFilter.values[index];
+                  final count = countRequestsByStatus(state.request, filter);
+                  return ChoiceChip(
+                    label: Text('${filter.label} ($count)'),
+                    selected: _selectedFilter == filter,
+                    onSelected: (_) => setState(() => _selectedFilter = filter),
+                    selectedColor: AppColors.action,
+                    backgroundColor: AppColors.surfaceBlue,
+                    labelStyle: TextStyle(
+                      color: _selectedFilter == filter
+                          ? AppColors.white
+                          : AppColors.text,
+                    ),
+                    showCheckmark: false,
+                    side: BorderSide.none,
+                  );
+                },
               ),
             ),
             SizedBox(
@@ -358,9 +358,20 @@ class _RequestsAdminPageState extends State<RequestsAdminPage> {
               const Divider(height: 24),
               _DetailLine(
                 'Ciudadano',
-                '${request.user?.name ?? ''} ${request.user?.lastName ?? ''}'
-                    .trim(),
+                request.user == null
+                    ? request.citizenName ?? 'No disponible'
+                    : '${request.user!.name} ${request.user!.lastName}'.trim(),
               ),
+              if (request.user == null && request.citizenEmail != null)
+                _DetailLine('Correo', request.citizenEmail!),
+              if (request.user == null && request.citizenPhone != null)
+                _DetailLine('Teléfono', request.citizenPhone!),
+              if (request.registeredBy != null)
+                _DetailLine(
+                  'Registrada por',
+                  '${request.registeredBy!.name} ${request.registeredBy!.lastName}'
+                      .trim(),
+                ),
               _DetailLine(
                 'Categoría',
                 request.category?.nameCategory ?? 'No disponible',
@@ -468,7 +479,9 @@ class _RequestCard extends StatelessWidget {
       request.user?.name,
       request.user?.lastName,
     ].whereType<String>().where((part) => part.isNotEmpty).join(' ');
+    final requesterName = name.isEmpty ? request.citizenName : name;
     final status = request.requestState?.nameRequestState ?? 'Sin estado';
+    final statusColor = requestStatusColor(status);
     return Card(
       margin: EdgeInsets.zero,
       color: AppColors.white,
@@ -496,7 +509,7 @@ class _RequestCard extends StatelessWidget {
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 5),
           child: Text(
-            '$name · ${request.category?.nameCategory ?? 'Sin categoría'}\n'
+            '${requesterName ?? 'Ciudadano'} · ${request.category?.nameCategory ?? 'Sin categoría'}\n'
             '${request.dependence?.nameDependence ?? 'Sin dependencia'} · ${request.date}',
             style: const TextStyle(color: AppColors.muted, height: 1.4),
           ),
@@ -504,11 +517,23 @@ class _RequestCard extends StatelessWidget {
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.circle, color: AppColors.icon, size: 10),
-            const SizedBox(height: 4),
-            Text(
-              status,
-              style: const TextStyle(color: AppColors.text, fontSize: 11),
+            Container(
+              constraints: const BoxConstraints(maxWidth: 130),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+              decoration: BoxDecoration(
+                color: statusColor.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Text(
+                status,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: statusColor,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ],
         ),

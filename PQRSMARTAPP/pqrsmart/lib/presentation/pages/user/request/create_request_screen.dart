@@ -27,9 +27,12 @@ import 'package:pqrsmart/presentation/states/RequestState.dart';
 import 'package:pqrsmart/presentation/states/RequestTypeEvent.dart';
 import 'package:pqrsmart/presentation/states/RequestTypeState.dart';
 import 'package:pqrsmart/presentation/widgets/pqr_widgets.dart';
+import 'package:pqrsmart/presentation/widgets/request_location_picker.dart';
 
 class CreateRequestScreen extends StatefulWidget {
-  const CreateRequestScreen({super.key});
+  final bool assisted;
+
+  const CreateRequestScreen({super.key, this.assisted = false});
 
   @override
   State<CreateRequestScreen> createState() => _CreateRequestScreenState();
@@ -38,13 +41,22 @@ class CreateRequestScreen extends StatefulWidget {
 class _CreateRequestScreenState extends State<CreateRequestScreen> {
   final _formKey = GlobalKey<FormState>();
   final _descriptionController = TextEditingController();
+  final _citizenNameController = TextEditingController();
+  final _citizenEmailController = TextEditingController();
+  final _citizenPhoneController = TextEditingController();
+  final _locationDescriptionController = TextEditingController();
   RequestTypeModel? _requestType;
   DependenceModel? _dependence;
   CategoryModel? _category;
+  RequestLocationSelection? _location;
 
   @override
   void dispose() {
     _descriptionController.dispose();
+    _citizenNameController.dispose();
+    _citizenEmailController.dispose();
+    _citizenPhoneController.dispose();
+    _locationDescriptionController.dispose();
     super.dispose();
   }
 
@@ -58,20 +70,53 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
       );
       return;
     }
+    if (widget.assisted && _citizenNameController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Escribe el nombre del ciudadano.')),
+      );
+      return;
+    }
+    final request = RequestModel(
+      description: _descriptionController.text.trim(),
+      requestType: _requestType,
+      dependence: _dependence,
+      category: _category,
+      date: DateTime.now().toIso8601String().split('T').first,
+      mediumAnswer: widget.assisted
+          ? _citizenEmailController.text.trim().isNotEmpty
+                ? 'Correo'
+                : _citizenPhoneController.text.trim().isNotEmpty
+                ? 'Teléfono'
+                : 'Presencial'
+          : 'Correo',
+      requestState: RequestStateModel(idRequestState: 1),
+      latitude: _location?.point.latitude,
+      longitude: _location?.point.longitude,
+      locationSource: _location == null
+          ? null
+          : widget.assisted
+          ? 'FUNCIONARIO'
+          : _location!.method,
+      locationMethod: _location?.method,
+      locationDescription: _locationDescriptionController.text.trim(),
+      locationCapturedAt: _location?.capturedAt.toUtc().toIso8601String(),
+      citizenName: widget.assisted ? _citizenNameController.text.trim() : null,
+      citizenEmail: widget.assisted
+          ? _optionalValue(_citizenEmailController.text)
+          : null,
+      citizenPhone: widget.assisted
+          ? _optionalValue(_citizenPhoneController.text)
+          : null,
+    );
     context.read<RequestBloc>().add(
-      SaveRequestEvent(
-        RequestModel(
-          description: _descriptionController.text.trim(),
-          requestType: _requestType,
-          dependence: _dependence,
-          category: _category,
-          date: DateTime.now().toIso8601String().split('T').first,
-          mediumAnswer: 'Correo',
-          requestState: RequestStateModel(idRequestState: 1),
-        ),
-      ),
+      widget.assisted
+          ? SaveAssistedRequestEvent(request)
+          : SaveRequestEvent(request),
     );
   }
+
+  String? _optionalValue(String value) =>
+      value.trim().isEmpty ? null : value.trim();
 
   @override
   Widget build(BuildContext context) => MultiBlocProvider(
@@ -115,6 +160,40 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(18, 8, 18, 24),
             children: [
+              if (widget.assisted) ...[
+                const PqrFieldLabel('Datos del ciudadano'),
+                TextFormField(
+                  controller: _citizenNameController,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: const InputDecoration(
+                    labelText: 'Nombre completo',
+                    prefixIcon: Icon(Icons.person_outline),
+                  ),
+                  validator: (value) =>
+                      widget.assisted && (value == null || value.trim().isEmpty)
+                      ? 'Escribe el nombre del ciudadano'
+                      : null,
+                ),
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: _citizenEmailController,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: const InputDecoration(
+                    labelText: 'Correo (opcional)',
+                    prefixIcon: Icon(Icons.email_outlined),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: _citizenPhoneController,
+                  keyboardType: TextInputType.phone,
+                  decoration: const InputDecoration(
+                    labelText: 'Teléfono (opcional)',
+                    prefixIcon: Icon(Icons.phone_outlined),
+                  ),
+                ),
+                const SizedBox(height: 17),
+              ],
               const PqrFieldLabel('Tipo de solicitud'),
               BlocBuilder<RequestTypeBloc, RequestTypeState>(
                 builder: (context, state) {
@@ -241,6 +320,22 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                 validator: (value) => value == null || value.trim().isEmpty
                     ? 'Escribe una descripción'
                     : null,
+              ),
+              const SizedBox(height: 17),
+              const PqrFieldLabel('Ubicación del problema (opcional)'),
+              RequestLocationPicker(
+                selection: _location,
+                onChanged: (value) => setState(() => _location = value),
+              ),
+              const SizedBox(height: 10),
+              TextFormField(
+                controller: _locationDescriptionController,
+                maxLength: 300,
+                decoration: const InputDecoration(
+                  labelText: 'Descripción del lugar (opcional)',
+                  hintText: 'Barrio, vía o referencia cercana',
+                  prefixIcon: Icon(Icons.place_outlined),
+                ),
               ),
               const SizedBox(height: 14),
               const PqrFieldLabel('Adjuntar archivo (opcional)'),
