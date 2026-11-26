@@ -87,7 +87,8 @@ public class SecurityConfig {
                 new AntPathRequestMatcher("/api/identification_type/get"),
                 new AntPathRequestMatcher("/api/person_type/get"),
                 new AntPathRequestMatcher("/api/chat/**"),
-                new AntPathRequestMatcher("/api/auth/forgot-password/**")
+                new AntPathRequestMatcher("/api/auth/forgot-password/**"),
+                new AntPathRequestMatcher("/api/Prediction/**")
 
         );
     }

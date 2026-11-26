@@ -39,4 +39,16 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
             @Param("filterRequestType") boolean filterRequestType,
             @Param("filterRequestState") boolean filterRequestState
     );
+
+    @Query("""
+        SELECT r
+        FROM Request r
+        JOIN FETCH r.dependence d
+        WHERE r.date IS NOT NULL
+          AND r.date < :fechaLimite
+        ORDER BY r.date ASC
+    """)
+    List<Request> obtenerHistorialPredictivo(
+            @Param("fechaLimite") LocalDate fechaLimite
+    );
 }
