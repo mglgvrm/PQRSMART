@@ -37,6 +37,11 @@ function NavbarSuper() {
       href: "/super/dashboard",
       current: pathname === "/super/dashboard",
     },
+    {
+      name: t("header.pqrs_link"),
+      href: "/super/pqrs",
+      current: pathname === "/super/pqrs",
+    },
   ];
 
   const router = useRouter();

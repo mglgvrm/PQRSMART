@@ -2,10 +2,9 @@
 import withAuth from "../../utils/withAuth";
 import { useEffect, useState } from "react";
 import api from "@/app/api/api";
-import AnswerModal from "@/app/components/modals/AnswerModal";
-import NavbarSecretariat from "@/app/components/navbar_secretariat";
 import ViewPqrs from "@/app/components/modals/ViewPqrs";
 import { useTranslation } from "react-i18next";
+import NavbarSuper from "@/app/components/navbar_super";
 
 function PqrsPageSecretariat() {
   type Pqrs = {
@@ -33,14 +32,26 @@ function PqrsPageSecretariat() {
   };
   const { t } = useTranslation("common");
   const [pqrs, setPqrs] = useState<Pqrs[]>([]);
-  const [isOpenResponder, setIsOpenResponder] = useState(false);
   const [isOpenViewPqrs, setIsOpenViewPqrs] = useState(false);
   const [selectedPqrs, setSelectedPqrs] = useState<Pqrs | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+  const sortedPqrs = [...pqrs].sort((first, second) => {
+    const firstIsPending = first.requestState?.nameRequestState === "Pendiente";
+    const secondIsPending =
+      second.requestState?.nameRequestState === "Pendiente";
+
+    if (firstIsPending !== secondIsPending) {
+      return firstIsPending ? -1 : 1;
+    }
+
+    if (!firstIsPending) return 0;
+
+    return Date.parse(String(first.date)) - Date.parse(String(second.date));
+  });
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = pqrs.slice(indexOfFirstItem, indexOfLastItem);
+  const currentItems = sortedPqrs.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(pqrs.length / itemsPerPage);
   const typeId =
     typeof window !== "undefined" ? localStorage.getItem("type") : null;
@@ -53,7 +64,7 @@ function PqrsPageSecretariat() {
         if (!token)
           return console.error("No se encontró el token de autenticación");
 
-        const response = await api.get("/request/getForDependence", {
+        const response = await api.get("/request/get", {
           headers: { Authorization: `Bearer ${token}` },
         });
         console.log(response);
@@ -108,7 +119,7 @@ function PqrsPageSecretariat() {
     <div className="min-h-screen bg-white flex flex-col items-center font-sans">
       {/* Header */}
       <header className="w-full bg-green-600 text-white shadow-md">
-        <NavbarSecretariat />
+        <NavbarSuper />
       </header>
 
       {/* Contenido principal */}
@@ -256,41 +267,18 @@ function PqrsPageSecretariat() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
-                    {pqrs.requestState.nameRequestState === "Pendiente" ? (
-                      <div className="">
-                        <span
-                          className="mr-4 cursor-pointer"
-                          title="Details"
-                          onClick={() => {
-                            setIsOpenViewPqrs(true);
-                            setSelectedPqrs(pqrs);
-                          }}
-                        >
-                          {"🔎"}
-                        </span>
-                        <span
-                          className="mr-4 cursor-pointer text-green-600 hover:text-green-700"
-                          title="Responder"
-                          onClick={() => {
-                            setSelectedPqrs(pqrs);
-                            setIsOpenResponder(true);
-                          }}
-                        >
-                          {"📩"}
-                        </span>
-                      </div>
-                    ) : (
-                      <span
-                        className="mr-4 cursor-pointer"
-                        title="Details"
-                        onClick={() => {
-                          setIsOpenViewPqrs(true);
-                          setSelectedPqrs(pqrs);
-                        }}
-                      >
-                        {"🔎"}
-                      </span>
-                    )}
+                    <button
+                      type="button"
+                      className="cursor-pointer rounded-md px-3 py-2 text-[#0B3C49] hover:bg-gray-100"
+                      title="Ver detalles de la petición"
+                      aria-label={`Ver detalles de la petición ${pqrs.radicado}`}
+                      onClick={() => {
+                        setIsOpenViewPqrs(true);
+                        setSelectedPqrs(pqrs);
+                      }}
+                    >
+                      🔎
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -314,31 +302,6 @@ function PqrsPageSecretariat() {
                 setSelectedPqrs(null);
               }}
               pqrs={selectedPqrs}
-            />
-          )}
-          {isOpenResponder && selectedPqrs && (
-            <AnswerModal
-              pqrs={selectedPqrs}
-              onClose={() => {
-                setIsOpenResponder(false);
-                setSelectedPqrs(null);
-              }}
-              onSave={() => {
-                // Refresca la lista de PQRS tras responder
-                setPqrs((prev) =>
-                  prev.map((p: Pqrs) =>
-                    p.idRequest === selectedPqrs.idRequest
-                      ? {
-                          ...p,
-                          requestState: {
-                            ...p.requestState,
-                            nameRequestState: "Finalizado",
-                          },
-                        }
-                      : p,
-                  ),
-                );
-              }}
             />
           )}
         </div>
@@ -368,4 +331,4 @@ function PqrsPageSecretariat() {
   );
 }
 
-export default withAuth(PqrsPageSecretariat, ["ROLE_SECRE"]);
+export default withAuth(PqrsPageSecretariat, ["ROLE_SUPER"]);

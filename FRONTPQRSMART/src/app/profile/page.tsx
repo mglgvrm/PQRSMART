@@ -7,6 +7,7 @@ import NavbarUser from "../components/navbar_user";
 import Navbar from "../components/navbar";
 import NavbarSecretariat from "../components/navbar_secretariat";
 import { useTranslation } from "react-i18next";
+import NavbarSuper from "../components/navbar_super";
 
 interface User {
   id: number;
@@ -82,10 +83,12 @@ const Profile = () => {
     <div className="min-h-screen bg-gray-100 flex flex-col items-center font-sans">
       {/* Header */}
       <header className="w-full bg-green-600 text-white shadow-md">
-        {user.role === "admin" ? (
+        {user.role === "ADMIN" ? (
           <Navbar />
         ) : user.role === "USER" ? (
           <NavbarUser />
+        ) : user.role === "SUPER" ? (
+          <NavbarSuper />
         ) : (
           <NavbarSecretariat />
         )}
@@ -193,4 +196,9 @@ const Profile = () => {
 };
 
 // Protección del componente según roles
-export default withAuth(Profile, ["ROLE_USER", "ROLE_SECRE", "ROLE_ADMIN"]);
+export default withAuth(Profile, [
+  "ROLE_USER",
+  "ROLE_SECRE",
+  "ROLE_ADMIN",
+  "ROLE_SUPER",
+]);

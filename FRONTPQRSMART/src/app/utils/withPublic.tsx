@@ -23,6 +23,10 @@ export default function withPublic(Component: React.ComponentType) {
           router.push("/secretariat/dashboard");
           return;
         }
+        if (role === "ROLE_SUPER") {
+          router.push("/super/dashboard");
+          return;
+        }
         // Si ya hay token, redirige al dashboard
         router.push("/dashboard");
       }

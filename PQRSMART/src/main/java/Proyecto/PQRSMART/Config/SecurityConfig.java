@@ -39,9 +39,9 @@ public class SecurityConfig {
                         .requestMatchers(userEndpoinds()).hasRole("USER")
                         .requestMatchers(adminEndpoinds()).hasRole("ADMIN")
                         .requestMatchers(secreEndpoinds()).hasRole("SECRE")
-                        .requestMatchers(allEnpoinds()).hasAnyRole("USER", "ADMIN", "SECRE")
-                        .requestMatchers("/api/request/report/**").hasAnyRole("ADMIN", "SECRE")
-
+                        .requestMatchers(allEnpoinds()).hasAnyRole("USER", "ADMIN", "SECRE", "SUPER")
+                        .requestMatchers("/api/request/report/**").hasAnyRole("ADMIN", "SECRE", "SUPER")
+                        .requestMatchers("/api/request/get").hasAnyRole( "ADMIN", "SUPER")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -88,7 +88,8 @@ public class SecurityConfig {
                 new AntPathRequestMatcher("/api/person_type/get"),
                 new AntPathRequestMatcher("/api/chat/**"),
                 new AntPathRequestMatcher("/api/auth/forgot-password/**"),
-                new AntPathRequestMatcher("/api/Prediction/**")
+                new AntPathRequestMatcher("/api/Prediction/**"),
+                new AntPathRequestMatcher("/api/Usuario/initial")
 
         );
     }
@@ -96,7 +97,6 @@ public class SecurityConfig {
     private RequestMatcher userEndpoinds() {
         return new OrRequestMatcher(
                 new AntPathRequestMatcher("/api/request/save"),
-                new AntPathRequestMatcher("/api/request/report/**"),
                 new AntPathRequestMatcher("/api/chat/")
         );
     }
@@ -125,7 +125,7 @@ public class SecurityConfig {
                 new AntPathRequestMatcher("/api/category/activate/**"),
                 new AntPathRequestMatcher("/api/category/save"),
                 new AntPathRequestMatcher("/api/category/update"),
-                new AntPathRequestMatcher("/api/request/get"),
+
                 new AntPathRequestMatcher("/api/request/save/assisted"),
                 // El acceso al heatmap y al detalle de celda está incluido en la regla ADMIN.
                 new AntPathRequestMatcher("/api/request/geo/heatmap"),
@@ -145,6 +145,7 @@ public class SecurityConfig {
         );
     }
 
+
     private RequestMatcher allEnpoinds() {
         return new OrRequestMatcher(
                 new AntPathRequestMatcher("/api/dependence/get"),
@@ -158,7 +159,8 @@ public class SecurityConfig {
                 new AntPathRequestMatcher("/api/person_type/get"),
                 new AntPathRequestMatcher("/api/request/get/pqrs"),
                 new AntPathRequestMatcher("/api/request/geo/municipality"),
-                new AntPathRequestMatcher("/api/Usuario/initial")
+                new AntPathRequestMatcher("/api/request/report/**")
         );
     }
+
 }

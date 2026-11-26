@@ -1,184 +1,39 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-} from "chart.js";
-import { Bar, Line } from "react-chartjs-2";
-import {
-  Building,
-  Calendar,
-  BarChart3,
-  TrendingUp,
-  ListTodo,
-} from "lucide-react";
+
 import api from "@/app/api/api";
 import withAuth from "@/app/utils/withAuth";
 import { useTranslation } from "react-i18next";
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-);
 
 import { CalendarDays } from "lucide-react";
 import NavbarSuper from "@/app/components/navbar_super";
 
 function DashboardPageSuper() {
-  const [pqrsData, setPqrsData] = useState<any[]>([]);
   const [pqrsDataPrediction, setPqrsDataPrediction] = useState<any[]>([]);
   const { t } = useTranslation("common");
-  const [totalPQRS, setTotalPQRS] = useState(0);
-  const [totalPQRSPorDependencia, setTotalPQRSPorDependencia] = useState<
-    Record<string, number>
-  >({});
-  const [totalPQRSmes, setTotalPQRSmes] = useState<Record<string, number>>({});
-  const [totalPQRSDepMes, setTotalPQRSDepMes] = useState<
-    Record<string, number>
-  >({});
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token)
-          return console.error("No se encontró el token de autenticación");
-        console.log("Token de autenticación encontrado:", token);
-        const response = await api.get("/request/get", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = response.data;
-        console.log("Fetched PQRS data:", data);
-        setPqrsData(data);
-        calcularTotales(data);
-      } catch (error) {
-        console.error("Error fetching PQRS data:", error);
-      }
-    };
     const fetchDataPrediction = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token)
           return console.error("No se encontró el token de autenticación");
         console.log("Token de autenticación encontrado:", token);
-        const response = await api.get("/prediction/dependencies", {
+        const response = await api.get("/Prediction/dependencias", {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = response.data;
         console.log("Fetched prediction PQRS data:", data);
-        setPqrsDataPrediction(data);
+        setPqrsDataPrediction(Array.isArray(data) ? data : data ? [data] : []);
       } catch (error) {
         console.error("Error fetching prediction PQRS data:", error);
       }
     };
 
-    fetchData();
     fetchDataPrediction();
   }, []);
 
-  const calcularTotales = (data: any[]) => {
-    setTotalPQRS(data.length);
-
-    // Total PQRS por Dependencia
-    const dependenciaCount = data.reduce(
-      (acc, pqrs) => {
-        const dependencia =
-          pqrs.dependence?.nameDependence || "Sin Dependencia";
-        acc[dependencia] = (acc[dependencia] || 0) + 1;
-        return acc;
-      },
-      {} as Record<string, number>,
-    );
-    setTotalPQRSPorDependencia(dependenciaCount);
-
-    // Total PQRS por Mes
-    const pqrsPorMes = data.reduce(
-      (acc, pqrs) => {
-        const mes = new Date(pqrs.date).toLocaleString("default", {
-          month: "long",
-          year: "numeric",
-        });
-        acc[mes] = (acc[mes] || 0) + 1;
-        return acc;
-      },
-      {} as Record<string, number>,
-    );
-    setTotalPQRSmes(pqrsPorMes);
-
-    // Total PQRS por Dependencia al Mes
-    const pqrsPorDepMes = data.reduce(
-      (acc, pqrs) => {
-        const mes = new Date(pqrs.date).toLocaleString("default", {
-          month: "long",
-          year: "numeric",
-        });
-        const dependencia =
-          pqrs.dependence?.nameDependence || "Sin Dependencia";
-        const key = `${dependencia} - ${mes}`;
-        acc[key] = (acc[key] || 0) + 1;
-        return acc;
-      },
-      {} as Record<string, number>,
-    );
-    setTotalPQRSDepMes(pqrsPorDepMes);
-  };
-
-  const dataChartDependencia = {
-    labels: Object.keys(totalPQRSPorDependencia),
-    datasets: [
-      {
-        label: t("admin.dashboard.total_pqrs_by_dependence"),
-        data: Object.values(totalPQRSPorDependencia),
-        backgroundColor: "rgba(99, 102, 241, 0.5)",
-        borderColor: "rgba(99, 102, 241, 1)",
-        borderWidth: 1,
-        borderRadius: 8,
-      },
-    ],
-  };
-
-  const dataChartMes = {
-    labels: Object.keys(totalPQRSmes),
-    datasets: [
-      {
-        label: t("admin.dashboard.total_pqrs_by_month"),
-        data: Object.values(totalPQRSmes),
-        backgroundColor: "rgba(34, 197, 94, 0.5)",
-        borderColor: "rgba(34, 197, 94, 1)",
-        borderWidth: 1,
-        borderRadius: 8,
-      },
-    ],
-  };
-
-  const lineChartData = {
-    labels: Object.keys(totalPQRSmes),
-    datasets: [
-      {
-        label: t("admin.dashboard.pqrs_tendency"),
-        data: Object.values(totalPQRSmes),
-        fill: true,
-        backgroundColor: "rgba(34, 197, 94, 0.1)",
-        borderColor: "rgba(34, 197, 94, 1)",
-        tension: 0.3,
-      },
-    ],
-  };
   const [isOpen, setIsOpen] = useState(false);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
@@ -218,7 +73,7 @@ function DashboardPageSuper() {
       <header className="w-full bg-green-600 text-white shadow-md">
         <NavbarSuper />
       </header>
-      <div className="px-6 py-10 max-w-7xl mx-auto">
+      <div className="mx-auto w-full max-w-7xl px-6 py-10">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold text-[#023047]">
             {t("admin.dashboard.dashboard_title")}
@@ -312,39 +167,10 @@ function DashboardPageSuper() {
           )}
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid w-full grid-cols-1 gap-6">
           {/* Total PQRS */}
-          <div className="bg-white rounded-2xl shadow-md p-6 flex flex-col items-center text-center hover:shadow-lg transition">
-            <ListTodo className="text-[#023047] mb-3" size={36} />
-            <h2 className="font-semibold text-gray-700 text-lg">
-              {t("admin.dashboard.total_pqrs")}
-            </h2>
-            <p className="text-4xl font-bold text-[#023047] mt-2">
-              {totalPQRS}
-            </p>
-          </div>
 
-          <div className="bg-white rounded-2xl shadow-md p-6 flex flex-col items-center text-center hover:shadow-lg transition">
-            <CalendarDays className="text-red-500 mb-3" size={36} />
-
-            <h2 className="font-semibold text-gray-700 text-lg">
-              Dependencia con más PQRS
-            </h2>
-
-            <p className="text-3xl font-bold text-[#023047] mt-2">
-              {pqrsDataPrediction[0]?.dependence || "Sin datos"}
-            </p>
-
-            <p className="text-lg text-gray-500 mt-1">
-              {pqrsDataPrediction[0]?.percentage?.toFixed(1) || 0}%
-            </p>
-
-            <p className="text-sm text-gray-400 mt-1">
-              {pqrsDataPrediction[0]?.predictedRequests?.toFixed(0) || 0}{" "}
-              solicitudes
-            </p>
-          </div>
-          <div className="bg-white rounded-2xl shadow-md p-6">
+          <div className="w-full rounded-2xl bg-white p-6 shadow-md">
             <h2 className="text-xl font-bold text-[#023047] mb-5">
               Predicción IA Próximo Mes
             </h2>
@@ -353,106 +179,49 @@ function DashboardPageSuper() {
               {pqrsDataPrediction.map((item, index) => (
                 <div
                   key={index}
-                  className="flex justify-between items-center bg-gray-50 rounded-xl p-4"
+                  className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)]"
                 >
-                  <div>
-                    <p className="font-semibold text-[#023047]">
-                      {index + 1}. {item.dependence}
+                  <div className="min-w-0 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                    <p className="mb-2 text-xs font-semibold uppercase text-gray-500">
+                      Dependencia
                     </p>
-
-                    <p className="text-sm text-gray-500">
-                      {item.predictedRequests.toFixed(0)} solicitudes estimadas
+                    <p className="break-words font-semibold text-[#023047]">
+                      {item.dependencia ?? item.dependence ?? "Sin dependencia"}
                     </p>
                   </div>
 
-                  <div className="text-right">
+                  <div className="min-w-0 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                    <p className="mb-2 text-xs font-semibold uppercase text-gray-500">
+                      Interpretación
+                    </p>
+                    <p className="break-words text-sm leading-relaxed text-gray-600">
+                      {item.mensaje ??
+                        (typeof item.predictedRequests === "number"
+                          ? `${item.predictedRequests.toFixed(0)} solicitudes estimadas`
+                          : "Sin información disponible")}
+                    </p>
+                    {item.periodo && (
+                      <p className="mt-2 text-xs text-gray-500">
+                        Periodo: {item.periodo}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="min-w-0 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                    <p className="mb-2 text-xs font-semibold uppercase text-gray-500">
+                      Porcentaje
+                    </p>
                     <p className="text-2xl font-bold text-red-500">
-                      {item.percentage.toFixed(1)}%
+                      {Number(
+                        item.probabilidad ?? item.percentage ?? 0,
+                      ).toFixed(1)}
+                      %
                     </p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
-          {/* PQRS por Dependencia */}
-          {Object.keys(totalPQRSPorDependencia).length > 0 && (
-            <div className="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition">
-              <div className="flex items-center gap-2 mb-3">
-                <Building className="text-indigo-500" />
-                <h2 className="font-semibold text-gray-700">
-                  {t("admin.dashboard.pqrs_by_dependence")}
-                </h2>
-              </div>
-              <Bar
-                data={dataChartDependencia}
-                options={{
-                  responsive: true,
-                  plugins: { legend: { display: false } },
-                }}
-              />
-            </div>
-          )}
-
-          {/* PQRS por Mes */}
-          {Object.keys(totalPQRSmes).length > 0 && (
-            <div className="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition">
-              <div className="flex items-center gap-2 mb-3">
-                <Calendar className="text-green-500" />
-                <h2 className="font-semibold text-gray-700">
-                  {t("admin.dashboard.pqrs_by_month")}
-                </h2>
-              </div>
-              <Bar
-                data={dataChartMes}
-                options={{
-                  responsive: true,
-                  plugins: { legend: { display: false } },
-                }}
-              />
-            </div>
-          )}
-
-          {/* PQRS por Dependencia al Mes */}
-          {Object.keys(totalPQRSDepMes).length > 0 && (
-            <div className="bg-white rounded-2xl shadow-md p-6 col-span-full hover:shadow-lg transition">
-              <div className="flex items-center gap-2 mb-3">
-                <BarChart3 className="text-purple-500" />
-                <h2 className="font-semibold text-gray-700">
-                  {t("admin.dashboard.pqrs_by_dependence_month")}
-                </h2>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                {Object.entries(totalPQRSDepMes).map(([key, count]) => (
-                  <div
-                    key={key}
-                    className="bg-gray-100 p-3 rounded-xl flex justify-between"
-                  >
-                    <span className="font-medium text-gray-600">{key}</span>
-                    <span className="text-[#023047]font-semibold">{count}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Tendencia */}
-          {Object.keys(totalPQRSmes).length > 0 && (
-            <div className="bg-white rounded-2xl shadow-md p-6 col-span-full hover:shadow-lg transition">
-              <div className="flex items-center gap-2 mb-3">
-                <TrendingUp className="text-green-500" />
-                <h2 className="font-semibold text-gray-700">
-                  {t("admin.dashboard.pqrs_tendency")}
-                </h2>
-              </div>
-              <Line
-                data={lineChartData}
-                options={{
-                  responsive: true,
-                  plugins: { legend: { position: "bottom" } },
-                }}
-              />
-            </div>
-          )}
         </div>
       </div>
     </div>
