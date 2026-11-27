@@ -30,3 +30,14 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Maven
+**/target/
+
+# IntelliJ
+.idea/
+*.iml
+
+# Archivos locales
+.env
+application-local.yml
