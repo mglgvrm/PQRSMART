@@ -1,9 +1,10 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/pqrsmartdb
+    url: jdbc:postgresql://${PGHOST}:${PGPORT}/${PGDATABASE}?sslmode=require
+    username: ${PGUSER}
+    password: ${PGPASSWORD}
 
-    username: postgres
-    password: 2004
+
     driver-class-name: org.postgresql.Driver
   servlet:
     multipart:

@@ -1,1 +1,11 @@
+Proyecto\PQRSMART\Domain\Dto\AIAnalysisResponseTest.class
 Proyecto\PQRSMART\PqrsmartApplicationTests.class
+Proyecto\PQRSMART\Domain\Service\GeoAnalyticsServiceTest.class
+Proyecto\PQRSMART\Domain\Service\RequestServicesAssistedTest.class
+Proyecto\PQRSMART\Controller\AuthControllerRegisterAppTest.class
+Proyecto\PQRSMART\Domain\Service\RequestServicesSecretaryTest.class
+Proyecto\PQRSMART\Domain\Service\RequestServicesCatalogTest.class
+Proyecto\PQRSMART\Domain\Service\EmailServiceImplTest.class
+Proyecto\PQRSMART\Domain\Service\AuthServiceRegistrationTest.class
+Proyecto\PQRSMART\Domain\Service\SecretaryRegistrationPostgresTest.class
+Proyecto\PQRSMART\Domain\Service\GeoBoundaryServiceTest.class
